@@ -11,6 +11,11 @@ pub enum Error {
     #[error("文件损坏或格式异常：{0}")]
     Corrupt(String),
 
+    /// DRM/加密标记（docs/03 §8 错误分类的 Encrypted 类；UI 文案对齐
+    /// LIB-01"可能受 DRM 保护"，不涉及任何破解行为）
+    #[error("文件可能受 DRM/加密保护，无法解析：{0}")]
+    Encrypted(String),
+
     #[error("不支持的格式：{0}")]
     UnsupportedFormat(String),
 

@@ -21,9 +21,10 @@ zip = "2"
 quick-xml = "0"
 flate2 = "1"
 encoding_rs = "0.8"
-mobi = "0"
+mobi = "0.8"            # MOBI/AZW3 PDB/PalmDOC/HUFF 内核（REQ-002 已核实 0.8.0 能力边界，锁定）
 
-# 注：PalmDOC 解压由 mobi crate 内部处理，无需单独依赖 palmdoc。
+# 注：PalmDOC 解压由 mobi crate 内部处理，无需单独依赖 palmdoc；
+# REQ-002 另在 format/mobi_common.rs 自研 palmdoc_decompress（GBK 解码与 AZW3 回退段需自解码）。
 regex = "1"
 flutter_rust_bridge = "=2.13.0"   # 桥接（docs/03 §4；版本与 flutter_rust_bridge_codegen 对齐）
 
