@@ -22,7 +22,7 @@ PHASES = {
 
 
 def norm(files):
-    return [f if isinstance(f, list) else [f] for f in files]
+    return files if isinstance(files, list) else [files]
 
 
 def main() -> int:
@@ -34,7 +34,7 @@ def main() -> int:
     for req_dir in sorted((wf / "backlog").glob("REQ-*")):
         req = req_dir.name
         for phase, files in PHASES.items():
-            for f in files:
+            for f in norm(files):
                 p = req_dir / f
                 if not p.exists():
                     if strict:
