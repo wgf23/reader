@@ -14,6 +14,8 @@ dependencies:
   flutter_rust_bridge: 2.13.0
   path_provider: ^2.1.0
   file_picker: ^8.0.0
+  # REQ-001：WebView 分页渲染（docs/02 §4.1，ADR-001）
+  flutter_inappwebview: ^6.1.5
 
   # P0 按需启用（设计见 docs/02-technical.md §8）：
   # riverpod: ^2

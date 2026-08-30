@@ -1,0 +1,21 @@
+--- src/store/mod.rs
++++ replace == with != in Store::integrity_check
+@@ -244,17 +244,17 @@
+         Ok(())
+     }
+ 
+     pub fn integrity_check(&self) -> Result<bool> {
+         let ok: String = self
+             .conn
+             .query_row("PRAGMA integrity_check", [], |r| r.get(0))
+             .map_err(Error::from)?;
+-        Ok(ok == "ok")
++        Ok(ok != /* ~ changed by cargo-mutants ~ */ "ok")
+     }
+ }
+ 
+ fn now_unix() -> i64 {
+     std::time::SystemTime::now()
+         .duration_since(std::time::UNIX_EPOCH)
+         .map(|d| d.as_secs() as i64)
+         .unwrap_or(0)

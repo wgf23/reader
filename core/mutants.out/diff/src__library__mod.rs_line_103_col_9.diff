@@ -1,0 +1,21 @@
+--- src/library/mod.rs
++++ replace LibraryService::save_progress -> Result<()> with Ok(())
+@@ -95,17 +95,17 @@
+     /// 读取规范 EPUB 中指定资源字节（图片/CSS/字体）
+     pub fn resource(&self, id: &str, name: &str) -> Result<Vec<u8>> {
+         let canonical = self.canonical_path(id)?;
+         crate::format::epub::resource(&canonical, name)
+     }
+ 
+     /// 保存阅读进度（复用 reading_progress，听读同进度不变式）
+     pub fn save_progress(&mut self, id: &str, href: &str, progression: f32) -> Result<()> {
+-        self.store.save_progress(id, href, progression)
++        Ok(()) /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     /// 读取阅读进度
+     pub fn load_progress(&self, id: &str) -> Result<Option<crate::store::ProgressRecord>> {
+         self.store.load_progress(id)
+     }
+ 
+     fn canonical_path(&self, id: &str) -> Result<std::path::PathBuf> {

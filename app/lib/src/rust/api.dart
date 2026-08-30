@@ -28,6 +28,26 @@ Future<void> libraryRemove({required String id}) =>
 Future<BookView> bookOpen({required String id}) =>
     RustLib.instance.api.crateApiBookOpen(id: id);
 
+/// 取规范 EPUB 中某章节的原始 HTML（WebView 分页渲染用，REQ-001）
+Future<String> bookChapterHtml({required String id, required String href}) =>
+    RustLib.instance.api.crateApiBookChapterHtml(id: id, href: href);
+
+/// 取规范 EPUB 中某资源（图片/CSS/字体）的字节
+Future<Uint8List> bookResource({required String id, required String path}) =>
+    RustLib.instance.api.crateApiBookResource(id: id, path: path);
+
+/// 保存阅读进度（href + 章内进度 0..1）
+Future<void> progressSave(
+        {required String id,
+        required String href,
+        required double progression}) =>
+    RustLib.instance.api
+        .crateApiProgressSave(id: id, href: href, progression: progression);
+
+/// 读取阅读进度（无记录返回 None）
+Future<ProgressView?> progressGet({required String id}) =>
+    RustLib.instance.api.crateApiProgressGet(id: id);
+
 /// 书架条目
 class BookSummary {
   final String id;
@@ -109,4 +129,26 @@ class ChapterView {
           runtimeType == other.runtimeType &&
           title == other.title &&
           text == other.text;
+}
+
+/// 阅读进度视图（桥接）
+class ProgressView {
+  final String href;
+  final double progression;
+
+  const ProgressView({
+    required this.href,
+    required this.progression,
+  });
+
+  @override
+  int get hashCode => href.hashCode ^ progression.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ProgressView &&
+          runtimeType == other.runtimeType &&
+          href == other.href &&
+          progression == other.progression;
 }

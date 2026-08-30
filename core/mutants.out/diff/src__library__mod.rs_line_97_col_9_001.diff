@@ -1,0 +1,22 @@
+--- src/library/mod.rs
++++ replace LibraryService::resource -> Result<Vec<u8>> with Ok(vec![0])
+@@ -89,18 +89,17 @@
+     /// 读取规范 EPUB 中指定章节的原始 HTML（WebView 渲染用，REQ-001）
+     pub fn chapter_html(&self, id: &str, href: &str) -> Result<String> {
+         let canonical = self.canonical_path(id)?;
+         crate::format::epub::chapter_html(&canonical, href)
+     }
+ 
+     /// 读取规范 EPUB 中指定资源字节（图片/CSS/字体）
+     pub fn resource(&self, id: &str, name: &str) -> Result<Vec<u8>> {
+-        let canonical = self.canonical_path(id)?;
+-        crate::format::epub::resource(&canonical, name)
++        Ok(vec![0]) /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     /// 保存阅读进度（复用 reading_progress，听读同进度不变式）
+     pub fn save_progress(&mut self, id: &str, href: &str, progression: f32) -> Result<()> {
+         self.store.save_progress(id, href, progression)
+     }
+ 
+     /// 读取阅读进度

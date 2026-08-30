@@ -95,6 +95,40 @@ pub fn book_open(id: String) -> std::result::Result<BookView, String> {
     })
 }
 
+/// 取规范 EPUB 中某章节的原始 HTML（WebView 分页渲染用，REQ-001）
+pub fn book_chapter_html(id: String, href: String) -> std::result::Result<String, String> {
+    let svc = service()?.lock().map_err(|_| "服务锁错误".to_string())?;
+    svc.chapter_html(&id, &href).map_err(err_msg)
+}
+
+/// 取规范 EPUB 中某资源（图片/CSS/字体）的字节
+pub fn book_resource(id: String, path: String) -> std::result::Result<Vec<u8>, String> {
+    let svc = service()?.lock().map_err(|_| "服务锁错误".to_string())?;
+    svc.resource(&id, &path).map_err(err_msg)
+}
+
+/// 阅读进度视图（桥接）
+pub struct ProgressView {
+    pub href: String,
+    pub progression: f32,
+}
+
+/// 保存阅读进度（href + 章内进度 0..1）
+pub fn progress_save(id: String, href: String, progression: f32) -> std::result::Result<(), String> {
+    let mut svc = service()?.lock().map_err(|_| "服务锁错误".to_string())?;
+    svc.save_progress(&id, &href, progression).map_err(err_msg)
+}
+
+/// 读取阅读进度（无记录返回 None）
+pub fn progress_get(id: String) -> std::result::Result<Option<ProgressView>, String> {
+    let svc = service()?.lock().map_err(|_| "服务锁错误".to_string())?;
+    let rec = svc.load_progress(&id).map_err(err_msg)?;
+    Ok(rec.map(|r| ProgressView {
+        href: r.href,
+        progression: r.progression,
+    }))
+}
+
 // ---------- 内部 ----------
 
 fn to_summary(rec: &BookRecord) -> BookSummary {

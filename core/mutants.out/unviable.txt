@@ -1,0 +1,8 @@
+src/library/mod.rs:33:9: replace LibraryService::import_file -> Result<BookRecord> with Ok(Default::default())
+src/library/mod.rs:72:9: replace LibraryService::list -> Result<Vec<BookRecord>> with Ok(vec![Default::default()])
+src/library/mod.rs:77:9: replace LibraryService::open_book -> Result<OpenedBook> with Ok(Default::default())
+src/library/mod.rs:108:9: replace LibraryService::load_progress -> Result<Option<crate::store::ProgressRecord>> with Ok(Some(Default::default()))
+src/store/mod.rs:44:9: replace Store::open -> Result<Store> with Ok(Default::default())
+src/store/mod.rs:125:9: replace Store::load_progress -> Result<Option<ProgressRecord>> with Ok(Some(Default::default()))
+src/store/mod.rs:175:9: replace Store::list_books -> Result<Vec<BookRecord>> with Ok(vec![Default::default()])
+src/store/mod.rs:208:9: replace Store::get_book -> Result<BookRecord> with Ok(Default::default())

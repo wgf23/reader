@@ -30,6 +30,14 @@ pub struct BookRecord {
     pub added_at: i64,
 }
 
+/// 阅读进度记录
+#[derive(Debug, Clone)]
+pub struct ProgressRecord {
+    pub href: String,
+    pub progression: f32,
+    pub updated_at: i64,
+}
+
 impl Store {
     /// 打开（或创建）书库；自动执行迁移。
     pub fn open(data_dir: &Path) -> Result<Store> {
@@ -80,7 +88,56 @@ PRAGMA user_version = 1;
                 )
                 .map_err(Error::from)?;
         }
+        if version < 2 {
+            self.conn
+                .execute_batch(
+                    r#"
+CREATE TABLE IF NOT EXISTS reading_progress (
+  book_id     TEXT PRIMARY KEY REFERENCES books(id) ON DELETE CASCADE,
+  href        TEXT NOT NULL,
+  progression REAL NOT NULL,
+  updated_at  INTEGER NOT NULL
+);
+PRAGMA user_version = 2;
+"#,
+                )
+                .map_err(Error::from)?;
+        }
         Ok(())
+    }
+
+    /// 保存阅读进度（同一本书一行，UPSERT）
+    pub fn save_progress(&mut self, book_id: &str, href: &str, progression: f32) -> Result<()> {
+        let now = now_unix();
+        self.conn
+            .execute(
+                "INSERT INTO reading_progress (book_id, href, progression, updated_at)
+                 VALUES (?1, ?2, ?3, ?4)
+                 ON CONFLICT(book_id) DO UPDATE SET href=?2, progression=?3, updated_at=?4",
+                rusqlite::params![book_id, href, progression, now],
+            )
+            .map_err(Error::from)?;
+        Ok(())
+    }
+
+    /// 读取阅读进度
+    pub fn load_progress(&self, book_id: &str) -> Result<Option<ProgressRecord>> {
+        let mut stmt = self
+            .conn
+            .prepare(
+                "SELECT href, progression, updated_at FROM reading_progress WHERE book_id = ?1",
+            )
+            .map_err(Error::from)?;
+        let mut rows = stmt
+            .query_map(rusqlite::params![book_id], |r| {
+                Ok(ProgressRecord {
+                    href: r.get(0)?,
+                    progression: r.get(1)?,
+                    updated_at: r.get(2)?,
+                })
+            })
+            .map_err(Error::from)?;
+        rows.next().transpose().map_err(Error::from)
     }
 
     pub fn insert_book(&mut self, record: &BookRecord) -> Result<()> {
@@ -254,5 +311,21 @@ mod tests {
         store.insert_book(&sample_record()).unwrap();
         store.remove_book("b1").unwrap();
         assert!(store.get_book("b1").is_err());
+    }
+
+    #[test]
+    fn timestamps_are_real() {
+        // 变异防护：now_unix 的常量替换（0/1/-1）必须被识破
+        let dir = tempfile::tempdir().unwrap();
+        let mut store = Store::open(dir.path()).unwrap();
+        store.insert_book(&sample_record()).unwrap();
+        let rec = store.get_book("b1").unwrap();
+        assert!(rec.added_at > 1_000_000_000, "added_at 应为真实时间戳: {}", rec.added_at);
+
+        store.save_progress("b1", "chapter_0001.xhtml", 0.5).unwrap();
+        let p = store.load_progress("b1").unwrap().expect("应有进度");
+        assert!(p.updated_at > 1_000_000_000, "updated_at 应为真实时间戳: {}", p.updated_at);
+        assert_eq!(p.href, "chapter_0001.xhtml");
+        assert!((p.progression - 0.5).abs() < 1e-4);
     }
 }

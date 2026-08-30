@@ -1,0 +1,65 @@
+--- src/store/mod.rs
++++ replace Store::migrate -> Result<()> with Ok(())
+@@ -54,61 +54,17 @@
+         Ok(store)
+     }
+ 
+     pub fn cache_dir(&self) -> std::path::PathBuf {
+         self.data_dir.join("cache")
+     }
+ 
+     fn migrate(&self) -> Result<()> {
+-        let version: i64 = self
+-            .conn
+-            .query_row("PRAGMA user_version", [], |r| r.get(0))
+-            .map_err(Error::from)?;
+-        if version < 1 {
+-            self.conn
+-                .execute_batch(
+-                    r#"
+-CREATE TABLE IF NOT EXISTS books (
+-  id            TEXT PRIMARY KEY,
+-  title         TEXT NOT NULL,
+-  authors       TEXT NOT NULL DEFAULT '[]',
+-  language      TEXT,
+-  source_path   TEXT NOT NULL,
+-  source_hash   TEXT NOT NULL UNIQUE,
+-  format        TEXT NOT NULL,
+-  added_at      INTEGER NOT NULL,
+-  updated_at    INTEGER NOT NULL
+-);
+-CREATE TABLE IF NOT EXISTS book_files (
+-  book_id        TEXT PRIMARY KEY REFERENCES books(id) ON DELETE CASCADE,
+-  canonical_path TEXT
+-);
+-CREATE INDEX IF NOT EXISTS idx_books_hash ON books(source_hash);
+-PRAGMA user_version = 1;
+-"#,
+-                )
+-                .map_err(Error::from)?;
+-        }
+-        if version < 2 {
+-            self.conn
+-                .execute_batch(
+-                    r#"
+-CREATE TABLE IF NOT EXISTS reading_progress (
+-  book_id     TEXT PRIMARY KEY REFERENCES books(id) ON DELETE CASCADE,
+-  href        TEXT NOT NULL,
+-  progression REAL NOT NULL,
+-  updated_at  INTEGER NOT NULL
+-);
+-PRAGMA user_version = 2;
+-"#,
+-                )
+-                .map_err(Error::from)?;
+-        }
+-        Ok(())
++        Ok(()) /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     /// 保存阅读进度（同一本书一行，UPSERT）
+     pub fn save_progress(&mut self, book_id: &str, href: &str, progression: f32) -> Result<()> {
+         let now = now_unix();
+         self.conn
+             .execute(
+                 "INSERT INTO reading_progress (book_id, href, progression, updated_at)

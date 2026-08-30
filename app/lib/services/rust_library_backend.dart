@@ -2,6 +2,8 @@
 /// 设计：docs/03-architecture.md §4、docs/04 §7、docs/07 §6。
 library;
 
+import 'dart:typed_data';
+
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart'
     as frb;
 import 'package:path_provider/path_provider.dart';
@@ -76,4 +78,22 @@ class RustLibraryBackend implements LibraryBackend {
 
   @override
   Future<void> remove(String id) => rust.libraryRemove(id: id);
+
+  @override
+  Future<String> chapterHtml(String bookId, String href) =>
+      rust.bookChapterHtml(id: bookId, href: href);
+
+  @override
+  Future<Uint8List> resource(String bookId, String path) =>
+      rust.bookResource(id: bookId, path: path);
+
+  @override
+  Future<void> saveProgress(String bookId, String href, double progression) =>
+      rust.progressSave(id: bookId, href: href, progression: progression);
+
+  @override
+  Future<ProgressData?> loadProgress(String bookId) async {
+    final p = await rust.progressGet(id: bookId);
+    return p == null ? null : ProgressData(href: p.href, progression: p.progression);
+  }
 }

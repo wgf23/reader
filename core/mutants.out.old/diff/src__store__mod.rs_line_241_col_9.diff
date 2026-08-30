@@ -1,0 +1,24 @@
+--- src/store/mod.rs
++++ replace Store::remove_book -> Result<()> with Ok(())
+@@ -233,20 +233,17 @@
+                     Error::NotFound(format!("书籍不存在: {id}"))
+                 }
+                 other => Error::from(other),
+             })?;
+         Ok(row)
+     }
+ 
+     pub fn remove_book(&mut self, id: &str) -> Result<()> {
+-        self.conn
+-            .execute("DELETE FROM books WHERE id = ?1", rusqlite::params![id])
+-            .map_err(Error::from)?;
+-        Ok(())
++        Ok(()) /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     pub fn integrity_check(&self) -> Result<bool> {
+         let ok: String = self
+             .conn
+             .query_row("PRAGMA integrity_check", [], |r| r.get(0))
+             .map_err(Error::from)?;
+         Ok(ok == "ok")

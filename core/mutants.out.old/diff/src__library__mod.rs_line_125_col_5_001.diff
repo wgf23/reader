@@ -1,0 +1,22 @@
+--- src/library/mod.rs
++++ replace sha256_of_file -> Result<String> with Ok("xyzzy".into())
+@@ -117,18 +117,17 @@
+     }
+ 
+     pub fn remove(&mut self, id: &str) -> Result<()> {
+         self.store.remove_book(id)
+     }
+ }
+ 
+ fn sha256_of_file(path: &Path) -> Result<String> {
+-    let bytes = std::fs::read(path).map_err(Error::Io)?;
+-    Ok(sha256_hex(&bytes))
++    Ok("xyzzy".into()) /* ~ changed by cargo-mutants ~ */
+ }
+ 
+ fn sha256_hex(bytes: &[u8]) -> String {
+     let digest = Sha256::digest(bytes);
+     let mut s = String::with_capacity(64);
+     for b in digest.iter() {
+         s.push_str(&format!("{b:02x}"));
+     }

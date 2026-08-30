@@ -1,0 +1,21 @@
+--- src/library/mod.rs
++++ delete ! in LibraryService::canonicalize_cached
+@@ -57,17 +57,17 @@
+         };
+         self.store.insert_book(&record)?;
+         Ok(record)
+     }
+ 
+     /// 规范 EPUB 缓存：cache/<hash>.epub，命中直接复用
+     fn canonicalize_cached(&self, hash: &str, parsed: &ParsedBook) -> Result<PathBuf> {
+         let path = self.store.cache_dir().join(format!("{hash}.epub"));
+-        if !path.exists() {
++        if  /* ~ changed by cargo-mutants ~ */path.exists() {
+             crate::convert::BookCanonicalizer::canonicalize(parsed, &path)?;
+         }
+         Ok(path)
+     }
+ 
+     pub fn list(&self) -> Result<Vec<BookRecord>> {
+         self.store.list_books()
+     }
