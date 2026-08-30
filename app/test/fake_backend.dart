@@ -1,6 +1,8 @@
+import 'dart:typed_data';
+
 import 'package:reader_app/services/library_backend.dart';
 
-/// 测试用书库后端（注入 LibraryPage/ReaderPage，避免依赖 Rust 动态库）
+/// 测试用书库后端（注入 LibraryPage/ReaderPage，避免依赖 Rust 动态库与系统 WebView）
 class FakeBackend implements LibraryBackend {
   final List<BookSummaryData> books = const [
     BookSummaryData(
@@ -11,6 +13,8 @@ class FakeBackend implements LibraryBackend {
       format: 'epub',
     ),
   ];
+
+  ProgressData? saved;
 
   @override
   Future<void> open() async {}
@@ -33,4 +37,20 @@ class FakeBackend implements LibraryBackend {
 
   @override
   Future<void> remove(String id) async {}
+
+  @override
+  Future<String> chapterHtml(String bookId, String href) async =>
+      '<html><body><h1>第一章</h1><p>很久以前，有一座山。</p></body></html>';
+
+  @override
+  Future<Uint8List> resource(String bookId, String path) async =>
+      Uint8List.fromList([1, 2, 3]);
+
+  @override
+  Future<void> saveProgress(String bookId, String href, double progression) async {
+    saved = ProgressData(href: href, progression: progression);
+  }
+
+  @override
+  Future<ProgressData?> loadProgress(String bookId) async => saved;
 }

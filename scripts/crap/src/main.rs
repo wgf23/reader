@@ -134,7 +134,7 @@ impl<'ast> Visit<'ast> for FnCollector {
     }
 }
 
-/// 解析 llvm-cov JSON，返回 函数名 → 覆盖率（counters 中 count>0 的比例）
+/// 解析 llvm-cov JSON 的文件级行覆盖率：文件路径 → 行覆盖百分比
 fn load_coverage(path: &str) -> HashMap<String, f64> {
     let text = std::fs::read_to_string(path).unwrap_or_default();
     #[derive(serde::Deserialize)]
@@ -145,23 +145,27 @@ fn load_coverage(path: &str) -> HashMap<String, f64> {
     #[derive(serde::Deserialize)]
     struct CovData<'a> {
         #[serde(borrow)]
-        functions: Vec<CovFn<'a>>,
+        files: Vec<CovEntry<'a>>,
     }
     #[derive(serde::Deserialize)]
-    struct CovFn<'a> {
+    struct CovEntry<'a> {
         #[serde(borrow)]
-        name: &'a str,
-        counters: Vec<i64>,
+        filename: &'a str,
+        summary: CovSummary,
+    }
+    #[derive(serde::Deserialize)]
+    struct CovSummary {
+        lines: LinesSummary,
+    }
+    #[derive(serde::Deserialize)]
+    struct LinesSummary {
+        percent: f64,
     }
     let mut map = HashMap::new();
     if let Ok(cov) = serde_json::from_str::<CovFile>(&text) {
         for data in cov.data {
-            for f in data.functions {
-                let total = f.counters.len() as f64;
-                let covered = f.counters.iter().filter(|c| **c > 0).count() as f64;
-                if total > 0.0 {
-                    map.insert(f.name.to_string(), covered / total);
-                }
+            for f in data.files {
+                map.insert(f.filename.replace('\\', "/"), f.summary.lines.percent);
             }
         }
     }
@@ -255,7 +259,11 @@ fn main() {
         .filter_map(|e| e.ok())
     {
         let path = entry.path();
-        if path.extension().map(|e| e == "rs").unwrap_or(false) {
+        let rel = path.display().to_string().replace('\\', "/");
+        if path.extension().map(|e| e == "rs").unwrap_or(false)
+            && !rel.ends_with("frb_generated.rs")
+            && !rel.ends_with("src/api.rs")
+        {
             if let Ok(text) = std::fs::read_to_string(path) {
                 collector.current_file = path.display().to_string();
                 if let Ok(syn_file) = syn::parse_file(&text) {
@@ -285,18 +293,13 @@ fn main() {
     }
 
     let mut fns = collector.fns;
-    // 覆盖率匹配：按 函数名后缀 + 文件名 匹配
+    // 覆盖率匹配：文件级行覆盖率（按绝对路径精确匹配）
     for f in fns.iter_mut() {
         let file_key = f.file.replace('\\', "/");
-        let base = file_key.rsplit('/').next().unwrap_or("").to_string();
-        f.cov = cov_map.iter().find_map(|(name, cov)| {
-            let matches_file = name.contains(&base) || base.is_empty();
-            if matches_file && name.ends_with(&f.name) {
-                Some(*cov)
-            } else {
-                None
-            }
-        });
+        // 扫描路径可能是相对路径，coverage 为绝对路径 → 后缀匹配
+        f.cov = cov_map
+            .iter()
+            .find_map(|(k, pct)| k.ends_with(&file_key).then(|| *pct / 100.0));
     }
     if !has_cov {
         eprintln!("[crap] 未提供 --cov，覆盖率按 N/A 处理（仅复杂度+重复参与判定）");

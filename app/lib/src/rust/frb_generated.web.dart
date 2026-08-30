@@ -32,7 +32,11 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_web.dart';
 
 @protected BookView dco_decode_book_view(dynamic raw);
 
+@protected ProgressView dco_decode_box_autoadd_progress_view(dynamic raw);
+
 @protected ChapterView dco_decode_chapter_view(dynamic raw);
+
+@protected double dco_decode_f_32(dynamic raw);
 
 @protected List<String> dco_decode_list_String(dynamic raw);
 
@@ -44,6 +48,10 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_web.dart';
 
 @protected String? dco_decode_opt_String(dynamic raw);
 
+@protected ProgressView? dco_decode_opt_box_autoadd_progress_view(dynamic raw);
+
+@protected ProgressView dco_decode_progress_view(dynamic raw);
+
 @protected int dco_decode_u_8(dynamic raw);
 
 @protected void dco_decode_unit(dynamic raw);
@@ -54,7 +62,11 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_web.dart';
 
 @protected BookView sse_decode_book_view(SseDeserializer deserializer);
 
+@protected ProgressView sse_decode_box_autoadd_progress_view(SseDeserializer deserializer);
+
 @protected ChapterView sse_decode_chapter_view(SseDeserializer deserializer);
+
+@protected double sse_decode_f_32(SseDeserializer deserializer);
 
 @protected List<String> sse_decode_list_String(SseDeserializer deserializer);
 
@@ -65,6 +77,10 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_web.dart';
 @protected Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
 
 @protected String? sse_decode_opt_String(SseDeserializer deserializer);
+
+@protected ProgressView? sse_decode_opt_box_autoadd_progress_view(SseDeserializer deserializer);
+
+@protected ProgressView sse_decode_progress_view(SseDeserializer deserializer);
 
 @protected int sse_decode_u_8(SseDeserializer deserializer);
 
@@ -80,7 +96,11 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_web.dart';
 
 @protected void sse_encode_book_view(BookView self, SseSerializer serializer);
 
+@protected void sse_encode_box_autoadd_progress_view(ProgressView self, SseSerializer serializer);
+
 @protected void sse_encode_chapter_view(ChapterView self, SseSerializer serializer);
+
+@protected void sse_encode_f_32(double self, SseSerializer serializer);
 
 @protected void sse_encode_list_String(List<String> self, SseSerializer serializer);
 
@@ -91,6 +111,10 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_web.dart';
 @protected void sse_encode_list_prim_u_8_strict(Uint8List self, SseSerializer serializer);
 
 @protected void sse_encode_opt_String(String? self, SseSerializer serializer);
+
+@protected void sse_encode_opt_box_autoadd_progress_view(ProgressView? self, SseSerializer serializer);
+
+@protected void sse_encode_progress_view(ProgressView self, SseSerializer serializer);
 
 @protected void sse_encode_u_8(int self, SseSerializer serializer);
 
