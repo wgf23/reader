@@ -1,0 +1,6 @@
+# CRAP 评分配置（docs/07 §5，评审后冻结）
+fail_threshold = 25.0      # CRAP ≥ 此值 → FAIL（必须重写/重构）
+warn_threshold = 15.0      # CRAP ≥ 此值 → WARN（补测试或拆分）
+dup_threshold = 0.6        # 函数体 5-gram Jaccard 相似度阈值
+dup_penalty = 15.0         # 命中重复的函数 CRAP 追加值
+dup_min_tokens = 120       # 函数体 token 数下限（≈30 行），低于不参与重复检测

@@ -1,10 +1,9 @@
 import 'package:reader_app/services/library_backend.dart';
-import 'package:reader_app/src/rust/api.dart' as rust;
 
 /// 测试用书库后端（注入 LibraryPage/ReaderPage，避免依赖 Rust 动态库）
 class FakeBackend implements LibraryBackend {
-  final List<rust.BookSummary> books = const [
-    rust.BookSummary(
+  final List<BookSummaryData> books = const [
+    BookSummaryData(
       id: 'b1',
       title: '测试书',
       authors: ['张三'],
@@ -17,18 +16,18 @@ class FakeBackend implements LibraryBackend {
   Future<void> open() async {}
 
   @override
-  Future<List<rust.BookSummary>> list() async => books;
+  Future<List<BookSummaryData>> list() async => books;
 
   @override
-  Future<rust.BookSummary> import(String path) async => books.first;
+  Future<BookSummaryData> import(String path) async => books.first;
 
   @override
-  Future<rust.BookView> openBook(String id) async => const rust.BookView(
+  Future<BookViewData> openBook(String id) async => const BookViewData(
         id: 'b1',
         title: '测试书',
         chapters: [
-          rust.ChapterView(title: '第一章', text: '很久以前，有一座山。'),
-          rust.ChapterView(title: '第二章', text: '故事结束了。'),
+          ChapterData(title: '第一章', text: '很久以前，有一座山。'),
+          ChapterData(title: '第二章', text: '故事结束了。'),
         ],
       );
 

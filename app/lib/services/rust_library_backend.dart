@@ -1,5 +1,5 @@
-/// Rust 核心后端：经 flutter_rust_bridge 调用 `reader_core`。
-/// 设计：docs/03-architecture.md §4、docs/04 §7。
+/// Rust 核心后端：经 flutter_rust_bridge 调用 `reader_core`，并把生成类型转换为 DTO。
+/// 设计：docs/03-architecture.md §4、docs/04 §7、docs/07 §6。
 library;
 
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart'
@@ -35,13 +35,44 @@ class RustLibraryBackend implements LibraryBackend {
   }
 
   @override
-  Future<List<rust.BookSummary>> list() => rust.libraryList();
+  Future<List<BookSummaryData>> list() async {
+    final books = await rust.libraryList();
+    return [
+      for (final b in books)
+        BookSummaryData(
+          id: b.id,
+          title: b.title,
+          authors: b.authors,
+          language: b.language,
+          format: b.format,
+        ),
+    ];
+  }
 
   @override
-  Future<rust.BookSummary> import(String path) => rust.libraryImport(path: path);
+  Future<BookSummaryData> import(String path) async {
+    final b = await rust.libraryImport(path: path);
+    return BookSummaryData(
+      id: b.id,
+      title: b.title,
+      authors: b.authors,
+      language: b.language,
+      format: b.format,
+    );
+  }
 
   @override
-  Future<rust.BookView> openBook(String id) => rust.bookOpen(id: id);
+  Future<BookViewData> openBook(String id) async {
+    final view = await rust.bookOpen(id: id);
+    return BookViewData(
+      id: view.id,
+      title: view.title,
+      chapters: [
+        for (final c in view.chapters)
+          ChapterData(title: c.title, text: c.text),
+      ],
+    );
+  }
 
   @override
   Future<void> remove(String id) => rust.libraryRemove(id: id);

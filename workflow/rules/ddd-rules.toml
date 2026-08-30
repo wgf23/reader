@@ -1,0 +1,48 @@
+# DDD / 分层合规规则（docs/07 §6，评审后冻结，勿单方面修改）
+#
+# 语义：
+#   paths            该层覆盖的路径前缀（相对仓库根）
+#   forbid_internal  禁止依赖的内部模块（归一化首段，如 "crate::store" → 禁 "store"）
+#   forbid_external  禁止依赖的外部 crate 名
+#   forbid_imports   Dart 侧禁止出现的 import 子串
+# 文件归属：命中第一个匹配层的路径前缀；未声明层不检查。
+
+[[layers]]
+name = "interface"
+paths = ["core/src/api.rs", "app/lib/pages", "app/lib/engines"]
+forbid_internal = []
+forbid_external = []
+# pages / engines 不得直接触碰桥接生成物（只能经 services）
+forbid_imports = ["package:reader_app/src/rust/", "src/rust/"]
+
+[[layers]]
+name = "application"
+paths = ["core/src/library", "app/lib/services"]
+forbid_internal = ["crate::api", "reader_core::api"]
+forbid_external = ["rusqlite", "zip", "quick-xml"]
+forbid_imports = []
+
+[[layers]]
+name = "domain"
+paths = [
+  "core/src/format", "core/src/convert", "core/src/locator",
+  "core/src/notes", "core/src/dict", "core/src/search", "core/src/tts",
+  "core/src/types.rs", "core/src/error.rs",
+]
+forbid_internal = [
+  "crate::store", "crate::api", "crate::library",
+  "reader_core::store", "reader_core::api", "reader_core::library",
+]
+forbid_external = []
+forbid_imports = []
+
+[[layers]]
+name = "infrastructure"
+paths = ["core/src/store", "app/lib/src/rust"]
+forbid_internal = [
+  "crate::format", "crate::convert", "crate::locator", "crate::library",
+  "crate::notes", "crate::dict", "crate::search", "crate::tts",
+  "reader_core::format", "reader_core::convert", "reader_core::library",
+]
+forbid_external = []
+forbid_imports = []

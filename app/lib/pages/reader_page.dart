@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../services/library_backend.dart';
-import '../src/rust/api.dart' as rust;
 
 /// 阅读器页（线框 05）。P0：滚动模式渲染章节纯文本 + 章节切换。
-/// WebView 分页（ReflowEngine）为下一迭代（docs/03 §3.2）。
+/// WebView 分页（ReflowEngine）为 REQ-001（docs/07，workflow/backlog/REQ-001-webview）。
 class ReaderPage extends StatefulWidget {
   const ReaderPage({
     super.key,
@@ -22,7 +21,7 @@ class ReaderPage extends StatefulWidget {
 }
 
 class _ReaderPageState extends State<ReaderPage> {
-  rust.BookView? _view;
+  BookViewData? _view;
   int _chapterIndex = 0;
   String? _error;
 
@@ -112,7 +111,6 @@ class _ReaderPageState extends State<ReaderPage> {
               ),
             ),
           ),
-          // 章节导航（P0 简化）
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

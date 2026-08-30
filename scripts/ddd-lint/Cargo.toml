@@ -1,0 +1,22 @@
+[package]
+name = "ddd-lint"
+version = "0.1.0"
+edition = "2021"
+description = "DDD/分层合规检测：按规则表检查 use/import 依赖（docs/07 §6）"
+
+[[bin]]
+name = "ddd-lint"
+path = "src/main.rs"
+
+[dependencies]
+syn = { version = "2", features = ["full"] }
+proc-macro2 = { version = "1", features = ["span-locations"] }
+quote = "1"
+walkdir = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+
+[profile.release]
+lto = true
+strip = true

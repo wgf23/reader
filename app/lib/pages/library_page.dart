@@ -18,7 +18,7 @@ class LibraryPage extends StatefulWidget {
 
 class _LibraryPageState extends State<LibraryPage> {
   late final LibraryBackend _backend = widget.backend ?? RustLibraryBackend();
-  List<dynamic>? _books;
+  List<BookSummaryData>? _books;
   String? _error;
   bool _busy = false;
 
@@ -118,12 +118,12 @@ class _LibraryPageState extends State<LibraryPage> {
     return ListView.builder(
       itemCount: books.length,
       itemBuilder: (context, i) {
-        final b = books[i] as dynamic;
+        final b = books[i];
         return ListTile(
           leading: const Icon(Icons.menu_book),
-          title: Text('${b.title}'),
+          title: Text(b.title),
           subtitle: Text(
-            '${b.authors.isNotEmpty ? b.authors.join('、') + ' · ' : ''}'
+            '${b.authors.isNotEmpty ? '${b.authors.join('、')} · ' : ''}'
             '${b.format}',
           ),
           trailing: const Icon(Icons.chevron_right),
@@ -131,8 +131,8 @@ class _LibraryPageState extends State<LibraryPage> {
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (_) => ReaderPage(
-                  bookId: b.id as String,
-                  bookTitle: b.title as String,
+                  bookId: b.id,
+                  bookTitle: b.title,
                   backend: _backend,
                 ),
               ),
