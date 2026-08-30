@@ -2,9 +2,9 @@
 
 | 字段 | 值 |
 |---|---|
-| 当前阶段 | delivery 完成，REQ-001 已合并回 main |
-| 活跃 REQ | REQ-001（已完成） |
-| 分支 | main（wf/REQ-001-webview 已合并） |
-| 闸门状态 | 闸门1 ✅ 闸门2 ✅ 闸门3 ✅（CRAP FAIL=0 / DDD 0 违规）闸门4 ✅（变异 91.7% / 覆盖 89.1%）闸门5 ✅ |
-| rework 计数 | 1（REWORK-REQ-001-D：变异测试 75%→91.7%，6 测试缺口修复 + 3 等价豁免） |
-| 最近事件 | REQ-001 五阶段流水线全流程跑通；交付产物与追溯矩阵闭合；下一条 REQ 待排期（建议：笔记高亮 NOTE-01 或 MOBI/AZW3） |
+| 当前阶段 | REQ-002 阶段2 架构设计（闸门1 ✅） |
+| 活跃 REQ | REQ-002-mobi-azw3 |
+| 分支 | wf/REQ-002-mobi-azw3 |
+| 闸门状态 | 闸门1 ✅（真 agent：req-analyst）｜ 闸门2..5 待跑 |
+| rework 计数 | 0（REQ-002） |
+| 最近事件 | REQ-002 阶段1 由独立 subagent（req-analyst）产出 01-req.md，闸门1 通过 |
