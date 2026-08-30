@@ -1,0 +1,21 @@
+--- src/library/mod.rs
++++ replace == with != in LibraryService::import_file
+@@ -30,17 +30,17 @@
+     /// 导入一个文件：嗅探格式 → 解析 → 规范 EPUB 缓存 → 入库。
+     /// 返回书籍记录；内容重复（同 hash）时返回既有记录（不重复入库）。
+     pub fn import_file(&mut self, path: &Path) -> Result<BookRecord> {
+         let hash = sha256_of_file(path)?;
+         if let Some(existing) = self
+             .store
+             .list_books()?
+             .into_iter()
+-            .find(|b| b.source_hash == hash)
++            .find(|b| b.source_hash != /* ~ changed by cargo-mutants ~ */ hash)
+         {
+             return Ok(existing);
+         }
+ 
+         let parsed = format::parse(path)?;
+         let id = format!("bk_{}", &hash[..16]);
+         let canonical_path = self.canonicalize_cached(&hash, &parsed)?;
+ 

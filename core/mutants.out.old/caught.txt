@@ -15,7 +15,6 @@ src/library/mod.rs:125:5: replace sha256_of_file -> Result<String> with Ok(Strin
 src/library/mod.rs:125:5: replace sha256_of_file -> Result<String> with Ok("xyzzy".into())
 src/library/mod.rs:130:5: replace sha256_hex -> String with String::new()
 src/library/mod.rs:130:5: replace sha256_hex -> String with "xyzzy".into()
-src/store/mod.rs:58:9: replace Store::cache_dir -> std::path::PathBuf with Default::default()
 src/store/mod.rs:62:9: replace Store::migrate -> Result<()> with Ok(())
 src/store/mod.rs:66:20: replace < with == in Store::migrate
 src/store/mod.rs:66:20: replace < with > in Store::migrate

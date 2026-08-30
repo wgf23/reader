@@ -1,0 +1,25 @@
+--- src/store/mod.rs
++++ replace Store::integrity_check -> Result<bool> with Ok(true)
+@@ -240,21 +240,17 @@
+     pub fn remove_book(&mut self, id: &str) -> Result<()> {
+         self.conn
+             .execute("DELETE FROM books WHERE id = ?1", rusqlite::params![id])
+             .map_err(Error::from)?;
+         Ok(())
+     }
+ 
+     pub fn integrity_check(&self) -> Result<bool> {
+-        let ok: String = self
+-            .conn
+-            .query_row("PRAGMA integrity_check", [], |r| r.get(0))
+-            .map_err(Error::from)?;
+-        Ok(ok == "ok")
++        Ok(true) /* ~ changed by cargo-mutants ~ */
+     }
+ }
+ 
+ fn now_unix() -> i64 {
+     std::time::SystemTime::now()
+         .duration_since(std::time::UNIX_EPOCH)
+         .map(|d| d.as_secs() as i64)
+         .unwrap_or(0)

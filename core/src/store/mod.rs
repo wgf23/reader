@@ -312,4 +312,20 @@ mod tests {
         store.remove_book("b1").unwrap();
         assert!(store.get_book("b1").is_err());
     }
+
+    #[test]
+    fn timestamps_are_real() {
+        // 变异防护：now_unix 的常量替换（0/1/-1）必须被识破
+        let dir = tempfile::tempdir().unwrap();
+        let mut store = Store::open(dir.path()).unwrap();
+        store.insert_book(&sample_record()).unwrap();
+        let rec = store.get_book("b1").unwrap();
+        assert!(rec.added_at > 1_000_000_000, "added_at 应为真实时间戳: {}", rec.added_at);
+
+        store.save_progress("b1", "chapter_0001.xhtml", 0.5).unwrap();
+        let p = store.load_progress("b1").unwrap().expect("应有进度");
+        assert!(p.updated_at > 1_000_000_000, "updated_at 应为真实时间戳: {}", p.updated_at);
+        assert_eq!(p.href, "chapter_0001.xhtml");
+        assert!((p.progression - 0.5).abs() < 1e-4);
+    }
 }

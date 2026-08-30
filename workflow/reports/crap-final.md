@@ -1,0 +1,85 @@
+# CRAP 评分报告
+
+> 配置: FAIL≥25 / WARN≥15 ｜ 覆盖率数据: true
+
+| 文件 | 函数 | 行 | CC | cov | D | CRAP | 判定 |
+|---|---|---|---|---|---|---|---|
+| src/store/mod.rs | open | 43 | 2 | 98% | 0 | **2.5** | PASS |
+| src/store/mod.rs | cache_dir | 57 | 0 | 98% | 0 | **0.0** | PASS |
+| src/store/mod.rs | migrate | 61 | 4 | 98% | 0 | **4.0** | PASS |
+| src/store/mod.rs | save_progress | 110 | 0 | 98% | 0 | **0.5** | PASS |
+| src/store/mod.rs | load_progress | 124 | 3 | 98% | 0 | **3.0** | PASS |
+| src/store/mod.rs | insert_book | 143 | 3 | 98% | 0 | **3.0** | PASS |
+| src/store/mod.rs | list_books | 174 | 8 | 98% | 0 | **7.5** | PASS |
+| src/store/mod.rs | get_book | 207 | 8 | 98% | 0 | **8.5** | PASS |
+| src/store/mod.rs | remove_book | 240 | 0 | 98% | 0 | **0.5** | PASS |
+| src/store/mod.rs | integrity_check | 247 | 1 | 98% | 0 | **1.0** | PASS |
+| src/store/mod.rs | now_unix | 256 | 0 | 98% | 0 | **0.5** | PASS |
+| src/format/epub.rs | parse | 19 | 2 | 86% | 0 | **2.0** | PASS |
+| src/format/epub.rs | open_zip | 38 | 1 | 86% | 0 | **1.0** | PASS |
+| src/format/epub.rs | check_mimetype | 44 | 2 | 86% | 0 | **2.0** | PASS |
+| src/format/epub.rs | read_container_and_opf | 56 | 4 | 86% | 0 | **3.5** | PASS |
+| src/format/epub.rs | collect_spine_items | 70 | 6 | 86% | 0 | **5.6** | PASS |
+| src/format/epub.rs | read_chapter | 94 | 2 | 86% | 0 | **1.5** | PASS |
+| src/format/epub.rs | push_resource | 113 | 1 | 86% | 0 | **1.0** | PASS |
+| src/format/epub.rs | collect_chapters_and_resources | 130 | 0 | 86% | 0 | **0.5** | PASS |
+| src/format/epub.rs | collect_manifest_resources | 141 | 6 | 86% | 0 | **5.6** | PASS |
+| src/format/epub.rs | is_resource_item | 167 | 2 | 86% | 0 | **2.0** | PASS |
+| src/format/epub.rs | resolve_toc | 175 | 1 | 86% | 0 | **1.0** | PASS |
+| src/format/epub.rs | parse_nav_if_present | 189 | 0 | 86% | 0 | **0.5** | PASS |
+| src/format/epub.rs | parse_manifest_item | 206 | 8 | 86% | 0 | **8.2** | PASS |
+| src/format/epub.rs | parse_spine_itemref | 234 | 2 | 86% | 0 | **2.0** | PASS |
+| src/format/epub.rs | parse | 259 | 0 | 86% | 0 | **0.0** | PASS |
+| src/format/epub.rs | parse_metadata | 281 | 21 | 86% | 0 | **22.2** | WARN |
+| src/format/epub.rs | parse_manifest_and_spine | 343 | 9 | 86% | 0 | **9.2** | PASS |
+| src/format/epub.rs | read_entry | 372 | 1 | 86% | 0 | **1.0** | PASS |
+| src/format/epub.rs | extract_opf_path | 379 | 7 | 86% | 0 | **7.1** | PASS |
+| src/format/epub.rs | opf_dir | 397 | 2 | 86% | 0 | **2.0** | PASS |
+| src/format/epub.rs | join_path | 404 | 1 | 86% | 0 | **1.0** | PASS |
+| src/format/epub.rs | is_navigation_item | 412 | 2 | 86% | 0 | **2.0** | PASS |
+| src/format/epub.rs | chapter_title_from_href | 418 | 1 | 86% | 0 | **1.0** | PASS |
+| src/format/epub.rs | html_to_text | 429 | 19 | 86% | 0 | **20.0** | WARN |
+| src/format/epub.rs | is_block_tag | 491 | 0 | 86% | 0 | **0.0** | PASS |
+| src/format/epub.rs | first_heading | 513 | 13 | 86% | 0 | **13.5** | PASS |
+| src/format/epub.rs | parse_nav_xhtml | 547 | 18 | 86% | 0 | **18.9** | WARN |
+| src/format/epub.rs | parse_ncx | 602 | 20 | 86% | 0 | **20.6** | WARN |
+| src/format/epub.rs | strip_fragment | 672 | 0 | 86% | 0 | **0.0** | PASS |
+| src/format/epub.rs | chapter_html | 677 | 2 | 86% | 0 | **2.5** | PASS |
+| src/format/epub.rs | resource | 687 | 2 | 86% | 0 | **2.0** | PASS |
+| src/format/txt.rs | parse | 15 | 2 | 96% | 0 | **2.0** | PASS |
+| src/format/txt.rs | decode | 39 | 2 | 96% | 0 | **2.0** | PASS |
+| src/format/txt.rs | strip_bom | 49 | 0 | 96% | 0 | **0.0** | PASS |
+| src/format/txt.rs | detect_language | 53 | 2 | 96% | 0 | **1.5** | PASS |
+| src/format/txt.rs | split_chapters | 69 | 10 | 96% | 0 | **9.5** | PASS |
+| src/format/txt.rs | escape_html | 126 | 0 | 96% | 0 | **0.0** | PASS |
+| src/format/mod.rs | name | 34 | 7 | 61% | 0 | **9.9** | PASS |
+| src/format/mod.rs | format_for_path | 90 | 9 | 61% | 0 | **13.7** | PASS |
+| src/format/mod.rs | detect_format | 105 | 8 | 61% | 0 | **11.7** | PASS |
+| src/format/mod.rs | looks_like_fb2 | 123 | 0 | 61% | 0 | **0.0** | PASS |
+| src/format/mod.rs | parse | 129 | 5 | 61% | 0 | **6.5** | PASS |
+| src/tts/mod.rs | segment | 62 | 0 | 33% | 0 | **0.0** | PASS |
+| src/tts/mod.rs | locator_for_sentence | 68 | 0 | 33% | 0 | **0.0** | PASS |
+| src/tts/mod.rs | sentence_index_at | 78 | 0 | 33% | 0 | **0.0** | PASS |
+| src/library/mod.rs | new | 26 | 0 | 96% | 0 | **0.0** | PASS |
+| src/library/mod.rs | import_file | 32 | 4 | 96% | 0 | **4.0** | PASS |
+| src/library/mod.rs | canonicalize_cached | 63 | 2 | 96% | 0 | **1.5** | PASS |
+| src/library/mod.rs | list | 71 | 0 | 96% | 0 | **0.0** | PASS |
+| src/library/mod.rs | open_book | 76 | 2 | 96% | 0 | **2.0** | PASS |
+| src/library/mod.rs | chapter_html | 90 | 0 | 96% | 0 | **0.5** | PASS |
+| src/library/mod.rs | resource | 96 | 0 | 96% | 0 | **0.5** | PASS |
+| src/library/mod.rs | save_progress | 102 | 0 | 96% | 0 | **0.0** | PASS |
+| src/library/mod.rs | load_progress | 107 | 0 | 96% | 0 | **0.0** | PASS |
+| src/library/mod.rs | canonical_path | 111 | 1 | 96% | 0 | **1.0** | PASS |
+| src/library/mod.rs | remove | 119 | 0 | 96% | 0 | **0.0** | PASS |
+| src/library/mod.rs | sha256_of_file | 124 | 0 | 96% | 0 | **0.5** | PASS |
+| src/library/mod.rs | sha256_hex | 129 | 1 | 96% | 0 | **1.0** | PASS |
+| core/src/error.rs | from | 31 | 0 | 0% | 0 | **0.0** | PASS |
+| src/convert/mod.rs | canonicalize | 21 | 23 | 94% | 0 | **23.1** | WARN |
+| src/convert/mod.rs | basename | 108 | 0 | 94% | 0 | **0.0** | PASS |
+| src/convert/mod.rs | container_xml | 112 | 0 | 94% | 0 | **0.0** | PASS |
+| src/convert/mod.rs | build_opf | 123 | 4 | 94% | 0 | **4.5** | PASS |
+| src/convert/mod.rs | build_nav | 181 | 2 | 94% | 0 | **2.5** | PASS |
+| src/convert/mod.rs | parsed_title_hash | 215 | 2 | 94% | 0 | **2.0** | PASS |
+| src/convert/mod.rs | escape_xml | 231 | 0 | 94% | 0 | **0.0** | PASS |
+
+**汇总：FAIL=0，WARN=5，PASS=72**

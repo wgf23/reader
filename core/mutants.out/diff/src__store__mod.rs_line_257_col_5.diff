@@ -1,0 +1,24 @@
+--- src/store/mod.rs
++++ replace now_unix -> i64 with 0
+@@ -249,20 +249,17 @@
+             .conn
+             .query_row("PRAGMA integrity_check", [], |r| r.get(0))
+             .map_err(Error::from)?;
+         Ok(ok == "ok")
+     }
+ }
+ 
+ fn now_unix() -> i64 {
+-    std::time::SystemTime::now()
+-        .duration_since(std::time::UNIX_EPOCH)
+-        .map(|d| d.as_secs() as i64)
+-        .unwrap_or(0)
++    0 /* ~ changed by cargo-mutants ~ */
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+     use super::*;
+ 
+     fn sample_record() -> BookRecord {
+         BookRecord {

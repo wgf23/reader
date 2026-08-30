@@ -190,6 +190,56 @@ mod tests {
     }
 
     #[test]
+    fn dedup_returns_existing_book_when_multiple_books() {
+        // 变异防护：import_file 的 == → != 必须被识破（两本不同书存在时）
+        let dir = tempfile::tempdir().unwrap();
+        let store = Store::open(&dir.path().join("data")).unwrap();
+        let mut svc = LibraryService::new(store);
+        let a = write_tmp_txt(dir.path(), "a.txt", "内容 AAAA");
+        let b = write_tmp_txt(dir.path(), "b.txt", "内容 BBBB");
+        let ra = svc.import_file(&a).unwrap();
+        let rb = svc.import_file(&b).unwrap();
+        let b2 = write_tmp_txt(dir.path(), "b2.txt", "内容 BBBB");
+        let dup = svc.import_file(&b2).unwrap();
+        assert_eq!(dup.id, rb.id, "重复导入应返回既有记录（内容相同）");
+        assert_ne!(dup.id, ra.id);
+        assert_eq!(svc.list().unwrap().len(), 2);
+    }
+
+    #[test]
+    fn library_remove_deletes_book() {
+        // 变异防护：remove 的 no-op 变异必须被识破
+        let dir = tempfile::tempdir().unwrap();
+        let store = Store::open(&dir.path().join("data")).unwrap();
+        let mut svc = LibraryService::new(store);
+        let txt = write_tmp_txt(dir.path(), "r.txt", "第一章 甲\n内容");
+        let rec = svc.import_file(&txt).unwrap();
+        svc.remove(&rec.id).unwrap();
+        assert!(svc.list().unwrap().is_empty(), "删除后书架应为空");
+        assert!(svc.open_book(&rec.id).is_err(), "删除后打开应失败");
+    }
+
+    #[test]
+    fn canonical_cache_path_under_cache_dir() {
+        // 变异防护：cache_dir 的 Default 变异必须被识破
+        let dir = tempfile::tempdir().unwrap();
+        let store = Store::open(&dir.path().join("data")).unwrap();
+        // 独立断言：cache_dir 必须等于 data/cache（与 cache_dir() 实现无关的期望）
+        assert_eq!(
+            store.cache_dir(),
+            dir.path().join("data").join("cache"),
+            "cache_dir 必须是 data/cache"
+        );
+        let cache_dir = store.cache_dir().display().to_string();
+        let mut svc = LibraryService::new(store);
+        let txt = write_tmp_txt(dir.path(), "c.txt", "第一章 甲\n内容");
+        let rec = svc.import_file(&txt).unwrap();
+        let canon = rec.canonical_path.expect("应有规范缓存路径");
+        assert!(canon.starts_with(&cache_dir), "规范缓存应在 cache 目录: {canon}");
+        assert!(canon.ends_with(".epub"));
+    }
+
+    #[test]
     fn progress_and_chapter_html_roundtrip() {
         let dir = tempfile::tempdir().unwrap();
         let store = Store::open(&dir.path().join("data")).unwrap();
