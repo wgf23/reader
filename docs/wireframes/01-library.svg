@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 640" width="100%" font-family="system-ui,'PingFang SC','Microsoft YaHei',sans-serif">
+  <rect x="0" y="0" width="900" height="640" fill="#FAFAFA"/>
+  <!-- 顶部标题条 -->
+  <line x1="0" y1="48" x2="900" y2="48" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="24" y="30" font-size="11" fill="#5F6368">阅读器 · 低保真线框 v1</text>
+  <text x="450" y="31" font-size="16" font-weight="bold" fill="#202124" text-anchor="middle">书架</text>
+  <!-- 左侧边栏 -->
+  <rect x="0" y="48" width="160" height="592" fill="#ECEEF1"/>
+  <line x1="160" y1="48" x2="160" y2="640" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="20" y="86" font-size="15" font-weight="bold" fill="#202124">📚 书库</text>
+  <line x1="12" y1="102" x2="148" y2="102" stroke="#E1E4E8" stroke-width="1.5"/>
+  <!-- 导航：书库（选中态） -->
+  <rect x="0" y="122" width="4" height="30" fill="#1A73E8"/>
+  <rect x="8" y="122" width="144" height="30" rx="4" fill="#E1E4E8"/>
+  <rect x="24" y="130" width="13" height="15" rx="2" fill="none" stroke="#1A73E8" stroke-width="1.5"/>
+  <line x1="26" y1="136" x2="35" y2="136" stroke="#1A73E8" stroke-width="1.5"/>
+  <text x="48" y="142" font-size="14" font-weight="bold" fill="#1A73E8">书库</text>
+  <!-- 导航：笔记 -->
+  <rect x="24" y="174" width="13" height="15" rx="2" fill="none" stroke="#5F6368" stroke-width="1.5"/>
+  <line x1="26" y1="180" x2="35" y2="180" stroke="#5F6368" stroke-width="1.5"/>
+  <line x1="26" y1="185" x2="32" y2="185" stroke="#5F6368" stroke-width="1.5"/>
+  <text x="48" y="186" font-size="14" fill="#202124">笔记</text>
+  <!-- 导航：生词本 -->
+  <circle cx="30" cy="222" r="6.5" fill="none" stroke="#5F6368" stroke-width="1.5"/>
+  <circle cx="30" cy="222" r="1.5" fill="#5F6368"/>
+  <text x="48" y="226" font-size="14" fill="#202124">生词本</text>
+  <!-- 导航：设置 -->
+  <circle cx="30" cy="262" r="6.5" fill="none" stroke="#5F6368" stroke-width="1.5"/>
+  <line x1="30" y1="258" x2="30" y2="266" stroke="#5F6368" stroke-width="1.5"/>
+  <line x1="26" y1="262" x2="34" y2="262" stroke="#5F6368" stroke-width="1.5"/>
+  <text x="48" y="266" font-size="14" fill="#202124">设置</text>
+  <!-- 主区顶部工具条 -->
+  <rect x="190" y="64" width="300" height="34" rx="8" fill="#FFFFFF" stroke="#9AA0A6" stroke-width="1.5"/>
+  <circle cx="212" cy="81" r="8" fill="none" stroke="#5F6368" stroke-width="1.5"/>
+  <line x1="218" y1="87" x2="228" y2="97" stroke="#5F6368" stroke-width="1.5"/>
+  <text x="232" y="86" font-size="13" fill="#5F6368">搜索书名或作者…</text>
+  <rect x="760" y="62" width="122" height="38" rx="6" fill="#1A73E8"/>
+  <text x="821" y="87" font-size="14" fill="#FFFFFF" text-anchor="middle">＋ 导入</text>
+  <!-- 封面网格 第 1 行 -->
+  <rect x="190" y="130" width="150" height="200" fill="#E1E4E8" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="265" y="240" font-size="15" font-weight="bold" fill="#202124" text-anchor="middle">百年孤独</text>
+  <rect x="190" y="340" width="150" height="5" rx="2.5" fill="#E1E4E8"/>
+  <rect x="190" y="340" width="93" height="5" rx="2.5" fill="#1A73E8"/>
+  <!-- “继续阅读”红色徽标 -->
+  <rect x="270" y="302" width="66" height="24" rx="4" fill="#D93025"/>
+  <text x="303" y="318" font-size="11" fill="#FFFFFF" text-anchor="middle">继续阅读</text>
+
+  <rect x="375" y="130" width="150" height="200" fill="#E1E4E8" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="450" y="240" font-size="15" font-weight="bold" fill="#202124" text-anchor="middle">呐喊</text>
+  <rect x="375" y="340" width="150" height="5" rx="2.5" fill="#E1E4E8"/>
+  <rect x="375" y="340" width="150" height="5" rx="2.5" fill="#1A73E8"/>
+
+  <rect x="560" y="130" width="150" height="200" fill="#E1E4E8" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="635" y="240" font-size="15" font-weight="bold" fill="#202124" text-anchor="middle">围城</text>
+  <rect x="560" y="340" width="150" height="5" rx="2.5" fill="#E1E4E8"/>
+  <rect x="560" y="340" width="52" height="5" rx="2.5" fill="#1A73E8"/>
+  <!-- 封面网格 第 2 行 -->
+  <rect x="190" y="370" width="150" height="200" fill="#E1E4E8" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="265" y="480" font-size="15" font-weight="bold" fill="#202124" text-anchor="middle">活着</text>
+  <rect x="190" y="580" width="150" height="5" rx="2.5" fill="#E1E4E8"/>
+  <rect x="190" y="580" width="120" height="5" rx="2.5" fill="#1A73E8"/>
+
+  <rect x="375" y="370" width="150" height="200" fill="#E1E4E8" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="450" y="480" font-size="15" font-weight="bold" fill="#202124" text-anchor="middle">平凡的世界</text>
+  <rect x="375" y="580" width="150" height="5" rx="2.5" fill="#E1E4E8"/>
+  <rect x="375" y="580" width="22" height="5" rx="2.5" fill="#1A73E8"/>
+
+  <rect x="560" y="370" width="150" height="200" fill="#E1E4E8" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="635" y="480" font-size="15" font-weight="bold" fill="#202124" text-anchor="middle">三体</text>
+  <rect x="560" y="580" width="150" height="5" rx="2.5" fill="#E1E4E8"/>
+  <rect x="560" y="580" width="85" height="5" rx="2.5" fill="#1A73E8"/>
+  <!-- 交互注释 -->
+  <rect x="726" y="150" width="150" height="64" rx="6" fill="none" stroke="#9AA0A6" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="736" y="172" font-size="11" fill="#5F6368">点击封面进入</text>
+  <text x="736" y="190" font-size="11" fill="#5F6368">阅读并恢复进度</text>
+  <!-- 底部状态栏 -->
+  <text x="530" y="598" font-size="12" fill="#202124" text-anchor="middle">共 6 本书 · 3 本在读</text>
+  <!-- 底部交互说明 -->
+  <text x="530" y="626" font-size="11" fill="#5F6368" text-anchor="middle">交互：点击封面进入阅读并恢复进度；顶部搜索框按书名/作者过滤；「＋ 导入」添加本地书籍</text>
+</svg>

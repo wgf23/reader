@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 640" width="100%" font-family="system-ui,'PingFang SC','Microsoft YaHei',sans-serif">
+  <rect x="0" y="0" width="900" height="640" fill="#FAFAFA"/>
+  <!-- 顶部标题条 -->
+  <line x1="0" y1="48" x2="900" y2="48" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="24" y="30" font-size="11" fill="#5F6368">阅读器 · 低保真线框 v1</text>
+  <text x="450" y="31" font-size="16" font-weight="bold" fill="#202124" text-anchor="middle">全文搜索</text>
+  <!-- 顶部工具条 -->
+  <circle cx="200" cy="80" r="13" fill="none" stroke="#9AA0A6" stroke-width="1.5"/>
+  <line x1="210" y1="90" x2="225" y2="105" stroke="#9AA0A6" stroke-width="1.5"/>
+  <rect x="230" y="64" width="420" height="34" rx="8" fill="#FFFFFF" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="252" y="86" font-size="13" fill="#202124">卡尔维诺</text>
+  <rect x="680" y="62" width="120" height="38" rx="6" fill="#1A73E8"/>
+  <text x="740" y="87" font-size="14" fill="#FFFFFF" text-anchor="middle">全文搜索</text>
+  <line x1="0" y1="118" x2="900" y2="118" stroke="#E1E4E8" stroke-width="1.5"/>
+  <!-- 结果 1 -->
+  <text x="180" y="158" font-size="15" font-weight="bold" fill="#202124">看不见的城市</text>
+  <text x="180" y="180" font-size="12" fill="#5F6368">第 1 章 · 城市与记忆</text>
+  <text x="180" y="202" font-size="12" fill="#202124">……在《看不见的城市》里，<tspan fill="#1A73E8" font-weight="bold">卡尔维诺</tspan>写道：城市是记忆的……</text>
+  <rect x="580" y="146" width="64" height="30" rx="6" fill="#ECEEF1" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="612" y="165" font-size="12" fill="#202124" text-anchor="middle">定位</text>
+  <line x1="180" y1="230" x2="660" y2="230" stroke="#E1E4E8" stroke-width="1.5"/>
+  <!-- 结果 2 -->
+  <text x="180" y="270" font-size="15" font-weight="bold" fill="#202124">马可瓦尔多</text>
+  <text x="180" y="292" font-size="12" fill="#5F6368">第 3 章 · 城市与符号</text>
+  <text x="180" y="314" font-size="12" fill="#202124">……一家人的故事里，<tspan fill="#1A73E8" font-weight="bold">卡尔维诺</tspan>始终关注日常的……</text>
+  <rect x="580" y="258" width="64" height="30" rx="6" fill="#ECEEF1" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="612" y="277" font-size="12" fill="#202124" text-anchor="middle">定位</text>
+  <line x1="180" y1="342" x2="660" y2="342" stroke="#E1E4E8" stroke-width="1.5"/>
+  <!-- 结果 3 -->
+  <text x="180" y="382" font-size="15" font-weight="bold" fill="#202124">树上的男爵</text>
+  <text x="180" y="404" font-size="12" fill="#5F6368">第 2 章 · 城市与贸易</text>
+  <text x="180" y="426" font-size="12" fill="#202124">……柯希莫在树上度过一生，<tspan fill="#1A73E8" font-weight="bold">卡尔维诺</tspan>借此探讨自由……</text>
+  <rect x="580" y="370" width="64" height="30" rx="6" fill="#ECEEF1" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="612" y="389" font-size="12" fill="#202124" text-anchor="middle">定位</text>
+  <line x1="180" y1="454" x2="660" y2="454" stroke="#E1E4E8" stroke-width="1.5"/>
+  <!-- 交互注释 -->
+  <rect x="180" y="480" width="480" height="64" rx="6" fill="none" stroke="#9AA0A6" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="196" y="502" font-size="11" fill="#5F6368">点击「定位」跳转到书中位置</text>
+  <text x="196" y="522" font-size="11" fill="#5F6368">并高亮关键词</text>
+  <!-- 右侧筛选面板 -->
+  <rect x="700" y="140" width="172" height="420" rx="8" fill="#ECEEF1" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="720" y="172" font-size="15" font-weight="bold" fill="#202124">筛选</text>
+  <text x="720" y="202" font-size="12" fill="#5F6368">按范围</text>
+  <circle cx="734" cy="226" r="8" fill="none" stroke="#1A73E8" stroke-width="2"/>
+  <circle cx="734" cy="226" r="3" fill="#1A73E8"/>
+  <text x="752" y="230" font-size="12" fill="#202124">全部书籍</text>
+  <circle cx="734" cy="256" r="8" fill="none" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="752" y="260" font-size="12" fill="#202124">当前书籍</text>
+  <text x="720" y="292" font-size="12" fill="#5F6368">按格式</text>
+  <rect x="724" y="304" width="14" height="14" rx="3" fill="none" stroke="#1A73E8" stroke-width="2"/>
+  <path d="M727 311 l3 3 l5 -5" fill="none" stroke="#1A73E8" stroke-width="2"/>
+  <text x="752" y="316" font-size="12" fill="#202124">EPUB</text>
+  <rect x="724" y="334" width="14" height="14" rx="3" fill="none" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="752" y="346" font-size="12" fill="#202124">PDF</text>
+  <rect x="724" y="364" width="14" height="14" rx="3" fill="none" stroke="#1A73E8" stroke-width="2"/>
+  <path d="M727 371 l3 3 l5 -5" fill="none" stroke="#1A73E8" stroke-width="2"/>
+  <text x="752" y="376" font-size="12" fill="#202124">MOBI</text>
+  <line x1="716" y1="520" x2="856" y2="520" stroke="#E1E4E8" stroke-width="1.5"/>
+  <text x="720" y="540" font-size="12" fill="#5F6368">结果 42 条 · 0.08s</text>
+  <!-- 底部交互说明 -->
+  <text x="450" y="628" font-size="11" fill="#5F6368" text-anchor="middle">交互：输入关键词后点击「全文搜索」；点击结果右侧「定位」跳转到命中位置并高亮关键词</text>
+</svg>

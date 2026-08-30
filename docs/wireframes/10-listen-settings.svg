@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 640" width="100%" font-family="system-ui,'PingFang SC','Microsoft YaHei',sans-serif">
+  <!-- ===== 顶部标题条 ===== -->
+  <text x="60" y="24" font-size="12" fill="#5F6368">阅读器 · 低保真线框 v1</text>
+  <text x="450" y="24" font-size="16" font-weight="bold" fill="#202124" text-anchor="middle">听书设置</text>
+  <line x1="40" y1="40" x2="860" y2="40" stroke="#9AA0A6" stroke-width="1.5"/>
+
+  <!-- ===== 听书设置面板（x=80..820，y=90..556） ===== -->
+  <rect x="80" y="90" width="740" height="466" rx="8" fill="#FFFFFF" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="100" y="122" font-size="16" font-weight="bold" fill="#202124">听书设置</text>
+
+  <!-- 音色分组（y≈150–330） -->
+  <text x="100" y="154" font-size="13" font-weight="bold" fill="#202124">音色</text>
+  <!-- 行1：系统男声（选中） -->
+  <circle cx="110" cy="184" r="8" fill="none" stroke="#1A73E8" stroke-width="1.5"/>
+  <circle cx="110" cy="184" r="4" fill="#1A73E8"/>
+  <text x="132" y="189" font-size="13" fill="#202124">系统男声</text>
+  <text x="800" y="189" font-size="12" fill="#5F6368" text-anchor="end">离线</text>
+  <!-- 行2：系统女声 -->
+  <circle cx="110" cy="218" r="8" fill="none" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="132" y="223" font-size="13" fill="#202124">系统女声</text>
+  <text x="800" y="223" font-size="12" fill="#5F6368" text-anchor="end">离线</text>
+  <!-- 行3：AI 音色 · 在线 -->
+  <circle cx="110" cy="252" r="8" fill="none" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="132" y="257" font-size="13" fill="#202124">AI 音色 · 在线</text>
+  <text x="800" y="257" font-size="12" fill="#5F6368" text-anchor="end">需网络（P2）</text>
+  <!-- 行4：本地神经音色 Piper -->
+  <circle cx="110" cy="286" r="8" fill="none" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="132" y="291" font-size="13" fill="#202124">本地神经音色 Piper</text>
+  <text x="800" y="291" font-size="12" fill="#5F6368" text-anchor="end">下载 52MB（P2）</text>
+  <!-- 行5：声音克隆（灰置） -->
+  <text x="132" y="325" font-size="13" fill="#9AA0A6">声音克隆 · 评估中</text>
+  <line x1="100" y1="336" x2="800" y2="336" stroke="#E1E4E8" stroke-width="1"/>
+
+  <!-- 语速分组（y≈350–410） -->
+  <text x="100" y="368" font-size="13" font-weight="bold" fill="#202124">语速</text>
+  <line x1="200" y1="368" x2="700" y2="368" stroke="#C4C9CF" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="300" cy="368" r="7" fill="#1A73E8"/>
+  <text x="200" y="392" font-size="12" fill="#5F6368" text-anchor="middle">0.5x</text>
+  <text x="700" y="392" font-size="12" fill="#5F6368" text-anchor="middle">3.0x</text>
+  <text x="724" y="373" font-size="13" font-weight="bold" fill="#1A73E8">1.0x</text>
+  <line x1="100" y1="414" x2="800" y2="414" stroke="#E1E4E8" stroke-width="1"/>
+
+  <!-- 定时关闭分组（y≈430–500） -->
+  <text x="100" y="446" font-size="13" font-weight="bold" fill="#202124">定时关闭</text>
+  <circle cx="205" cy="470" r="7" fill="none" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="219" y="475" font-size="13" fill="#202124">关闭</text>
+  <circle cx="305" cy="470" r="7" fill="none" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="319" y="475" font-size="13" fill="#202124">15 分钟</text>
+  <circle cx="405" cy="470" r="7" fill="none" stroke="#1A73E8" stroke-width="1.5"/>
+  <circle cx="405" cy="470" r="3.5" fill="#1A73E8"/>
+  <text x="419" y="475" font-size="13" fill="#202124">30 分钟</text>
+  <circle cx="505" cy="470" r="7" fill="none" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="519" y="475" font-size="13" fill="#202124">60 分钟</text>
+  <circle cx="605" cy="470" r="7" fill="none" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="619" y="475" font-size="13" fill="#202124">本章结束</text>
+  <line x1="100" y1="508" x2="800" y2="508" stroke="#E1E4E8" stroke-width="1"/>
+
+  <!-- 后台播放（y≈515–555） -->
+  <text x="100" y="542" font-size="13" fill="#202124">后台播放</text>
+  <rect x="758" y="528" width="46" height="26" rx="13" fill="#1A73E8"/>
+  <text x="774" y="545" font-size="11" fill="#FFFFFF" text-anchor="middle">开</text>
+  <circle cx="794" cy="541" r="9" fill="#FFFFFF"/>
+
+  <!-- ===== 面板外下方注释（虚线框） ===== -->
+  <rect x="80" y="572" width="740" height="30" rx="6" fill="none" stroke="#9AA0A6" stroke-width="1" stroke-dasharray="4 3"/>
+  <text x="450" y="592" font-size="11" fill="#5F6368" text-anchor="middle">在线 AI 音色需网络与费用，会把正文文本发送至 TTS 服务商；离线音色不联网、隐私无忧</text>
+
+  <!-- ===== 底部说明 ===== -->
+  <text x="450" y="622" font-size="11" fill="#5F6368" text-anchor="middle">音色与语速即时生效；定时关闭可到本章结束；后台播放开关控制锁屏 / 切后台后是否继续朗读</text>
+</svg>

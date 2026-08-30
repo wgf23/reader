@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 640" width="100%" font-family="system-ui,'PingFang SC','Microsoft YaHei',sans-serif">
+  <rect x="0" y="0" width="900" height="640" fill="#FAFAFA"/>
+  <!-- 顶部标题条 -->
+  <text x="24" y="24" font-size="12" fill="#5F6368">阅读器 · 低保真线框 v1</text>
+  <text x="450" y="24" text-anchor="middle" font-size="16" font-weight="bold" fill="#202124">笔记面板</text>
+
+  <!-- 左侧简化阅读器（可见几条灰色文字行） -->
+  <line x1="60" y1="104" x2="480" y2="104" stroke="#C4C9CF" stroke-width="3" stroke-linecap="round"/>
+  <line x1="60" y1="128" x2="420" y2="128" stroke="#C4C9CF" stroke-width="3" stroke-linecap="round"/>
+  <line x1="60" y1="152" x2="460" y2="152" stroke="#C4C9CF" stroke-width="3" stroke-linecap="round"/>
+  <line x1="60" y1="176" x2="380" y2="176" stroke="#C4C9CF" stroke-width="3" stroke-linecap="round"/>
+  <line x1="60" y1="200" x2="440" y2="200" stroke="#C4C9CF" stroke-width="3" stroke-linecap="round"/>
+  <line x1="60" y1="224" x2="360" y2="224" stroke="#C4C9CF" stroke-width="3" stroke-linecap="round"/>
+  <line x1="60" y1="248" x2="420" y2="248" stroke="#C4C9CF" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- 跳转目标：临时高亮（第 3 行） -->
+  <rect x="60" y="152" width="380" height="24" fill="rgba(26,115,232,0.25)" stroke="#1A73E8" stroke-width="1"/>
+  <text x="452" y="168" font-size="11" fill="#1A73E8">临时高亮</text>
+
+  <!-- 从面板指向原文的跳转箭头 -->
+  <line x1="540" y1="236" x2="488" y2="182" stroke="#1A73E8" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <path d="M 488 182 L 479 172 L 495 175 Z" fill="#1A73E8"/>
+
+  <!-- 交互注释 -->
+  <rect x="60" y="280" width="400" height="44" rx="4" fill="#FFFFFF" fill-opacity="0.85" stroke="#9AA0A6" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="72" y="296" font-size="11" fill="#5F6368">点击笔记条目后跳回原文位置，</text>
+  <text x="72" y="312" font-size="11" fill="#5F6368">并临时高亮对应句子</text>
+
+  <rect x="60" y="380" width="400" height="44" rx="4" fill="#FFFFFF" fill-opacity="0.85" stroke="#9AA0A6" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="72" y="396" font-size="11" fill="#5F6368">面板打开时阅读器主体调暗，</text>
+  <text x="72" y="412" font-size="11" fill="#5F6368">点击面板外空白处关闭</text>
+
+  <!-- 右侧笔记面板（360px 宽，白色底，左侧竖边框） -->
+  <rect x="540" y="40" width="360" height="560" fill="#FFFFFF" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="560" y="72" font-size="15" font-weight="bold" fill="#202124">笔记</text>
+  <text x="872" y="72" text-anchor="end" font-size="16" fill="#5F6368">✕</text>
+  <rect x="560" y="88" width="320" height="32" rx="4" fill="#ECEEF1" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="572" y="108" font-size="12" fill="#9AA0A6">搜索笔记</text>
+
+  <!-- 章节分组：第一章 -->
+  <text x="560" y="148" font-size="13" fill="#5F6368">第一章</text>
+  <rect x="560" y="160" width="4" height="56" fill="#F9AB00"/>
+  <text x="576" y="182" font-size="12" fill="#202124">多年以后，面对行刑队，奥雷里亚诺…</text>
+  <text x="576" y="202" font-size="12" fill="#5F6368">布恩迪亚家族命运的伏笔</text>
+  <text x="872" y="182" text-anchor="end" font-size="11" fill="#9AA0A6">01-12</text>
+
+  <rect x="560" y="224" width="4" height="56" fill="#1A73E8"/>
+  <text x="576" y="246" font-size="12" fill="#202124">冰块在箱中散发寒气的那个下午…</text>
+  <text x="576" y="266" font-size="12" fill="#5F6368">童年记忆与孤独的意象</text>
+  <text x="872" y="246" text-anchor="end" font-size="11" fill="#9AA0A6">01-12</text>
+
+  <rect x="560" y="288" width="4" height="56" fill="#F9AB00"/>
+  <text x="576" y="310" font-size="12" fill="#202124">他想着吉卜赛人的磁铁，觉得世界…</text>
+  <text x="576" y="330" font-size="12" fill="#5F6368">魔幻现实主义的引入</text>
+  <text x="872" y="310" text-anchor="end" font-size="11" fill="#9AA0A6">01-11</text>
+
+  <!-- 章节分组：第二章 -->
+  <text x="560" y="388" font-size="13" fill="#5F6368">第二章</text>
+  <rect x="560" y="404" width="4" height="56" fill="#1A73E8"/>
+  <text x="576" y="426" font-size="12" fill="#202124">奥雷里亚诺上校发动了三十二次起义…</text>
+  <text x="576" y="446" font-size="12" fill="#5F6368">上校形象的铺垫</text>
+  <text x="872" y="426" text-anchor="end" font-size="11" fill="#9AA0A6">01-10</text>
+
+  <rect x="560" y="468" width="4" height="56" fill="#F9AB00"/>
+  <text x="576" y="490" font-size="12" fill="#202124">阿玛兰塔·乌苏拉回到马孔多…</text>
+  <text x="576" y="510" font-size="12" fill="#5F6368">结局的预示</text>
+  <text x="872" y="490" text-anchor="end" font-size="11" fill="#9AA0A6">01-09</text>
+
+  <!-- 面板底部操作 -->
+  <line x1="560" y1="556" x2="880" y2="556" stroke="#E1E4E8" stroke-width="1.5"/>
+  <rect x="560" y="564" width="110" height="30" rx="4" fill="#1A73E8"/>
+  <text x="615" y="583" text-anchor="middle" font-size="13" fill="#FFFFFF">导出</text>
+  <text x="872" y="583" text-anchor="end" font-size="13" fill="#D93025">全部删除</text>
+
+  <!-- 编辑批注卡片（叠于面板右上角） -->
+  <rect x="590" y="152" width="260" height="150" rx="4" fill="#FFFFFF" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="606" y="174" font-size="13" font-weight="bold" fill="#202124">编辑批注</text>
+  <rect x="606" y="184" width="228" height="58" rx="4" fill="#FAFAFA" stroke="#9AA0A6" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="618" y="210" font-size="12" fill="#9AA0A6">输入批注内容…</text>
+  <text x="618" y="280" font-size="12" fill="#D93025">删除</text>
+  <rect x="756" y="264" width="78" height="26" rx="4" fill="#1A73E8"/>
+  <text x="795" y="281" text-anchor="middle" font-size="12" fill="#FFFFFF">保存</text>
+
+  <!-- 交互注释：编辑卡片 -->
+  <rect x="590" y="380" width="260" height="40" rx="4" fill="#FFFFFF" fill-opacity="0.85" stroke="#9AA0A6" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="602" y="396" font-size="11" fill="#5F6368">编辑卡片：修改批注内容后</text>
+  <text x="602" y="412" font-size="11" fill="#5F6368">保存或删除并关闭卡片</text>
+
+  <!-- 底部交互说明 -->
+  <text x="24" y="604" font-size="11" fill="#5F6368">主要交互点：点击笔记条目跳回原文位置并临时高亮；搜索框过滤笔记；✕ 关闭面板；底部导出 / 全部删除；编辑卡片保存或删除批注</text>
+</svg>

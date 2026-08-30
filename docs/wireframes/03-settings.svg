@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 640" width="100%" font-family="system-ui,'PingFang SC','Microsoft YaHei',sans-serif">
+  <rect x="0" y="0" width="900" height="640" fill="#FAFAFA"/>
+  <!-- 顶部标题条 -->
+  <line x1="0" y1="48" x2="900" y2="48" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="24" y="30" font-size="11" fill="#5F6368">阅读器 · 低保真线框 v1</text>
+  <text x="450" y="31" font-size="16" font-weight="bold" fill="#202124" text-anchor="middle">设置</text>
+  <!-- 左侧导航 -->
+  <rect x="0" y="48" width="180" height="592" fill="#ECEEF1"/>
+  <line x1="180" y1="48" x2="180" y2="640" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="24" y="96" font-size="11" fill="#5F6368">偏好设置</text>
+  <text x="28" y="128" font-size="14" fill="#202124">阅读</text>
+  <!-- 外观（当前高亮） -->
+  <rect x="8" y="140" width="164" height="30" rx="4" fill="#E1E4E8"/>
+  <rect x="0" y="140" width="4" height="30" fill="#1A73E8"/>
+  <text x="28" y="160" font-size="14" font-weight="bold" fill="#1A73E8">外观</text>
+  <text x="28" y="202" font-size="14" fill="#202124">翻译与词典</text>
+  <text x="28" y="244" font-size="14" fill="#202124">数据与备份</text>
+  <text x="28" y="286" font-size="14" fill="#202124">快捷键</text>
+  <!-- 右侧表单区：外观分组 -->
+  <text x="220" y="116" font-size="16" font-weight="bold" fill="#202124">外观</text>
+  <line x1="220" y1="132" x2="860" y2="132" stroke="#E1E4E8" stroke-width="1.5"/>
+  <!-- 字号滑块 -->
+  <text x="220" y="186" font-size="14" fill="#202124">字号</text>
+  <rect x="360" y="176" width="280" height="6" rx="3" fill="#E1E4E8"/>
+  <rect x="360" y="176" width="150" height="6" rx="3" fill="#1A73E8"/>
+  <circle cx="510" cy="179" r="10" fill="#FFFFFF" stroke="#1A73E8" stroke-width="2.5"/>
+  <text x="338" y="188" font-size="12" fill="#5F6368" text-anchor="end">小</text>
+  <text x="662" y="188" font-size="12" fill="#5F6368">大</text>
+  <!-- 主题单选 -->
+  <text x="220" y="252" font-size="14" fill="#202124">主题</text>
+  <rect x="360" y="276" width="52" height="52" rx="6" fill="#FAFAFA" stroke="#1A73E8" stroke-width="2.5"/>
+  <rect x="430" y="276" width="52" height="52" rx="6" fill="#202124" stroke="#9AA0A6" stroke-width="1.5"/>
+  <rect x="500" y="276" width="52" height="52" rx="6" fill="#E8F5E9" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="386" y="352" font-size="12" fill="#202124" text-anchor="middle">浅色</text>
+  <text x="456" y="352" font-size="12" fill="#202124" text-anchor="middle">深色</text>
+  <text x="526" y="352" font-size="12" fill="#202124" text-anchor="middle">护眼</text>
+  <!-- 默认字体下拉框 -->
+  <text x="220" y="394" font-size="14" fill="#202124">默认字体</text>
+  <rect x="360" y="376" width="280" height="36" rx="4" fill="#FAFAFA" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="380" y="399" font-size="13" fill="#202124">系统默认</text>
+  <text x="622" y="399" font-size="13" fill="#5F6368" text-anchor="end">▾</text>
+  <!-- 翻页动画下拉框（展开态，展示选项） -->
+  <text x="220" y="470" font-size="14" fill="#202124">翻页动画</text>
+  <rect x="360" y="452" width="280" height="120" rx="4" fill="#FAFAFA" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="380" y="478" font-size="13" fill="#202124">无</text>
+  <text x="380" y="506" font-size="13" fill="#202124">淡入</text>
+  <rect x="364" y="520" width="272" height="28" rx="3" fill="#E1E4E8"/>
+  <text x="380" y="540" font-size="13" font-weight="bold" fill="#1A73E8">滑动</text>
+  <!-- 交互注释 -->
+  <rect x="700" y="370" width="172" height="110" rx="6" fill="none" stroke="#9AA0A6" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="716" y="394" font-size="11" fill="#5F6368">翻译与词典页将包含：</text>
+  <text x="716" y="414" font-size="11" fill="#5F6368">· Provider 开关</text>
+  <text x="716" y="434" font-size="11" fill="#5F6368">· API Key 输入</text>
+  <text x="716" y="454" font-size="11" fill="#5F6368">· 离线词库添加按钮</text>
+  <!-- 底部：恢复默认设置 -->
+  <text x="220" y="618" font-size="13" fill="#1A73E8">恢复默认设置</text>
+  <line x1="220" y1="622" x2="299" y2="622" stroke="#1A73E8" stroke-width="1"/>
+  <!-- 底部交互说明 -->
+  <text x="450" y="632" font-size="11" fill="#5F6368" text-anchor="middle">交互：左侧导航切换设置分组；字号、主题、字体、翻页动画调整即时生效；「恢复默认设置」重置全部配置</text>
+</svg>

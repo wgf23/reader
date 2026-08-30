@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 640" width="100%" font-family="system-ui,'PingFang SC','Microsoft YaHei',sans-serif">
+  <rect x="0" y="0" width="900" height="640" fill="#FAFAFA"/>
+  <!-- 顶部标题条 -->
+  <text x="24" y="24" font-size="12" fill="#5F6368">阅读器 · 低保真线框 v1</text>
+  <text x="450" y="24" text-anchor="middle" font-size="16" font-weight="bold" fill="#202124">翻译与词典浮层</text>
+
+  <!-- ============ 场景 ①：选句翻译 ============ -->
+  <text x="24" y="60" font-size="12" fill="#5F6368">场景 ① · 选句翻译</text>
+
+  <!-- 左侧正文（2 行有半透明蓝选区） -->
+  <line x1="60" y1="104" x2="300" y2="104" stroke="#C4C9CF" stroke-width="3" stroke-linecap="round"/>
+  <line x1="60" y1="128" x2="420" y2="128" stroke="#C4C9CF" stroke-width="3" stroke-linecap="round"/>
+  <line x1="60" y1="152" x2="500" y2="152" stroke="#C4C9CF" stroke-width="3" stroke-linecap="round"/>
+  <line x1="60" y1="176" x2="460" y2="176" stroke="#C4C9CF" stroke-width="3" stroke-linecap="round"/>
+  <line x1="60" y1="200" x2="360" y2="200" stroke="#C4C9CF" stroke-width="3" stroke-linecap="round"/>
+  <line x1="60" y1="224" x2="420" y2="224" stroke="#C4C9CF" stroke-width="3" stroke-linecap="round"/>
+  <line x1="60" y1="248" x2="380" y2="248" stroke="#C4C9CF" stroke-width="3" stroke-linecap="round"/>
+
+  <rect x="60" y="152" width="440" height="48" fill="rgba(26,115,232,0.25)" stroke="#1A73E8" stroke-width="1"/>
+  <line x1="500" y1="176" x2="556" y2="150" stroke="#1A73E8" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <path d="M 556 150 L 546 144 L 546 156 Z" fill="#1A73E8"/>
+
+  <!-- 翻译结果卡片 -->
+  <rect x="560" y="90" width="300" height="200" rx="6" fill="#FFFFFF" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="580" y="118" font-size="14" font-weight="bold" fill="#202124">翻译</text>
+  <text x="580" y="146" font-size="12" fill="#5F6368">多年以后，面对行刑队，奥雷里亚诺·布恩迪亚</text>
+  <text x="580" y="164" font-size="12" fill="#5F6368">上校将会回想起父亲带他去看冰块…</text>
+  <line x1="580" y1="180" x2="840" y2="180" stroke="#E1E4E8" stroke-width="1.5"/>
+  <text x="580" y="206" font-size="14" fill="#202124">多年以后，奥雷里亚诺上校将回想起</text>
+  <text x="580" y="226" font-size="14" fill="#202124">父亲带他去看冰块的那个下午。</text>
+  <text x="580" y="268" font-size="11" fill="#5F6368">DeepL · 命中缓存</text>
+
+  <!-- 交互注释 -->
+  <rect x="60" y="258" width="300" height="40" rx="4" fill="#FFFFFF" fill-opacity="0.85" stroke="#9AA0A6" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="72" y="274" font-size="11" fill="#5F6368">选中句子后自动触发翻译，</text>
+  <text x="72" y="290" font-size="11" fill="#5F6368">也可点工具条「翻译」</text>
+
+  <rect x="560" y="300" width="300" height="40" rx="4" fill="#FFFFFF" fill-opacity="0.85" stroke="#9AA0A6" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="572" y="316" font-size="11" fill="#5F6368">译文按「原文 + 语言对」缓存，</text>
+  <text x="572" y="332" font-size="11" fill="#5F6368">命中后直接展示，不重复请求</text>
+
+  <!-- 场景分隔线 -->
+  <line x1="24" y1="345" x2="876" y2="345" stroke="#9AA0A6" stroke-width="1.5" stroke-dasharray="6 4"/>
+
+  <!-- ============ 场景 ②：长按查词 ============ -->
+  <text x="24" y="386" font-size="12" fill="#5F6368">场景 ② · 长按查词</text>
+
+  <!-- 左侧正文（一个词位置有蓝圈标记） -->
+  <line x1="60" y1="420" x2="400" y2="420" stroke="#C4C9CF" stroke-width="3" stroke-linecap="round"/>
+  <line x1="60" y1="444" x2="460" y2="444" stroke="#C4C9CF" stroke-width="3" stroke-linecap="round"/>
+  <line x1="60" y1="468" x2="380" y2="468" stroke="#C4C9CF" stroke-width="3" stroke-linecap="round"/>
+
+  <circle cx="250" cy="420" r="8" fill="none" stroke="#1A73E8" stroke-width="2"/>
+  <text x="266" y="424" font-size="12" fill="#1A73E8">ephemeral</text>
+  <line x1="350" y1="420" x2="556" y2="430" stroke="#1A73E8" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <path d="M 556 430 L 546 424 L 546 436 Z" fill="#1A73E8"/>
+
+  <!-- 词典卡片 -->
+  <rect x="560" y="380" width="300" height="200" rx="6" fill="#FFFFFF" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="580" y="410" font-size="15" font-weight="bold" fill="#202124">ephemeral</text>
+  <text x="580" y="432" font-size="13" fill="#5F6368">/ɪˈfem.ər.əl/</text>
+  <text x="580" y="458" font-size="12" fill="#202124">adj. 短暂的；瞬息的</text>
+  <text x="580" y="478" font-size="12" fill="#202124">adj. （植物）仅一天的；短生的</text>
+  <text x="580" y="498" font-size="12" fill="#202124">n. 短暂存在的事物</text>
+  <text x="580" y="522" font-size="12" font-style="italic" fill="#5F6368">例：Life is ephemeral.</text>
+  <rect x="580" y="540" width="150" height="32" rx="4" fill="#1A73E8"/>
+  <text x="655" y="560" text-anchor="middle" font-size="13" fill="#FFFFFF">＋ 加入生词本</text>
+
+  <!-- 交互注释：离线查词 -->
+  <rect x="60" y="500" width="300" height="44" rx="4" fill="#FFFFFF" fill-opacity="0.85" stroke="#9AA0A6" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="72" y="516" font-size="11" fill="#5F6368">长按单词弹出词典卡片，</text>
+  <text x="72" y="532" font-size="11" fill="#5F6368">查词完全离线可用（StarDict 词库）</text>
+
+  <!-- 底部交互说明 -->
+  <text x="24" y="604" font-size="11" fill="#5F6368">主要交互点：选中句子自动翻译并按「原文 + 语言对」缓存；长按单词离线查词（StarDict 词库）；可「＋ 加入生词本」</text>
+</svg>

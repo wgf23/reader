@@ -1,0 +1,39 @@
+[package]
+name = "reader_core"
+version = "0.1.0"
+edition = "2021"
+description = "阅读器核心：格式解析/规范化/定位器/笔记/词典/搜索/存储"
+license = "MIT"
+
+[lib]
+name = "reader_core"
+crate-type = ["rlib", "cdylib"]   # cdylib 供 flutter_rust_bridge 链接
+
+[dependencies]
+# 骨架期 major-only 占位版本：首个 cargo check 后按需 pin（P0 验收前冻结）。
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "1"
+log = "0.4"
+rusqlite = { version = "0", features = ["bundled"] }
+sha2 = "0.10"
+zip = "2"
+quick-xml = "0"
+flate2 = "1"
+encoding_rs = "0.8"
+mobi = "0"
+
+# 注：PalmDOC 解压由 mobi crate 内部处理，无需单独依赖 palmdoc。
+regex = "1"
+flutter_rust_bridge = "=2.13.0"   # 桥接（docs/03 §4；版本与 flutter_rust_bridge_codegen 对齐）
+
+# P0 按需启用（见 docs/02-technical.md §8）：
+# pdfium-render = "0.8"          # PDF 渲染
+# tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+
+[dev-dependencies]
+tempfile = "3"                  # 测试用临时目录
+
+[profile.release]
+lto = true
+strip = true

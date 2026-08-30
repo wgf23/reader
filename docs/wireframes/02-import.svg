@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 640" width="100%" font-family="system-ui,'PingFang SC','Microsoft YaHei',sans-serif">
+  <rect x="0" y="0" width="900" height="640" fill="#FAFAFA"/>
+  <!-- 顶部标题条 -->
+  <line x1="0" y1="48" x2="900" y2="48" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="24" y="30" font-size="11" fill="#5F6368">阅读器 · 低保真线框 v1</text>
+  <text x="450" y="31" font-size="16" font-weight="bold" fill="#202124" text-anchor="middle">导入书籍</text>
+  <!-- 拖拽区 -->
+  <rect x="150" y="84" width="600" height="170" rx="8" fill="#FAFAFA" stroke="#1A73E8" stroke-width="1.5" stroke-dasharray="10 6"/>
+  <line x1="450" y1="112" x2="450" y2="134" stroke="#5F6368" stroke-width="1.5"/>
+  <path d="M440 124 L450 136 L460 124" fill="none" stroke="#5F6368" stroke-width="1.5"/>
+  <text x="450" y="168" font-size="16" font-weight="bold" fill="#202124" text-anchor="middle">拖拽书籍到此处</text>
+  <text x="450" y="194" font-size="13" fill="#1A73E8" text-anchor="middle">或点击选择文件</text>
+  <!-- 格式徽标 -->
+  <rect x="267" y="207" width="46" height="26" rx="6" fill="#E1E4E8" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="290" y="225" font-size="12" fill="#202124" text-anchor="middle">EPUB</text>
+  <rect x="323" y="207" width="40" height="26" rx="6" fill="#E1E4E8" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="343" y="225" font-size="12" fill="#202124" text-anchor="middle">PDF</text>
+  <rect x="373" y="207" width="48" height="26" rx="6" fill="#E1E4E8" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="397" y="225" font-size="12" fill="#202124" text-anchor="middle">MOBI</text>
+  <rect x="431" y="207" width="52" height="26" rx="6" fill="#E1E4E8" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="457" y="225" font-size="12" fill="#202124" text-anchor="middle">AZW3</text>
+  <rect x="493" y="207" width="36" height="26" rx="6" fill="#E1E4E8" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="511" y="225" font-size="12" fill="#202124" text-anchor="middle">TXT</text>
+  <rect x="539" y="207" width="42" height="26" rx="6" fill="#E1E4E8" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="560" y="225" font-size="12" fill="#202124" text-anchor="middle">FB2</text>
+  <rect x="591" y="207" width="42" height="26" rx="6" fill="#E1E4E8" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="612" y="225" font-size="12" fill="#202124" text-anchor="middle">CBZ</text>
+  <!-- 导入列表 -->
+  <text x="180" y="300" font-size="15" font-weight="bold" fill="#202124">导入队列</text>
+  <!-- 行 1：解析中 -->
+  <text x="180" y="338" font-size="14" fill="#202124">呐喊.epub</text>
+  <rect x="310" y="326" width="46" height="20" rx="6" fill="#E1E4E8" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="333" y="340" font-size="11" fill="#5F6368" text-anchor="middle">EPUB</text>
+  <rect x="390" y="336" width="300" height="8" rx="4" fill="#E1E4E8"/>
+  <rect x="390" y="336" width="195" height="8" rx="4" fill="#1A73E8"/>
+  <text x="840" y="340" font-size="13" fill="#5F6368" text-anchor="end">解析中…</text>
+  <line x1="180" y1="372" x2="860" y2="372" stroke="#E1E4E8" stroke-width="1.5"/>
+  <!-- 行 2：已完成 -->
+  <text x="180" y="408" font-size="14" fill="#202124">百年孤独.pdf</text>
+  <rect x="310" y="396" width="40" height="20" rx="6" fill="#E1E4E8" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="330" y="410" font-size="11" fill="#5F6368" text-anchor="middle">PDF</text>
+  <rect x="390" y="406" width="300" height="8" rx="4" fill="#E1E4E8"/>
+  <rect x="390" y="406" width="300" height="8" rx="4" fill="#1A73E8"/>
+  <text x="840" y="410" font-size="13" fill="#1A73E8" text-anchor="end">已完成</text>
+  <line x1="180" y1="442" x2="860" y2="442" stroke="#E1E4E8" stroke-width="1.5"/>
+  <!-- 行 3：失败 -->
+  <text x="180" y="478" font-size="14" fill="#202124">三体.mobi</text>
+  <rect x="310" y="466" width="48" height="20" rx="6" fill="#E1E4E8" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="334" y="480" font-size="11" fill="#5F6368" text-anchor="middle">MOBI</text>
+  <rect x="390" y="476" width="300" height="8" rx="4" fill="#E1E4E8"/>
+  <rect x="390" y="476" width="120" height="8" rx="4" fill="#1A73E8"/>
+  <text x="840" y="480" font-size="13" fill="#D93025" text-anchor="end">失败</text>
+  <line x1="180" y1="512" x2="860" y2="512" stroke="#E1E4E8" stroke-width="1.5"/>
+  <!-- 交互注释 -->
+  <rect x="180" y="520" width="560" height="52" rx="6" fill="none" stroke="#9AA0A6" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="196" y="540" font-size="11" fill="#5F6368">导入在后台进行，不阻塞界面</text>
+  <text x="196" y="560" font-size="11" fill="#5F6368">重复文件按内容指纹去重</text>
+  <!-- 底部汇总条 -->
+  <rect x="150" y="580" width="600" height="34" rx="8" fill="#ECEEF1" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="450" y="602" font-size="13" fill="#202124" text-anchor="middle">导入完成：2 本完成 · 1 本失败（<tspan fill="#D93025">重试</tspan>）</text>
+  <!-- 底部交互说明 -->
+  <text x="450" y="628" font-size="11" fill="#5F6368" text-anchor="middle">交互：拖拽文件到虚线区或点击选择文件；导入在后台进行不阻塞界面；失败项可在汇总条点击「重试」</text>
+</svg>

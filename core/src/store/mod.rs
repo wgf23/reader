@@ -1,0 +1,258 @@
+//! SQLite 存储封装：迁移（user_version）/ WAL / 事务。
+//!
+//! DDL：docs/04-module-design.md §5（books / book_files）；性能：WAL（docs/03 §5）。
+
+use std::path::Path;
+
+use rusqlite::Connection;
+
+use crate::error::{Error, Result};
+
+/// 数据目录结构：
+///   <data_dir>/library.db
+///   <data_dir>/cache/        （规范 EPUB 缓存）
+pub struct Store {
+    conn: Connection,
+    data_dir: std::path::PathBuf,
+}
+
+/// 书籍记录（books 表行）
+#[derive(Debug, Clone)]
+pub struct BookRecord {
+    pub id: String,
+    pub title: String,
+    pub authors: Vec<String>,
+    pub language: Option<String>,
+    pub source_path: String,
+    pub source_hash: String,
+    pub format: String,
+    pub canonical_path: Option<String>,
+    pub added_at: i64,
+}
+
+impl Store {
+    /// 打开（或创建）书库；自动执行迁移。
+    pub fn open(data_dir: &Path) -> Result<Store> {
+        std::fs::create_dir_all(data_dir).map_err(Error::Io)?;
+        std::fs::create_dir_all(data_dir.join("cache")).map_err(Error::Io)?;
+        let conn = Connection::open(data_dir.join("library.db")).map_err(Error::from)?;
+        conn.execute_batch("PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;")
+            .map_err(Error::from)?;
+        let store = Store {
+            conn,
+            data_dir: data_dir.to_path_buf(),
+        };
+        store.migrate()?;
+        Ok(store)
+    }
+
+    pub fn cache_dir(&self) -> std::path::PathBuf {
+        self.data_dir.join("cache")
+    }
+
+    fn migrate(&self) -> Result<()> {
+        let version: i64 = self
+            .conn
+            .query_row("PRAGMA user_version", [], |r| r.get(0))
+            .map_err(Error::from)?;
+        if version < 1 {
+            self.conn
+                .execute_batch(
+                    r#"
+CREATE TABLE IF NOT EXISTS books (
+  id            TEXT PRIMARY KEY,
+  title         TEXT NOT NULL,
+  authors       TEXT NOT NULL DEFAULT '[]',
+  language      TEXT,
+  source_path   TEXT NOT NULL,
+  source_hash   TEXT NOT NULL UNIQUE,
+  format        TEXT NOT NULL,
+  added_at      INTEGER NOT NULL,
+  updated_at    INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS book_files (
+  book_id        TEXT PRIMARY KEY REFERENCES books(id) ON DELETE CASCADE,
+  canonical_path TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_books_hash ON books(source_hash);
+PRAGMA user_version = 1;
+"#,
+                )
+                .map_err(Error::from)?;
+        }
+        Ok(())
+    }
+
+    pub fn insert_book(&mut self, record: &BookRecord) -> Result<()> {
+        let authors = serde_json::to_string(&record.authors)
+            .map_err(|e| Error::Other(format!("authors 序列化失败: {e}")))?;
+        let now = now_unix();
+        self.conn
+            .execute(
+                "INSERT OR REPLACE INTO books (id, title, authors, language, source_path, source_hash, format, added_at, updated_at)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?8)",
+                rusqlite::params![
+                    record.id,
+                    record.title,
+                    authors,
+                    record.language,
+                    record.source_path,
+                    record.source_hash,
+                    record.format,
+                    now
+                ],
+            )
+            .map_err(Error::from)?;
+        if let Some(canonical) = &record.canonical_path {
+            self.conn
+                .execute(
+                    "INSERT OR REPLACE INTO book_files (book_id, canonical_path) VALUES (?1, ?2)",
+                    rusqlite::params![record.id, canonical],
+                )
+                .map_err(Error::from)?;
+        }
+        Ok(())
+    }
+
+    pub fn list_books(&self) -> Result<Vec<BookRecord>> {
+        let mut stmt = self
+            .conn
+            .prepare(
+                "SELECT b.id, b.title, b.authors, b.language, b.source_path, b.source_hash, b.format, b.added_at, f.canonical_path
+                 FROM books b LEFT JOIN book_files f ON f.book_id = b.id
+                 ORDER BY b.added_at DESC",
+            )
+            .map_err(Error::from)?;
+        let rows = stmt
+            .query_map([], |r| {
+                let authors_json: String = r.get(2)?;
+                let authors = serde_json::from_str(&authors_json).unwrap_or_default();
+                Ok(BookRecord {
+                    id: r.get(0)?,
+                    title: r.get(1)?,
+                    authors,
+                    language: r.get(3)?,
+                    source_path: r.get(4)?,
+                    source_hash: r.get(5)?,
+                    format: r.get(6)?,
+                    added_at: r.get(7)?,
+                    canonical_path: r.get(8)?,
+                })
+            })
+            .map_err(Error::from)?;
+        let mut out = Vec::new();
+        for row in rows {
+            out.push(row.map_err(Error::from)?);
+        }
+        Ok(out)
+    }
+
+    pub fn get_book(&self, id: &str) -> Result<BookRecord> {
+        let mut stmt = self
+            .conn
+            .prepare(
+                "SELECT b.id, b.title, b.authors, b.language, b.source_path, b.source_hash, b.format, b.added_at, f.canonical_path
+                 FROM books b LEFT JOIN book_files f ON f.book_id = b.id WHERE b.id = ?1",
+            )
+            .map_err(Error::from)?;
+        let row = stmt
+            .query_row(rusqlite::params![id], |r| {
+                let authors_json: String = r.get(2)?;
+                let authors = serde_json::from_str(&authors_json).unwrap_or_default();
+                Ok(BookRecord {
+                    id: r.get(0)?,
+                    title: r.get(1)?,
+                    authors,
+                    language: r.get(3)?,
+                    source_path: r.get(4)?,
+                    source_hash: r.get(5)?,
+                    format: r.get(6)?,
+                    added_at: r.get(7)?,
+                    canonical_path: r.get(8)?,
+                })
+            })
+            .map_err(|e| match e {
+                rusqlite::Error::QueryReturnedNoRows => {
+                    Error::NotFound(format!("书籍不存在: {id}"))
+                }
+                other => Error::from(other),
+            })?;
+        Ok(row)
+    }
+
+    pub fn remove_book(&mut self, id: &str) -> Result<()> {
+        self.conn
+            .execute("DELETE FROM books WHERE id = ?1", rusqlite::params![id])
+            .map_err(Error::from)?;
+        Ok(())
+    }
+
+    pub fn integrity_check(&self) -> Result<bool> {
+        let ok: String = self
+            .conn
+            .query_row("PRAGMA integrity_check", [], |r| r.get(0))
+            .map_err(Error::from)?;
+        Ok(ok == "ok")
+    }
+}
+
+fn now_unix() -> i64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs() as i64)
+        .unwrap_or(0)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn sample_record() -> BookRecord {
+        BookRecord {
+            id: "b1".to_string(),
+            title: "测试书".to_string(),
+            authors: vec!["张三".to_string()],
+            language: Some("zh".to_string()),
+            source_path: "/tmp/x.epub".to_string(),
+            source_hash: "abc123".to_string(),
+            format: "epub".to_string(),
+            canonical_path: Some("/tmp/cache/abc123.epub".to_string()),
+            added_at: 1,
+        }
+    }
+
+    #[test]
+    fn open_migrate_insert_list_roundtrip() {
+        let dir = tempfile::tempdir().unwrap();
+        let mut store = Store::open(dir.path()).unwrap();
+        assert!(store.integrity_check().unwrap());
+        store.insert_book(&sample_record()).unwrap();
+        let books = store.list_books().unwrap();
+        assert_eq!(books.len(), 1);
+        assert_eq!(books[0].title, "测试书");
+        assert_eq!(books[0].authors, vec!["张三".to_string()]);
+        assert_eq!(books[0].canonical_path.as_deref(), Some("/tmp/cache/abc123.epub"));
+        let got = store.get_book("b1").unwrap();
+        assert_eq!(got.format, "epub");
+    }
+
+    #[test]
+    fn dedup_by_hash() {
+        let dir = tempfile::tempdir().unwrap();
+        let mut store = Store::open(dir.path()).unwrap();
+        store.insert_book(&sample_record()).unwrap();
+        let mut dup = sample_record();
+        dup.id = "b2".to_string();
+        store.insert_book(&dup).unwrap(); // 同 hash，INSERT OR REPLACE → 仍 1 本
+        assert_eq!(store.list_books().unwrap().len(), 1);
+    }
+
+    #[test]
+    fn remove_book() {
+        let dir = tempfile::tempdir().unwrap();
+        let mut store = Store::open(dir.path()).unwrap();
+        store.insert_book(&sample_record()).unwrap();
+        store.remove_book("b1").unwrap();
+        assert!(store.get_book("b1").is_err());
+    }
+}
