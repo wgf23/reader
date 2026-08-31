@@ -972,6 +972,14 @@ mod tests {
     }
 
     #[test]
+    fn palmdoc_c0_boundary_is_space_encoding() {
+        // 边界：0xc0 属于 0xc0..=0xff 区间（空格编码），不属于 0x80..=0xbf 回引用区间
+        let stream = [0xc0];
+        let out = palmdoc_decompress(&stream);
+        assert_eq!(out, b" @");
+    }
+
+    #[test]
     fn palmdoc_invalid_backref_stops_leniently() {
         // offset=0（KindleGen 结束标记）→ 停止，返回已解压部分
         let s = [b'x', 0x80, 0x00];
@@ -987,6 +995,26 @@ mod tests {
         let s = [0x03, b'a', b'b'];
         let out = palmdoc_decompress(&s);
         assert_eq!(out, b"ab");
+    }
+
+    // ---------- 大端读取辅助（边界守卫） ----------
+
+    #[test]
+    fn u16_be_at_reads_and_bounds() {
+        assert_eq!(u16_be_at(&[0x12, 0x34], 0), 0x1234);
+        // 越界（off+2 > len）→ 0；若守卫被变异（`+`→`-`/`*`、`>`→`==`）会越界读 → panic
+        assert_eq!(u16_be_at(&[0x12, 0x34], 1), 0);
+        assert_eq!(u16_be_at(&[0x12], 0), 0);
+        assert_eq!(u16_be_at(&[], 0), 0);
+    }
+
+    #[test]
+    fn u32_be_reads_be_bytes_and_bounds() {
+        // 高位字节非 0 → 校验大端顺序正确（变异 `off+1`→`off` 会改变读值）
+        assert_eq!(u32_be(&[1, 2, 3, 4], 0), 0x0102_0304);
+        assert_eq!(u32_be(&[0, 0, 0, 5], 0), 5);
+        assert_eq!(u32_be(&[1, 2, 3], 0), 0); // 越界 → 0
+        assert_eq!(u32_be(&[], 0), 0);
     }
 
     // ---------- 编码解码链 ----------
@@ -1011,6 +1039,14 @@ mod tests {
         let (gbk, _, _) = GB18030.encode("中文内容测试");
         let s = decode_text(&gbk, TextEncoding::Unknown(0));
         assert_eq!(s, "中文内容测试");
+    }
+
+    #[test]
+    fn decode_unknown_declaration_valid_utf8_uses_utf8() {
+        // 未知声明 + 内容本身是合法 UTF-8 → 按 UTF-8 解码（不得误判为 GBK）
+        let s = decode_text("hello 你好 world".as_bytes(), TextEncoding::Unknown(0));
+        assert!(s.contains("hello 你好 world"), "实际: {s}");
+        assert!(!s.contains('\u{fffd}'));
     }
 
     #[test]
@@ -1077,6 +1113,15 @@ mod tests {
         assert!(out.contains("kindle:flow"));
     }
 
+    #[test]
+    fn sanitize_keeps_existing_doctype() {
+        // 输入已含 DOCTYPE → 不重复前置
+        let html = "<!DOCTYPE html>\n<html><body><p>正文</p></body></html>";
+        let out = sanitize_html(html, &[]);
+        assert!(out.starts_with("<!DOCTYPE html>"));
+        assert_eq!(out.matches("<!DOCTYPE").count(), 1, "不应重复 DOCTYPE: {out}");
+    }
+
     // ---------- 拆章 ----------
 
     #[test]
@@ -1109,6 +1154,16 @@ mod tests {
         let html = "<html><body><p>只有一段</p></body></html>";
         let (parts, _) = split_chapters(html);
         assert_eq!(parts.len(), 1);
+    }
+
+    #[test]
+    fn split_consecutive_pagebreaks_and_trailing_marker() {
+        // 连续 pagebreak（无间隔内容）不产生空段；内容以 pagebreak 结尾不产生尾段
+        let html = "<p>A</p><mbp:pagebreak/><mbp:pagebreak/><p>B</p><mbp:pagebreak/>";
+        let (parts, _) = split_chapters(html);
+        assert_eq!(parts.len(), 2, "应只有 A/B 两段: {parts:?}");
+        assert!(parts[0].contains("A"));
+        assert!(parts[1].contains("B"));
     }
 
     // ---------- 标题 ----------
@@ -1215,6 +1270,29 @@ mod tests {
         assert_eq!(toc[0].title, "第一章");
         assert_eq!(toc[0].href, "chapter_0002.xhtml");
         assert_eq!(toc[1].href, "chapter_0003.xhtml");
+    }
+
+    #[test]
+    fn build_toc_maps_indx_positions_linearly() {
+        // INDX pos 线性映射：pos 落在最后一章区间之后 → 映射到最后一章（不跳过）
+        let chapters = vec![
+            Chapter { title: "第一章".into(), href: "chapter_0001.xhtml".into(), html: String::new(), text: String::new() },
+            Chapter { title: "第二章".into(), href: "chapter_0002.xhtml".into(), html: String::new(), text: String::new() },
+        ];
+        let offsets = vec![0usize, 100];
+        let indx = vec![("第一章".to_string(), 50), ("越界条目".to_string(), 9999)];
+        let toc = build_toc(&chapters, &offsets, Some(&indx));
+        assert_eq!(toc.len(), 2);
+        assert_eq!(toc[0].href, "chapter_0001.xhtml");
+        assert_eq!(toc[1].href, "chapter_0002.xhtml", "9999 应线性映射到最后一章");
+    }
+
+    #[test]
+    fn chapter_index_at_front_matter() {
+        // pos 落在第一个偏移之前（front matter）→ 章节 0
+        assert_eq!(chapter_index_at(&[100, 300], 50), Some(0));
+        // 空偏移表 → None
+        assert_eq!(chapter_index_at(&[], 50), None);
     }
 
     // ---------- lenient 文本抽取 ----------
