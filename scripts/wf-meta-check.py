@@ -45,7 +45,8 @@ def main() -> int:
                 if not m:
                     errors.append(f"[非法头] {req}/{f}")
                     continue
-                if m.group(1) != req or m.group(2) != phase:
+                # 目录名允许带 slug：REQ-002-mobi-azw3 对应 meta req=REQ-002
+                if (m.group(1) != req and not req.startswith(m.group(1) + "-")) or m.group(2) != phase:
                     errors.append(
                         f"[头不一致] {req}/{f}: meta(req={m.group(1)}, phase={m.group(2)})"
                     )

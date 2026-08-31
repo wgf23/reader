@@ -2,9 +2,9 @@
 
 | 字段 | 值 |
 |---|---|
-| 当前阶段 | delivery 完成，REQ-001 已合并回 main |
-| 活跃 REQ | REQ-001（已完成） |
-| 分支 | main（wf/REQ-001-webview 已合并） |
-| 闸门状态 | 闸门1 ✅ 闸门2 ✅ 闸门3 ✅（CRAP FAIL=0 / DDD 0 违规）闸门4 ✅（变异 91.7% / 覆盖 89.1%）闸门5 ✅ |
-| rework 计数 | 1（REWORK-REQ-001-D：变异测试 75%→91.7%，6 测试缺口修复 + 3 等价豁免） |
-| 最近事件 | REQ-001 五阶段流水线全流程跑通；交付产物与追溯矩阵闭合；下一条 REQ 待排期（建议：笔记高亮 NOTE-01 或 MOBI/AZW3） |
+| 当前阶段 | REQ-002 阶段5 交付（闸门1-4 ✅） |
+| 活跃 REQ | REQ-002-mobi-azw3 |
+| 分支 | wf/REQ-002-mobi-azw3 |
+| 闸门状态 | 闸门1-4 ✅（真 agent：req-analyst/architect/developer/test-engineer，orchestrator 逐一独立复验）｜ 闸门5 待跑 |
+| rework 计数 | 1（REWORK-REQ-002-D：变异 77.7%→94.8%，16 测试缺口闭环，5 等价豁免） |
+| 最近事件 | 阶段4 test-engineer 完成（降载模式，多次 WSL 中断后幂等重跑成功）：覆盖率 97.7%、变异 94.8%；派阶段5 release-manager |

@@ -26,3 +26,7 @@ Thumbs.db
 
 # 工作流工具（Rust 小工具）
 scripts/*/target/
+
+# 变异测试产物（勿提交）
+core/mutants.out/
+core/mutants.out.old/
