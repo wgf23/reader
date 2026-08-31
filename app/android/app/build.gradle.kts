@@ -6,8 +6,8 @@ plugins {
 
 android {
     namespace = "com.reader.reader_app"
-    compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    compileSdk = 36  // flutter_plugin_android_lifecycle 要求 API 36
+    ndkVersion = "27.0.12077973"  // 本构建环境使用 NDK r27（flutter 默认 28.2 需另行下载）
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

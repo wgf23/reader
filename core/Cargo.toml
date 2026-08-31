@@ -17,7 +17,7 @@ thiserror = "1"
 log = "0.4"
 rusqlite = { version = "0", features = ["bundled"] }
 sha2 = "0.10"
-zip = "2"
+zip = { version = "2", default-features = false, features = ["deflate", "deflate64"] }  # 裁剪 C 压缩依赖（bzip2/zstd/lzma）便于 Android 交叉编译
 quick-xml = "0"
 flate2 = "1"
 encoding_rs = "0.8"

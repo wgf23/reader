@@ -18,15 +18,21 @@ class RustLibraryBackend implements LibraryBackend {
   static bool _initialized = false;
 
   /// 加载 Rust 动态库（只做一次）。
-  /// 开发期：`--dart-define=READER_CORE_SO=<path>` 指定；否则按平台取默认名
-  /// （Windows: reader_core.dll / macOS: libreader_core.dylib / Linux/Android: libreader_core.so）。
+  /// - `--dart-define=READER_CORE_SO=<path>`：显式指定（开发期/桌面）；
+  /// - Android：走 frb 默认 loader（.so 打包进 jniLibs，按 libreader_core.so 加载）；
+  /// - 其他平台：按平台默认名（reader_core.dll / libreader_core.dylib / libreader_core.so）。
   Future<void> _ensureInit() async {
     if (_initialized) return;
     const env = String.fromEnvironment('READER_CORE_SO');
-    final soPath = env.isNotEmpty ? env : _defaultSoName();
-    await rustlib.RustLib.init(
-      externalLibrary: frb.ExternalLibrary.open(soPath),
-    );
+    if (env.isNotEmpty) {
+      await rustlib.RustLib.init(externalLibrary: frb.ExternalLibrary.open(env));
+    } else if (Platform.isAndroid) {
+      await rustlib.RustLib.init();
+    } else {
+      await rustlib.RustLib.init(
+        externalLibrary: frb.ExternalLibrary.open(_defaultSoName()),
+      );
+    }
     _initialized = true;
   }
 

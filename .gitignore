@@ -30,3 +30,7 @@ scripts/*/target/
 # 变异测试产物（勿提交）
 core/mutants.out/
 core/mutants.out.old/
+
+# 发布产物
+app/dist/
+dist/
