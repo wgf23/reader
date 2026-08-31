@@ -21,9 +21,12 @@ flutter_rust_bridge_codegen generate \
 ## 构建与运行约定
 
 - Rust 动态库：`cd core && cargo build --release` → `target/release/libreader_core.so`。
-- 开发期：Flutter 侧用 `--dart-define=READER_CORE_SO=<绝对路径>` 指定 .so；否则默认找
-  可执行目录旁的 `libreader_core.so`。
-- 发布期：构建脚本把 `.so` 拷贝到各平台可执行目录旁（Windows 为 `.dll`、macOS 为 `.dylib`）。
+- 开发期：Flutter 侧用 `--dart-define=READER_CORE_SO=<绝对路径>` 指定 .so；否则按平台默认名
+  （Windows: `reader_core.dll` / macOS: `libreader_core.dylib` / Linux·Android: `libreader_core.so`；
+  Android 走 frb 默认 loader，.so 由 build-android.sh 打进 jniLibs）。
+- 发布期：
+  - **Android**：`bash scripts/build-android.sh`（交叉编译 3 ABI → jniLibs → APK，含第三方插件补丁）；
+  - **Windows**：在 Windows 上执行 `scripts/build-windows.ps1`（产出 zip 免安装包，.so 随包分发）。
 
 ```bash
 # FFI 端到端测试（需先 cargo build --release）
