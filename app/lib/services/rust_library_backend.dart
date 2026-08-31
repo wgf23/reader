@@ -2,6 +2,7 @@
 /// 设计：docs/03-architecture.md §4、docs/04 §7、docs/07 §6。
 library;
 
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart'
@@ -17,16 +18,22 @@ class RustLibraryBackend implements LibraryBackend {
   static bool _initialized = false;
 
   /// 加载 Rust 动态库（只做一次）。
-  /// 开发期：`--dart-define=READER_CORE_SO=<path>` 指定；默认取可执行目录旁的
-  /// `libreader_core.so`（发布期由构建脚本拷贝，见 bridge/README.md）。
+  /// 开发期：`--dart-define=READER_CORE_SO=<path>` 指定；否则按平台取默认名
+  /// （Windows: reader_core.dll / macOS: libreader_core.dylib / Linux/Android: libreader_core.so）。
   Future<void> _ensureInit() async {
     if (_initialized) return;
     const env = String.fromEnvironment('READER_CORE_SO');
-    final soPath = env.isNotEmpty ? env : 'libreader_core.so';
+    final soPath = env.isNotEmpty ? env : _defaultSoName();
     await rustlib.RustLib.init(
       externalLibrary: frb.ExternalLibrary.open(soPath),
     );
     _initialized = true;
+  }
+
+  String _defaultSoName() {
+    if (Platform.isWindows) return 'reader_core.dll';
+    if (Platform.isMacOS) return 'libreader_core.dylib';
+    return 'libreader_core.so';
   }
 
   @override
