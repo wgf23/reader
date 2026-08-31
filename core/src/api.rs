@@ -2,13 +2,19 @@
 //!
 //! 约定：函数签名即桥接契约，改动需同步更新 docs/03 §4 与 Dart 侧服务层。
 //! 错误统一映射为 `String`（用户可读文案）。
+//! REQ-003：新增 7 个 **async** 桥接函数（FRB 2.13 async，函数体为同步阻塞代码，
+//! 在 FRB 内部线程池执行，UI 不阻塞 —— ADR 决策点1）；`library_open` 装配 DICT/TRANSLATION
+//! 双单例（两 trait 各持一个 TranslationRepo 第二连接，WAL + busy_timeout，迁移幂等）。
 
 use std::path::Path;
 use std::sync::{Mutex, OnceLock};
 
+use crate::dict::{DeepLProvider, DictService, EchoProvider, TranslationService};
 use crate::error::Result;
 use crate::library::LibraryService;
+use crate::store::TranslationRepo;
 use crate::store::{BookRecord, Store};
+use crate::types::{Lang, ProviderConfig, TranslationCacheRepository};
 
 // ---------- 桥接数据结构 ----------
 
@@ -34,14 +40,58 @@ pub struct BookView {
     pub chapters: Vec<ChapterView>,
 }
 
+// ---------- REQ-003 桥接数据结构（FRB 生成面） ----------
+
+/// 已安装词库信息（US-7；docs/03 §4 原 Result<()>，ADR 关联裁定4 修正）
+#[derive(Debug)]
+pub struct DictInfoView {
+    pub id: String,
+    pub name: String,
+    pub word_count: u64,
+    pub path: String,
+}
+
+/// 词条视图（US-1/16）
+#[derive(Debug)]
+pub struct DictEntryView {
+    pub word: String,
+    pub phonetic: Option<String>,
+    pub pos: Option<String>,
+    pub definition: String,
+    pub example: Option<String>,
+}
+
+/// 译文视图（from_cache 标注缓存命中，US-10/13）
+#[derive(Debug)]
+pub struct TranslationView {
+    pub text: String,
+    pub from: String,
+    pub to: String,
+    pub provider: String,
+    pub from_cache: bool,
+}
+
 // ---------- 全局服务（进程内单例） ----------
 
 static SERVICE: OnceLock<Mutex<LibraryService>> = OnceLock::new();
+static DICT: OnceLock<Mutex<DictService>> = OnceLock::new();
+static TRANSLATION: OnceLock<Mutex<TranslationService>> = OnceLock::new();
 
 fn service() -> std::result::Result<&'static Mutex<LibraryService>, String> {
     SERVICE
         .get()
         .ok_or_else(|| "书库未初始化：请先调用 library_open".to_string())
+}
+
+fn dict_service() -> std::result::Result<&'static Mutex<DictService>, String> {
+    DICT.get()
+        .ok_or_else(|| "词库未初始化：请先调用 library_open".to_string())
+}
+
+fn translation_service() -> std::result::Result<&'static Mutex<TranslationService>, String> {
+    TRANSLATION
+        .get()
+        .ok_or_else(|| "翻译未初始化：请先调用 library_open".to_string())
 }
 
 fn err_msg<E: std::fmt::Display>(e: E) -> String {
@@ -51,9 +101,22 @@ fn err_msg<E: std::fmt::Display>(e: E) -> String {
 // ---------- 书库 API ----------
 
 /// 打开（或创建）书库，指定数据目录。应用启动时调用一次。
+/// 装配：SERVICE（既有）+ DICT/TRANSLATION 双单例（REQ-003 02-design §4.1）。
 pub fn library_open(data_dir: String) -> std::result::Result<(), String> {
     let store = Store::open(Path::new(&data_dir)).map_err(err_msg)?;
     let _ = SERVICE.set(Mutex::new(LibraryService::new(store)));
+
+    let cache_repo =
+        Box::new(TranslationRepo::open(Path::new(&data_dir)).map_err(err_msg)?)
+            as Box<dyn TranslationCacheRepository + Send>;
+    let config_repo = Box::new(TranslationRepo::open(Path::new(&data_dir)).map_err(err_msg)?)
+        as Box<dyn ProviderConfig + Send>;
+    let _ = DICT.set(Mutex::new(DictService::new(Path::new(&data_dir)).map_err(err_msg)?));
+    let _ = TRANSLATION.set(Mutex::new(TranslationService::new(
+        cache_repo,
+        config_repo,
+        vec![Box::new(DeepLProvider::new()), Box::new(EchoProvider)],
+    )));
     Ok(())
 }
 
@@ -139,6 +202,99 @@ fn to_summary(rec: &BookRecord) -> BookSummary {
         language: rec.language.clone(),
         format: rec.format.clone(),
     }
+}
+
+// ---------- REQ-003 词典与翻译桥接（全部 async；FRB 池线程执行，UI 不阻塞） ----------
+
+/// 安装词库（入参为 .ifo 路径或含 .ifo 的目录）；返回 DictInfoView（US-7）
+pub async fn dict_install(path: String) -> std::result::Result<DictInfoView, String> {
+    let mut svc = dict_service()?.lock().map_err(|_| "服务锁错误".to_string())?;
+    let info = svc.install(Path::new(&path)).map_err(err_msg)?;
+    Ok(DictInfoView {
+        id: info.id,
+        name: info.name,
+        word_count: info.word_count,
+        path: info.path,
+    })
+}
+
+/// 移除词库
+pub async fn dict_remove(dict_id: String) -> std::result::Result<(), String> {
+    let mut svc = dict_service()?.lock().map_err(|_| "服务锁错误".to_string())?;
+    svc.remove(&dict_id).map_err(err_msg)
+}
+
+/// 已装词库列表（安装顺序）
+pub async fn dict_list() -> std::result::Result<Vec<DictInfoView>, String> {
+    let svc = dict_service()?.lock().map_err(|_| "服务锁错误".to_string())?;
+    let list = svc.list().map_err(err_msg)?;
+    Ok(list
+        .into_iter()
+        .map(|i| DictInfoView {
+            id: i.id,
+            name: i.name,
+            word_count: i.word_count,
+            path: i.path,
+        })
+        .collect())
+}
+
+/// 查词：Ok(Some(DictEntryView)) 命中 / Ok(None) 未收录（US-2）/ Err（无词库 US-3、损坏 US-6）
+pub async fn dict_lookup(
+    word: String,
+    dict_id: Option<String>,
+) -> std::result::Result<Option<DictEntryView>, String> {
+    let svc = dict_service()?.lock().map_err(|_| "服务锁错误".to_string())?;
+    let entry = svc.lookup(&word, dict_id.as_deref()).map_err(err_msg)?;
+    Ok(entry.map(|e| DictEntryView {
+        word: e.word,
+        phonetic: e.phonetic,
+        pos: e.pos,
+        definition: e.definition,
+        example: e.example,
+    }))
+}
+
+/// 翻译：缓存优先；命中 from_cache=true（US-10/13）；未配置/网络失败给明确错误（US-12）
+pub async fn translate(
+    text: String,
+    from: String,
+    to: String,
+) -> std::result::Result<TranslationView, String> {
+    let from_lang = Lang::parse(&from)
+        .ok_or_else(|| format!("不支持的语言代码: {from}"))?;
+    let to_lang = Lang::parse(&to).ok_or_else(|| format!("不支持的语言代码: {to}"))?;
+    let mut svc = translation_service()?
+        .lock()
+        .map_err(|_| "服务锁错误".to_string())?;
+    let (t, from_cache) = svc.translate_cached(&text, from_lang, to_lang).map_err(err_msg)?;
+    Ok(TranslationView {
+        text: t.text,
+        from: t.from.as_str().to_string(),
+        to: t.to.as_str().to_string(),
+        provider: t.provider,
+        from_cache,
+    })
+}
+
+/// 一键清空翻译缓存（US-13 / docs/04 领域规则4）
+pub async fn translate_cache_clear() -> std::result::Result<(), String> {
+    let mut svc = translation_service()?
+        .lock()
+        .map_err(|_| "服务锁错误".to_string())?;
+    svc.clear_cache().map_err(err_msg)
+}
+
+/// Provider 最小配置通道：写 settings + 对注册 Provider 调 configure
+/// （`translate_set_config("echo", "")` 即无 key 演示，ADR 关联裁定2）
+pub async fn translate_set_config(
+    provider: String,
+    key: String,
+) -> std::result::Result<(), String> {
+    let mut svc = translation_service()?
+        .lock()
+        .map_err(|_| "服务锁错误".to_string())?;
+    svc.set_config(&provider, &key).map_err(err_msg)
 }
 
 // 供 Rust 侧测试引用（避免 dead_code 告警）

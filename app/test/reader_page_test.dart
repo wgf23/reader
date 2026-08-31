@@ -7,6 +7,8 @@ import 'package:reader_app/pages/reader_page.dart';
 import 'fake_backend.dart';
 
 /// 分页模式的 fake 构建器：不实例化真实 WebView
+// REQ-003：typedef 新增可选 onSelectedText（PagedViewBuilder 契约），fake 同步补参数；
+// 断言零改动（既有用例零回归）。
 Widget fakePagedBuilder(
   BuildContext context, {
   required String bookId,
@@ -15,6 +17,7 @@ Widget fakePagedBuilder(
   required dynamic backend,
   required int fontSize,
   required ValueChanged<double> onProgress,
+  ValueChanged<String>? onSelectedText,
 }) {
   return const Center(child: Text('分页模式（fake WebView）'));
 }

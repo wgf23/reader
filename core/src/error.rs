@@ -28,6 +28,17 @@ pub enum Error {
     #[error("尚未实现（P0/P1 里程碑）")]
     NotImplemented,
 
+    /// REQ-003：翻译服务未配置（无 API Key / 未知 Provider），US-12
+    #[error("翻译服务未配置：{0}")]
+    NotConfigured(String),
+
+    /// REQ-003：网络/Provider 调用失败；携带原文本供 UI 重试不丢原文，US-12
+    #[error("网络请求失败：{detail}（原文：{source_text}）")]
+    Network {
+        detail: String,
+        source_text: String,
+    },
+
     #[error("{0}")]
     Other(String),
 }

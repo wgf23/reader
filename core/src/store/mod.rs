@@ -1,6 +1,11 @@
 //! SQLite 存储封装：迁移（user_version）/ WAL / 事务。
 //!
-//! DDL：docs/04-module-design.md §5（books / book_files）；性能：WAL（docs/03 §5）。
+//! DDL：docs/04-module-design.md §5（books / book_files / translation_cache / settings）；
+//! 性能：WAL（docs/03 §5）。REQ-003：`migrate_conn` 为 Store 主连接与 TranslationRepo
+//! 第二连接共用的幂等迁移；`translation.rs` 实现翻译缓存与 Provider 配置仓储。
+
+mod translation;
+pub use translation::TranslationRepo;
 
 use std::path::Path;
 
@@ -11,6 +16,7 @@ use crate::error::{Error, Result};
 /// 数据目录结构：
 ///   <data_dir>/library.db
 ///   <data_dir>/cache/        （规范 EPUB 缓存）
+///   <data_dir>/dicts/        （StarDict 词库安装目录，docs/02 §5）
 pub struct Store {
     conn: Connection,
     data_dir: std::path::PathBuf,
@@ -43,14 +49,15 @@ impl Store {
     pub fn open(data_dir: &Path) -> Result<Store> {
         std::fs::create_dir_all(data_dir).map_err(Error::Io)?;
         std::fs::create_dir_all(data_dir.join("cache")).map_err(Error::Io)?;
+        std::fs::create_dir_all(data_dir.join("dicts")).map_err(Error::Io)?;
         let conn = Connection::open(data_dir.join("library.db")).map_err(Error::from)?;
         conn.execute_batch("PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;")
             .map_err(Error::from)?;
+        migrate_conn(&conn)?;
         let store = Store {
             conn,
             data_dir: data_dir.to_path_buf(),
         };
-        store.migrate()?;
         Ok(store)
     }
 
@@ -58,52 +65,8 @@ impl Store {
         self.data_dir.join("cache")
     }
 
-    fn migrate(&self) -> Result<()> {
-        let version: i64 = self
-            .conn
-            .query_row("PRAGMA user_version", [], |r| r.get(0))
-            .map_err(Error::from)?;
-        if version < 1 {
-            self.conn
-                .execute_batch(
-                    r#"
-CREATE TABLE IF NOT EXISTS books (
-  id            TEXT PRIMARY KEY,
-  title         TEXT NOT NULL,
-  authors       TEXT NOT NULL DEFAULT '[]',
-  language      TEXT,
-  source_path   TEXT NOT NULL,
-  source_hash   TEXT NOT NULL UNIQUE,
-  format        TEXT NOT NULL,
-  added_at      INTEGER NOT NULL,
-  updated_at    INTEGER NOT NULL
-);
-CREATE TABLE IF NOT EXISTS book_files (
-  book_id        TEXT PRIMARY KEY REFERENCES books(id) ON DELETE CASCADE,
-  canonical_path TEXT
-);
-CREATE INDEX IF NOT EXISTS idx_books_hash ON books(source_hash);
-PRAGMA user_version = 1;
-"#,
-                )
-                .map_err(Error::from)?;
-        }
-        if version < 2 {
-            self.conn
-                .execute_batch(
-                    r#"
-CREATE TABLE IF NOT EXISTS reading_progress (
-  book_id     TEXT PRIMARY KEY REFERENCES books(id) ON DELETE CASCADE,
-  href        TEXT NOT NULL,
-  progression REAL NOT NULL,
-  updated_at  INTEGER NOT NULL
-);
-PRAGMA user_version = 2;
-"#,
-                )
-                .map_err(Error::from)?;
-        }
-        Ok(())
+    pub fn dicts_dir(&self) -> std::path::PathBuf {
+        self.data_dir.join("dicts")
     }
 
     /// 保存阅读进度（同一本书一行，UPSERT）
@@ -258,6 +221,78 @@ fn now_unix() -> i64 {
         .duration_since(std::time::UNIX_EPOCH)
         .map(|d| d.as_secs() as i64)
         .unwrap_or(0)
+}
+
+/// 幂等迁移（v1 → v2 → v3）：Store 主连接与 TranslationRepo 第二连接共用（REQ-003 02-design §3）。
+/// v1/v2 分支行为与既有完全一致；v3 追加 translation_cache + settings（docs/04 §5 DDL）。
+pub(crate) fn migrate_conn(conn: &Connection) -> Result<()> {
+    let version: i64 = conn
+        .query_row("PRAGMA user_version", [], |r| r.get(0))
+        .map_err(Error::from)?;
+    if version < 1 {
+        conn.execute_batch(
+            r#"
+CREATE TABLE IF NOT EXISTS books (
+  id            TEXT PRIMARY KEY,
+  title         TEXT NOT NULL,
+  authors       TEXT NOT NULL DEFAULT '[]',
+  language      TEXT,
+  source_path   TEXT NOT NULL,
+  source_hash   TEXT NOT NULL UNIQUE,
+  format        TEXT NOT NULL,
+  added_at      INTEGER NOT NULL,
+  updated_at    INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS book_files (
+  book_id        TEXT PRIMARY KEY REFERENCES books(id) ON DELETE CASCADE,
+  canonical_path TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_books_hash ON books(source_hash);
+PRAGMA user_version = 1;
+"#,
+        )
+        .map_err(Error::from)?;
+    }
+    if version < 2 {
+        conn.execute_batch(
+            r#"
+CREATE TABLE IF NOT EXISTS reading_progress (
+  book_id     TEXT PRIMARY KEY REFERENCES books(id) ON DELETE CASCADE,
+  href        TEXT NOT NULL,
+  progression REAL NOT NULL,
+  updated_at  INTEGER NOT NULL
+);
+PRAGMA user_version = 2;
+"#,
+        )
+        .map_err(Error::from)?;
+    }
+    if version < 3 {
+        // REQ-003（docs/04 §5 翻译缓存 + 设置）：vocabulary 表本期不建（TRANS-04 排除，不占迁移号）
+        conn.execute_batch(
+            r#"
+CREATE TABLE IF NOT EXISTS translation_cache (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  source_text TEXT NOT NULL,
+  from_lang   TEXT NOT NULL,
+  to_lang     TEXT NOT NULL,
+  provider    TEXT NOT NULL,
+  result      TEXT NOT NULL,             -- JSON Translation
+  created_at  INTEGER NOT NULL,
+  hit_count   INTEGER NOT NULL DEFAULT 1
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_tcache
+  ON translation_cache(source_text, from_lang, to_lang, provider);
+CREATE TABLE IF NOT EXISTS settings (    -- Provider key 最小配置通道（ADR 关联裁定3）
+  key   TEXT PRIMARY KEY,
+  value TEXT NOT NULL
+);
+PRAGMA user_version = 3;
+"#,
+        )
+        .map_err(Error::from)?;
+    }
+    Ok(())
 }
 
 #[cfg(test)]

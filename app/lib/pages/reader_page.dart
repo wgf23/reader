@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show SelectedContent;
 
 import '../engines/paged_web_view.dart';
 import '../services/library_backend.dart';
+import '../services/translate_backend.dart';
+import '../widgets/translation_popup.dart';
 
-/// 分页视图构建器（测试注入 fake，避免依赖系统 WebView）
+/// 分页视图构建器（测试注入 fake，避免依赖系统 WebView）。
+/// `onSelectedText` 为 REQ-003 最小选区回传（可选命名参数，既有 fake 构建器零改动）。
 typedef PagedViewBuilder = Widget Function(
   BuildContext context, {
   required String bookId,
@@ -12,23 +16,28 @@ typedef PagedViewBuilder = Widget Function(
   required LibraryBackend backend,
   required int fontSize,
   required ValueChanged<double> onProgress,
+  ValueChanged<String>? onSelectedText,
 });
 
 /// 阅读器页（线框 05）。
-/// - 滚动模式：Flutter Text 渲染纯文本（P0 占位）
-/// - 分页模式：PagedWebView（REQ-001，WebView + CSS 分页）
+/// - 滚动模式：Flutter SelectionArea 渲染纯文本（REQ-003：选中文本 → 翻译/查词入口）
+/// - 分页模式：PagedWebView（REQ-001，WebView + CSS 分页；REQ-003：JS 选区回传）
 class ReaderPage extends StatefulWidget {
   const ReaderPage({
     super.key,
     required this.bookId,
     required this.bookTitle,
     required this.backend,
+    this.translateBackend,
     this.pagedViewBuilder,
   });
 
   final String bookId;
   final String bookTitle;
   final LibraryBackend backend;
+
+  /// REQ-003：词典/翻译后端；null 时隐藏翻译/查词入口（既有测试零回归）
+  final TranslateBackend? translateBackend;
 
   /// 测试注入用；默认构建 PagedWebView
   final PagedViewBuilder? pagedViewBuilder;
@@ -48,6 +57,16 @@ class _ReaderPageState extends State<ReaderPage> {
   int _fontSize = 18;
   String? _error;
   DateTime _lastSave = DateTime.fromMillisecondsSinceEpoch(0);
+
+  // ---- REQ-003 选中/翻译/查词状态 ----
+  String? _selectedText;
+  bool _translating = false;
+  TranslationData? _translation;
+  String? _translationError;
+  bool _lookingUp = false;
+  DictEntryData? _dictEntry;
+  String? _lookupError;
+  bool _lookupAttempted = false;
 
   @override
   void initState() {
@@ -103,6 +122,90 @@ class _ReaderPageState extends State<ReaderPage> {
     final href = 'chapter_${(_chapterIndex + 1).toString().padLeft(4, '0')}.xhtml';
     widget.backend.saveProgress(widget.bookId, href, progression);
   }
+
+  // ==================== REQ-003 选中/翻译/查词 ====================
+
+  /// 统一选中入口：滚动模式（SelectionArea 偏移切片）与分页模式（JS 选区回传）共用。
+  /// 未注入 translateBackend 时忽略（既有行为零回归）。
+  void _onSelectedText(String text) {
+    if (widget.translateBackend == null) return;
+    final trimmed = text.trim();
+    setState(() {
+      _selectedText = trimmed.isEmpty ? null : trimmed;
+      _resetPopups();
+    });
+  }
+
+  void _resetPopups() {
+    _translating = false;
+    _translation = null;
+    _translationError = null;
+    _lookingUp = false;
+    _dictEntry = null;
+    _lookupError = null;
+    _lookupAttempted = false;
+  }
+
+  /// 滚动模式：SelectionArea 回调为 SelectedContent（含 plainText，REQ-003 02-design §5.2）
+  String _sliceSelection(SelectedContent? content) => content?.plainText ?? '';
+
+  Future<void> _doTranslate() async {
+    final backend = widget.translateBackend;
+    final text = _selectedText;
+    if (backend == null || text == null) return;
+    setState(() {
+      _translating = true;
+      _translationError = null;
+      _translation = null;
+    });
+    try {
+      final t = await backend.translate(text);
+      if (!mounted) return;
+      setState(() {
+        _translating = false;
+        _translation = t;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _translating = false;
+        _translationError = '$e';
+      });
+    }
+  }
+
+  Future<void> _doLookup() async {
+    final backend = widget.translateBackend;
+    final text = _selectedText;
+    if (backend == null || text == null) return;
+    setState(() {
+      _lookingUp = true;
+      _lookupError = null;
+      _dictEntry = null;
+      _lookupAttempted = false;
+    });
+    try {
+      final e = await backend.lookup(text);
+      if (!mounted) return;
+      setState(() {
+        _lookingUp = false;
+        _dictEntry = e;
+        _lookupAttempted = true;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _lookingUp = false;
+        _lookupError = '$e';
+        _lookupAttempted = true;
+      });
+    }
+  }
+
+  void _cancelSelection() => setState(() {
+        _selectedText = null;
+        _resetPopups();
+      });
 
   @override
   Widget build(BuildContext context) {
@@ -171,6 +274,17 @@ class _ReaderPageState extends State<ReaderPage> {
             ),
           ),
           const Divider(height: 8),
+          if (_selectedText != null) _buildSelectionToolbar(),
+          if (_translating) _buildLoadingCard('翻译中…'),
+          if (!_translating && _translationError != null)
+            OverlayError(message: _translationError!, onRetry: _doTranslate),
+          if (!_translating && _translation != null)
+            TranslationResultCard(translation: _translation!),
+          if (_lookingUp) _buildLoadingCard('查词中…'),
+          if (!_lookingUp && _lookupError != null)
+            OverlayError(message: _lookupError!, onRetry: _doLookup),
+          if (!_lookingUp && _lookupError == null && _lookupAttempted)
+            DictResultCard(entry: _dictEntry),
           Expanded(child: _buildChapterBody(view, chapter)),
           SafeArea(
             child: Padding(
@@ -202,11 +316,66 @@ class _ReaderPageState extends State<ReaderPage> {
     );
   }
 
+  /// 选中工具条（翻译/查词/取消，US-15/16）
+  Widget _buildSelectionToolbar() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+      child: Row(
+        children: [
+          Flexible(
+            child: Text(
+              '已选中：${_selectedText!.length} 字符',
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
+          const Spacer(),
+          ActionChip(
+            label: const Text('翻译'),
+            onPressed: _doTranslate,
+          ),
+          const SizedBox(width: 8),
+          ActionChip(
+            label: const Text('查词'),
+            onPressed: _doLookup,
+          ),
+          const SizedBox(width: 8),
+          ActionChip(
+            label: const Text('取消'),
+            onPressed: _cancelSelection,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingCard(String label) {
+    return Card(
+      elevation: 3,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+            const SizedBox(width: 10),
+            Text(label, style: Theme.of(context).textTheme.bodyMedium),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildChapterBody(BookViewData view, ChapterData chapter) {
     if (_pagedMode) {
       final builder = widget.pagedViewBuilder ??
-          (context, {required bookId, required href, required html, required backend,
-              required fontSize, required onProgress}) {
+          (context, {required bookId, required href, required html,
+              required backend, required fontSize, required onProgress,
+              onSelectedText}) {
             return PagedWebView(
               key: _pagedKey,
               bookId: bookId,
@@ -215,6 +384,7 @@ class _ReaderPageState extends State<ReaderPage> {
               backend: backend,
               fontSize: fontSize,
               onProgress: onProgress,
+              onSelectedText: onSelectedText,
             );
           };
       return FutureBuilder<String>(
@@ -234,15 +404,19 @@ class _ReaderPageState extends State<ReaderPage> {
             backend: widget.backend,
             fontSize: _fontSize,
             onProgress: _saveProgress,
+            onSelectedText: _onSelectedText,
           );
         },
       );
     }
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 48),
-      child: Text(
-        chapter.text,
-        style: TextStyle(fontSize: _fontSize.toDouble(), height: 1.8),
+      child: SelectionArea(
+        onSelectionChanged: (content) => _onSelectedText(_sliceSelection(content)),
+        child: Text(
+          chapter.text,
+          style: TextStyle(fontSize: _fontSize.toDouble(), height: 1.8),
+        ),
       ),
     );
   }

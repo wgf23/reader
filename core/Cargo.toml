@@ -28,6 +28,10 @@ mobi = "0.8"            # MOBI/AZW3 PDB/PalmDOC/HUFF 内核（REQ-002 已核实 
 regex = "1"
 flutter_rust_bridge = "=2.13.0"   # 桥接（docs/03 §4；版本与 flutter_rust_bridge_codegen 对齐）
 
+# REQ-003 在线翻译 Provider（ADR 决策点4）：ureq blocking + rustls，禁 native-tls/OpenSSL
+# （Android NDK/WSL 交叉编译友好）；json 特性用于 DeepL POST /v2/translate 请求体与响应。
+ureq = { version = "2", default-features = false, features = ["json", "tls"] }
+
 # P0 按需启用（见 docs/02-technical.md §8）：
 # pdfium-render = "0.8"          # PDF 渲染
 # tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
