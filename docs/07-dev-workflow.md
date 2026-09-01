@@ -116,18 +116,24 @@ Orchestrator 是唯一允许写 STATE.md 的角色。此约定保证"长期上�
 | 计划拆分是否有问题（任务缺失/依赖环/估算离谱）？ | 问题清单 | rework-A → 回架构设计 |
 | 需求验收标准是否可实现/可测？ | 歧义清单 | rework-C → 回需求分析 |
 | 是否影响既有功能（回归面）？ | 回归清单 | 并入开发任务 |
+| **实现是否与交互原型图一致？**（`docs/wireframes/**` 是 UI 交互的**权威规范**；涉及 UI 的 REQ 必须指定对应原型图并逐屏对照，禁止对布局/交互自由发挥） | 偏差清单（逐屏：少做/做错/发明新交互） | rework-B → 回架构/UI 设计；偏差须在 03-review 记录并被修复 |
+
+> **教训固化**：凡是涉及页面的 REQ，`02-adr/02-design` 必须引用具体原型图（如
+> `docs/wireframes/reader-ui-v2/*`）；`developer` 严格逐屏实现原型，**不得自创布局**
+> （此前 REQ-001 曾违反自己产出的线框 [REQ-001 教训]）。
 
 **第二步：实现 + 自检循环**
 
 ```
 实现(按 plan 任务) → 单元/集成测试 → CRAP 评分 → DDD 合规 → 不达标 → 重写/重构 → 复评
+                    └─ 逐屏对照原型图（开发自检 + 人工复核）
 ```
 
 | 项 | 内容 |
 |---|---|
 | Agent | `developer`（开发者） |
 | 产物 | 代码（提交）+ `03-crap-report.md` + `03-ddd-report.md` + `03-review.md` |
-| 闸门3 | ① CRAP FAIL=0（§5）；② DDD 违规=0（§6）；③ `cargo test` + Flutter 测试全绿；④ 无未处理 rework |
+| 闸门3 | ① CRAP FAIL=0（§5）；② DDD 违规=0（§6）；③ `cargo test` + Flutter 测试全绿；④ 无未处理 rework；⑤ **原型一致性通过**（orchestrator 逐屏对照 `docs/wireframes/**` 指定的原型图核对实现，deviation=0） |
 
 ### 4.4 阶段 4 · 测试（Testing）
 
