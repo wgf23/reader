@@ -192,7 +192,7 @@ void main() {
     expect(find.byType(TranslationResultCard), findsOneWidget);
   });
 
-  testWidgets('translateBackend 为 null 时隐藏翻译/查词，划重点/笔记/复制仍在（REQ-003 零注入行为）',
+  testWidgets('translateBackend 为 null 时工具条仍显示翻译/查词，点翻译提示未配置（REQ-004 加固）',
       (tester) async {
     await tester.pumpWidget(wrap(ReaderPage(
       bookId: 'b1',
@@ -204,9 +204,14 @@ void main() {
         tester.widget<SelectionArea>(find.byType(SelectionArea));
     selectionArea.onSelectionChanged!(const SelectedContent(plainText: '很久以前'));
     await tester.pumpAndSettle();
-    expect(find.text('翻译'), findsNothing);
-    expect(find.text('查词'), findsNothing);
+    // 翻译/查词无条件显示（避免用户看不到入口）
+    expect(find.text('翻译'), findsOneWidget);
+    expect(find.text('查词'), findsOneWidget);
     expect(find.text('划重点'), findsOneWidget);
     expect(find.text('复制'), findsOneWidget);
+    // 点击翻译 → 提示未配置（而非静默）
+    await tester.tap(find.text('翻译'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('未配置翻译后端'), findsOneWidget);
   });
 }

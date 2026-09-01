@@ -304,7 +304,15 @@ class _ReaderPageState extends State<ReaderPage> {
   Future<void> _doTranslate() async {
     final backend = widget.translateBackend;
     final text = _selectedText;
-    if (backend == null || text == null) return;
+    if (text == null) return;
+    if (backend == null) {
+      setState(() {
+        _translating = false;
+        _translation = null;
+        _translationError = '未配置翻译后端（请检查设置）';
+      });
+      return;
+    }
     setState(() {
       _translating = true;
       _translationError = null;
@@ -329,7 +337,16 @@ class _ReaderPageState extends State<ReaderPage> {
   Future<void> _doLookup() async {
     final backend = widget.translateBackend;
     final text = _selectedText;
-    if (backend == null || text == null) return;
+    if (text == null) return;
+    if (backend == null) {
+      setState(() {
+        _lookingUp = false;
+        _dictEntry = null;
+        _lookupError = '未配置查词后端（请导入词典）';
+        _lookupAttempted = true;
+      });
+      return;
+    }
     setState(() {
       _lookingUp = true;
       _dictEntry = null;
@@ -409,7 +426,6 @@ class _ReaderPageState extends State<ReaderPage> {
                   right: 0,
                   child: Center(child: ReaderSelectionToolbar(
                     onAction: _onSelectionAction,
-                    hasTranslateBackend: widget.translateBackend != null,
                   )),
                 ),
               if (_selectedText != null)

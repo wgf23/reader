@@ -10,13 +10,9 @@ class ReaderSelectionToolbar extends StatelessWidget {
   const ReaderSelectionToolbar({
     super.key,
     required this.onAction,
-    this.hasTranslateBackend = true,
   });
 
   final ValueChanged<SelectionAction> onAction;
-
-  /// translateBackend==null 时隐藏 翻译/查词（REQ-003 零注入行为不变；划重点/笔记/复制仍在）
-  final bool hasTranslateBackend;
 
   @override
   Widget build(BuildContext context) {
@@ -29,10 +25,8 @@ class ReaderSelectionToolbar extends StatelessWidget {
         children: [
           _btn('划重点', Icons.border_color, SelectionAction.highlight),
           _btn('笔记', Icons.edit_note, SelectionAction.note, withColorDots: true),
-          if (hasTranslateBackend) ...[
-            _btn('翻译', Icons.translate, SelectionAction.translate),
-            _btn('查词', Icons.abc, SelectionAction.lookup),
-          ],
+          _btn('翻译', Icons.translate, SelectionAction.translate),
+          _btn('查词', Icons.abc, SelectionAction.lookup),
           _btn('复制', Icons.copy, SelectionAction.copy),
         ],
       ),
