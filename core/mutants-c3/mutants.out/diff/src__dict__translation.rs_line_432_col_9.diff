@@ -1,0 +1,21 @@
+--- src/dict/translation.rs
++++ replace TranslationService::clear_cache -> Result<()> with Ok(())
+@@ -424,17 +424,17 @@
+     }
+ 
+     /// 翻译（薄包装，保持 02-design §2.4 签名）
+     pub fn translate(&mut self, text: &str, from: Lang, to: Lang) -> Result<Translation> {
+         self.translate_cached(text, from, to).map(|(t, _)| t)
+     }
+ 
+     pub fn clear_cache(&mut self) -> Result<()> {
+-        self.cache.cache_clear()
++        Ok(()) /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     /// 写 settings（set_provider_key + set_default_provider）并对注册 Provider 调 configure
+     /// （ADR 关联裁定2：`translate_set_config("echo","")` 切 echo 即无 key 演示）
+     pub fn set_config(&mut self, provider: &str, key: &str) -> Result<()> {
+         self.config.set_provider_key(provider, key)?;
+         self.config.set_default_provider(provider)?;
+         for p in &mut self.providers {

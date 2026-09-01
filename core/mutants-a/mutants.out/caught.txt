@@ -1,0 +1,8 @@
+src/dict/stardict.rs:52:13: delete match arm "idxfilesize" in parse_ifo
+src/dict/stardict.rs:55:13: delete match arm "sametypesequence" in parse_ifo
+src/dict/stardict.rs:79:5: replace load_idx -> Result<Vec<IdxEntry>> with Ok(vec![])
+src/dict/stardict.rs:81:15: replace < with == in load_idx
+src/dict/stardict.rs:81:15: replace < with > in load_idx
+src/dict/stardict.rs:49:13: delete match arm "wordcount" in parse_ifo
+src/dict/stardict.rs:81:15: replace < with <= in load_idx
+src/dict/stardict.rs:110:26: replace + with * in load_idx

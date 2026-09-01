@@ -1,0 +1,34 @@
+--- src/dict/translation.rs
++++ replace normalize_text -> String with String::new()
+@@ -443,30 +443,17 @@
+             }
+         }
+         Ok(())
+     }
+ }
+ 
+ /// 连续空白折叠为单空格并 trim（US-9 跨行自动合并）
+ pub fn normalize_text(s: &str) -> String {
+-    let mut out = String::with_capacity(s.len());
+-    let mut last_ws = false;
+-    for c in s.chars() {
+-        if c.is_whitespace() {
+-            if !out.is_empty() && !last_ws {
+-                out.push(' ');
+-            }
+-            last_ws = true;
+-        } else {
+-            out.push(c);
+-            last_ws = false;
+-        }
+-    }
+-    out.trim().to_string()
++    String::new() /* ~ changed by cargo-mutants ~ */
+ }
+ 
+ fn now_unix() -> i64 {
+     std::time::SystemTime::now()
+         .duration_since(std::time::UNIX_EPOCH)
+         .map(|d| d.as_secs() as i64)
+         .unwrap_or(0)
+ }

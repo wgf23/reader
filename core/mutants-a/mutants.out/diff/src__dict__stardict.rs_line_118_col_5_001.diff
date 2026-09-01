@@ -1,0 +1,48 @@
+--- src/dict/stardict.rs
++++ replace lookup_entry -> Option<&'a IdxEntry> with Some(Box::leak(Box::new(Default::default())))
+@@ -110,44 +110,17 @@
+         pos = tail_start + 8;
+     }
+     Ok(out)
+ }
+ 
+ /// 查词：二分精确命中；未中则线性扫描做"首字母大小写归一 / 全小写 / 忽略大小写"匹配
+ /// （US-5；n≤10^5 实测 <1ms）。
+ pub(crate) fn lookup_entry<'a>(idx: &'a [IdxEntry], word: &str) -> Option<&'a IdxEntry> {
+-    if let Ok(found) = idx.binary_search_by(|e| e.word.as_bytes().cmp(word.as_bytes())) {
+-        return Some(&idx[found]);
+-    }
+-    // 线性扫描归一匹配
+-    let lower = word.to_lowercase();
+-    let mut first_flipped = String::new();
+-    if let Some(c) = word.chars().next() {
+-        if c.is_ascii_alphabetic() {
+-            let mut s = word.to_string();
+-            let rep = if c.is_ascii_lowercase() {
+-                c.to_ascii_uppercase()
+-            } else {
+-                c.to_ascii_lowercase()
+-            };
+-            s.replace_range(0..c.len_utf8(), &rep.to_string());
+-            first_flipped = s;
+-        }
+-    }
+-    for e in idx {
+-        if e.word == word
+-            || e.word == lower
+-            || (!first_flipped.is_empty() && e.word == first_flipped)
+-            || e.word.eq_ignore_ascii_case(word)
+-        {
+-            return Some(e);
+-        }
+-    }
+-    None
++    Some(Box::leak(Box::new(Default::default()))) /* ~ changed by cargo-mutants ~ */
+ }
+ 
+ /// 按 sametypesequence 解析 .dict 区段（offset..offset+size）：
+ /// 类型码 t→phonetic、m→definition(纯文本)、g→definition(HTML)、x→example；
+ /// 未知类型码读到 \0 跳过（末字段读到区段尾）；区段越界/截断 → Err(Corrupt)。
+ /// sametypesequence 为空（旧格式）时：每个字段为 [类型码][数据]\0。
+ pub(crate) fn parse_entry(seq: &[u8], dict_bytes: &[u8], e: &IdxEntry) -> Result<DictEntry> {
+     let start = e.offset as usize;

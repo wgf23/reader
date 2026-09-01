@@ -1,0 +1,32 @@
+--- src/dict/provider.rs
++++ replace deepl_code -> &'static str with "xyzzy"
+@@ -89,28 +89,17 @@
+             to,
+             provider: self.name().to_string(),
+         })
+     }
+ }
+ 
+ /// DeepL 语言代码（大写）："en"→"EN"、"zh"→"ZH"…
+ fn deepl_code(l: Lang) -> &'static str {
+-    match l {
+-        Lang::Auto => "EN", // 不会被使用（Auto 分支不传 source_lang）
+-        Lang::En => "EN",
+-        Lang::Zh => "ZH",
+-        Lang::Ja => "JA",
+-        Lang::Ko => "KO",
+-        Lang::Fr => "FR",
+-        Lang::De => "DE",
+-        Lang::Es => "ES",
+-        Lang::Ru => "RU",
+-        Lang::Other(s) => s,
+-    }
++    "xyzzy" /* ~ changed by cargo-mutants ~ */
+ }
+ 
+ // ---------- 测试用 Provider（cfg(test)，服务层单测注入用） ----------
+ 
+ /// 计数 + 参数记录 Provider（US-9/10/11 的 mock 计数与参数断言锚点）
+ #[cfg(test)]
+ pub(crate) struct CountingProvider {
+     pub calls: std::cell::Cell<u32>,

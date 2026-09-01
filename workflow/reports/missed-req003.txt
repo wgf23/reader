@@ -1,0 +1,44 @@
+# REQ-003 存活变异体清单（rework-D 分析输入）
+## A 片 stardict.rs（40/95 评估，55 未评估-环境限制）
+src/dict/stardict.rs:139:13: replace || with && in lookup_entry
+src/dict/stardict.rs:138:13: replace || with && in lookup_entry
+## B 片 provider.rs + mod.rs（21 全）
+src/dict/mod.rs:80:13: delete match arm '<' in strip_html_tags
+src/dict/mod.rs:81:20: replace match guard in_tag with true in strip_html_tags
+src/dict/mod.rs:82:18: replace match guard !in_tag with true in strip_html_tags
+src/dict/provider.rs:42:17: replace != with == in <impl TranslationProvider for DeepLProvider>::translate
+src/dict/provider.rs:97:5: replace deepl_code -> &'static str with ""
+src/dict/provider.rs:97:5: replace deepl_code -> &'static str with "xyzzy"
+## C 片 translation.rs（72 全）
+src/dict/translation.rs:50:9: replace DictService::scan_existing with ()
+src/dict/translation.rs:121:25: replace != with == in DictService::install
+src/dict/translation.rs:272:15: replace += with -= in DictService::unique_id
+src/dict/translation.rs:272:15: replace += with *= in DictService::unique_id
+src/dict/translation.rs:279:5: replace find_ifo_in -> Option<PathBuf> with None
+src/dict/translation.rs:279:5: replace find_ifo_in -> Option<PathBuf> with Some(Default::default())
+src/dict/translation.rs:282:60: replace == with != in find_ifo_in
+src/dict/translation.rs:290:5: replace dict_stem -> String with String::new()
+src/dict/translation.rs:290:5: replace dict_stem -> String with "xyzzy".into()
+src/dict/translation.rs:323:5: replace sanitize_id -> String with String::new()
+src/dict/translation.rs:323:5: replace sanitize_id -> String with "xyzzy".into()
+src/dict/translation.rs:326:54: replace || with && in sanitize_id
+src/dict/translation.rs:326:42: replace || with && in sanitize_id
+src/dict/translation.rs:326:47: replace == with != in sanitize_id
+src/dict/translation.rs:326:59: replace == with != in sanitize_id
+src/dict/translation.rs:336:16: replace > with == in sanitize_id
+src/dict/translation.rs:336:16: replace > with < in sanitize_id
+src/dict/translation.rs:336:16: replace > with >= in sanitize_id
+src/dict/translation.rs:340:20: replace < with == in sanitize_id
+src/dict/translation.rs:340:20: replace < with > in sanitize_id
+src/dict/translation.rs:340:20: replace < with <= in sanitize_id
+src/dict/translation.rs:348:5: replace fnv32 -> u32 with 0
+src/dict/translation.rs:348:5: replace fnv32 -> u32 with 1
+src/dict/translation.rs:350:11: replace ^= with |= in fnv32
+src/dict/translation.rs:350:11: replace ^= with &= in fnv32
+src/dict/translation.rs:441:25: replace == with != in TranslationService::set_config
+src/dict/translation.rs:468:5: replace now_unix -> i64 with 0
+src/dict/translation.rs:468:5: replace now_unix -> i64 with 1
+src/dict/translation.rs:468:5: replace now_unix -> i64 with -1
+## D 片 store/translation.rs（18 全）
+src/store/translation.rs:38:9: replace TranslationRepo::provider_key_setting -> String with "xyzzy".into()
+src/store/translation.rs:38:9: replace TranslationRepo::provider_key_setting -> String with String::new()

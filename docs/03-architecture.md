@@ -150,6 +150,19 @@ fn settings_get() -> Result<Settings>;
 fn settings_set(patch: SettingsPatch) -> Result<()>;
 ```
 
+**dict / translate（REQ-003 已实现，async 桥接）**
+```rust
+async fn dict_install(path: String) -> Result<()>;              // 安装 StarDict 词库（.ifo/.idx/.dict(.dz)）
+async fn dict_remove(name: String) -> Result<()>;
+async fn dict_list() -> Result<Vec<DictInfo>>;
+async fn dict_lookup(word: String) -> Result<Option<DictEntry>>; // 离线查词，多词库首命中
+async fn translate(text: String, from: Lang, to: Lang) -> Result<Translation>; // 缓存优先；失败带原文
+async fn translate_cache_clear() -> Result<()>;                 // 隐私：清空翻译缓存
+async fn translate_set_config(cfg: ProviderConfig) -> Result<()>; // Provider key/开关
+```
+- 分层：契约类型与 `TranslationCacheRepository` trait 在 `core/src/types.rs`（共享内核）；`store/translation.rs` 实现；装配在 `api.rs` 的 `library_open`（双单例注入）；dict/translation 属 domain 层，不直接依赖 store（经 trait），满足 ddd-rules。
+- 异步方案（ADR）：core 内同步（ureq HTTP、rustls），async 由 flutter_rust_bridge 桥接层承载，core 不引入 tokio。
+
 ---
 
 ## 5. 线程与并发模型

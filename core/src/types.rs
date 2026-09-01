@@ -5,6 +5,8 @@
 
 use serde::{Deserialize, Serialize};
 
+use crate::error::Result;
+
 /// 书籍标识（uuid 字符串）
 pub type BookId = String;
 
@@ -58,6 +60,120 @@ pub struct BookMeta {
     pub authors: Vec<String>,
     pub language: Option<String>,
     // TODO(P0): cover / toc / spine
+}
+
+// ===================== REQ-003 · 翻译上下文（共享内核 + 跨层契约） =====================
+// 契约与载荷类型落共享内核的原因见 ADR REQ-003 决策点3：
+// ddd-lint 对 infrastructure 层（core/src/store）禁 `crate::dict` 等业务模块、不禁
+// `crate::types`；规则表冻结零改动 → store 实现契约必须只依赖本文件。
+
+/// 语言（翻译语言对；桥接层用字符串 "en"/"zh"/"auto"… 经 `as_str`/`parse` 互转）。
+/// `Auto` 表示自动检测（UI 默认 from='auto'；DeepL 请求省略 source_lang）。
+/// serde 手写（`Other(&'static str)` 无法派生 Deserialize），序列化为语言代码字符串。
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Lang {
+    Auto,
+    En,
+    Zh,
+    Ja,
+    Ko,
+    Fr,
+    De,
+    Es,
+    Ru,
+    Other(&'static str),
+}
+
+impl Lang {
+    pub fn as_str(&self) -> &str {
+        match self {
+            Lang::Auto => "auto",
+            Lang::En => "en",
+            Lang::Zh => "zh",
+            Lang::Ja => "ja",
+            Lang::Ko => "ko",
+            Lang::Fr => "fr",
+            Lang::De => "de",
+            Lang::Es => "es",
+            Lang::Ru => "ru",
+            Lang::Other(s) => s,
+        }
+    }
+
+    /// 未知代码 → None（api 层映射为 `Err(Other("不支持的语言代码: …"))`）
+    pub fn parse(s: &str) -> Option<Lang> {
+        match s.to_ascii_lowercase().as_str() {
+            "auto" => Some(Lang::Auto),
+            "en" => Some(Lang::En),
+            "zh" => Some(Lang::Zh),
+            "ja" => Some(Lang::Ja),
+            "ko" => Some(Lang::Ko),
+            "fr" => Some(Lang::Fr),
+            "de" => Some(Lang::De),
+            "es" => Some(Lang::Es),
+            "ru" => Some(Lang::Ru),
+            _ => None,
+        }
+    }
+}
+
+impl serde::Serialize for Lang {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> std::result::Result<S::Ok, S::Error> {
+        s.serialize_str(self.as_str())
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for Lang {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> std::result::Result<Lang, D::Error> {
+        let s = String::deserialize(d)?;
+        Ok(Lang::parse(&s).unwrap_or(Lang::Other("other")))
+    }
+}
+
+/// 译文值对象（translation_cache.result 列的 JSON 载荷；docs/04 §5）
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Translation {
+    pub text: String,
+    pub from: Lang,
+    pub to: Lang,
+    pub provider: String,
+}
+
+/// 缓存键：(原文归一化, 语言对, Provider) —— docs/04 §5 唯一索引语义
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct CacheKey {
+    pub source_text: String,
+    pub from_lang: Lang,
+    pub to_lang: Lang,
+    pub provider: String,
+}
+
+/// 缓存行（translation_cache 表）
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CacheEntry {
+    pub key: CacheKey,
+    pub result: Translation,
+    pub created_at: i64, // unix 秒
+    pub hit_count: u64,
+}
+
+/// 翻译缓存仓储契约（domain 契约 → infrastructure 实现 → interface 装配注入）。
+/// 实现见 `core/src/store/translation.rs`（TranslationRepo）。
+pub trait TranslationCacheRepository {
+    fn cache_get(&self, key: &CacheKey) -> Result<Option<CacheEntry>>;
+    fn cache_put(&mut self, entry: &CacheEntry) -> Result<()>; // UPSERT，不重置 hit_count
+    fn cache_incr_hit(&mut self, key: &CacheKey) -> Result<()>; // 命中 +1
+    fn cache_clear(&mut self) -> Result<()>;
+    fn cache_count(&self) -> Result<u64>; // US-13 行数断言
+}
+
+/// Provider 凭据/默认路由契约（settings 表等价通道；docs/04 §5 settings 表）。
+/// 键约定：`translate.default_provider`（默认 "deepl"）、`translate.key.<provider>`。
+pub trait ProviderConfig {
+    fn default_provider(&self) -> Result<String>;
+    fn provider_key(&self, provider: &str) -> Result<Option<String>>; // None → 未配置
+    fn set_provider_key(&mut self, provider: &str, key: &str) -> Result<()>;
+    fn set_default_provider(&mut self, provider: &str) -> Result<()>;
 }
 
 // TODO(P0): TextSelection / NoteKind / Settings / DictEntry / Translation …

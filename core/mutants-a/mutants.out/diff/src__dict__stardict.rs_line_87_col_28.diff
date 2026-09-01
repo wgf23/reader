@@ -1,0 +1,21 @@
+--- src/dict/stardict.rs
++++ replace + with - in load_idx
+@@ -79,17 +79,17 @@
+     let mut out = Vec::new();
+     let mut pos = 0usize;
+     while pos < idx_bytes.len() {
+         // 尾部全 0 视为填充忽略（部分工具生成的 idx 带对齐 padding）
+         if idx_bytes[pos..].iter().all(|&b| b == 0) {
+             break;
+         }
+         let nul = match idx_bytes[pos..].iter().position(|&b| b == 0) {
+-            Some(n) => pos + n,
++            Some(n) => pos - /* ~ changed by cargo-mutants ~ */ n,
+             None => {
+                 return Err(Error::Corrupt("词库 .idx 条目缺少 word 终止符（截断）".into()));
+             }
+         };
+         let word = String::from_utf8_lossy(&idx_bytes[pos..nul]).into_owned();
+         let tail_start = nul + 1;
+         if tail_start + 8 > idx_bytes.len() {
+             return Err(Error::Corrupt("词库 .idx 条目偏移/长度字段截断".into()));

@@ -1,0 +1,54 @@
+--- src/dict/stardict.rs
++++ replace load_idx -> Result<Vec<IdxEntry>> with Ok(vec![Default::default()])
+@@ -71,50 +71,17 @@
+         sametypesequence,
+     })
+ }
+ 
+ /// 加载 .idx 全量入内存（langdao 级 ~1-2MB；保存原序）。
+ /// 条目格式：word(UTF-8) \0 + offset(u32 BE) + size(u32 BE)。
+ /// 尾部残字节：全 0 视为填充忽略；非 0 残片 → Corrupt（.idx 截断，US-6）。
+ pub(crate) fn load_idx(idx_bytes: &[u8]) -> Result<Vec<IdxEntry>> {
+-    let mut out = Vec::new();
+-    let mut pos = 0usize;
+-    while pos < idx_bytes.len() {
+-        // 尾部全 0 视为填充忽略（部分工具生成的 idx 带对齐 padding）
+-        if idx_bytes[pos..].iter().all(|&b| b == 0) {
+-            break;
+-        }
+-        let nul = match idx_bytes[pos..].iter().position(|&b| b == 0) {
+-            Some(n) => pos + n,
+-            None => {
+-                return Err(Error::Corrupt("词库 .idx 条目缺少 word 终止符（截断）".into()));
+-            }
+-        };
+-        let word = String::from_utf8_lossy(&idx_bytes[pos..nul]).into_owned();
+-        let tail_start = nul + 1;
+-        if tail_start + 8 > idx_bytes.len() {
+-            return Err(Error::Corrupt("词库 .idx 条目偏移/长度字段截断".into()));
+-        }
+-        let offset = u32::from_be_bytes([
+-            idx_bytes[tail_start],
+-            idx_bytes[tail_start + 1],
+-            idx_bytes[tail_start + 2],
+-            idx_bytes[tail_start + 3],
+-        ]);
+-        let size = u32::from_be_bytes([
+-            idx_bytes[tail_start + 4],
+-            idx_bytes[tail_start + 5],
+-            idx_bytes[tail_start + 6],
+-            idx_bytes[tail_start + 7],
+-        ]);
+-        out.push(IdxEntry { word, offset, size });
+-        pos = tail_start + 8;
+-    }
+-    Ok(out)
++    Ok(vec![Default::default()]) /* ~ changed by cargo-mutants ~ */
+ }
+ 
+ /// 查词：二分精确命中；未中则线性扫描做"首字母大小写归一 / 全小写 / 忽略大小写"匹配
+ /// （US-5；n≤10^5 实测 <1ms）。
+ pub(crate) fn lookup_entry<'a>(idx: &'a [IdxEntry], word: &str) -> Option<&'a IdxEntry> {
+     if let Ok(found) = idx.binary_search_by(|e| e.word.as_bytes().cmp(word.as_bytes())) {
+         return Some(&idx[found]);
+     }

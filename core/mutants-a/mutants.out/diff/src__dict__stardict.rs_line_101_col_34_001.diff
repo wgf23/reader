@@ -1,0 +1,21 @@
+--- src/dict/stardict.rs
++++ replace + with * in load_idx
+@@ -93,17 +93,17 @@
+         let tail_start = nul + 1;
+         if tail_start + 8 > idx_bytes.len() {
+             return Err(Error::Corrupt("词库 .idx 条目偏移/长度字段截断".into()));
+         }
+         let offset = u32::from_be_bytes([
+             idx_bytes[tail_start],
+             idx_bytes[tail_start + 1],
+             idx_bytes[tail_start + 2],
+-            idx_bytes[tail_start + 3],
++            idx_bytes[tail_start * /* ~ changed by cargo-mutants ~ */ 3],
+         ]);
+         let size = u32::from_be_bytes([
+             idx_bytes[tail_start + 4],
+             idx_bytes[tail_start + 5],
+             idx_bytes[tail_start + 6],
+             idx_bytes[tail_start + 7],
+         ]);
+         out.push(IdxEntry { word, offset, size });

@@ -1,0 +1,21 @@
+--- src/dict/stardict.rs
++++ replace + with - in load_idx
+@@ -102,17 +102,17 @@
+         ]);
+         let size = u32::from_be_bytes([
+             idx_bytes[tail_start + 4],
+             idx_bytes[tail_start + 5],
+             idx_bytes[tail_start + 6],
+             idx_bytes[tail_start + 7],
+         ]);
+         out.push(IdxEntry { word, offset, size });
+-        pos = tail_start + 8;
++        pos = tail_start - /* ~ changed by cargo-mutants ~ */ 8;
+     }
+     Ok(out)
+ }
+ 
+ /// 查词：二分精确命中；未中则线性扫描做"首字母大小写归一 / 全小写 / 忽略大小写"匹配
+ /// （US-5；n≤10^5 实测 <1ms）。
+ pub(crate) fn lookup_entry<'a>(idx: &'a [IdxEntry], word: &str) -> Option<&'a IdxEntry> {
+     if let Ok(found) = idx.binary_search_by(|e| e.word.as_bytes().cmp(word.as_bytes())) {

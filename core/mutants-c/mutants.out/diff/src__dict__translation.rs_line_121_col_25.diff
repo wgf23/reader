@@ -1,0 +1,21 @@
+--- src/dict/translation.rs
++++ replace != with == in DictService::install
+@@ -113,17 +113,17 @@
+                 idx_path.display()
+             ))
+         })?;
+         // 校验 .idx 可完整解析（截断 → Corrupt，US-6）
+         let idx = stardict::load_idx(&idx_bytes).map_err(|e| {
+             Error::Corrupt(format!("词库 .idx 损坏: {e}"))
+         })?;
+         if let Some(expected) = meta.idxfilesize {
+-            if expected != idx_bytes.len() as u64 {
++            if expected == /* ~ changed by cargo-mutants ~ */ idx_bytes.len() as u64 {
+                 log::warn!(
+                     "词库 {} 的 idxfilesize 声明 {} 与实际 {} 不一致",
+                     meta.bookname,
+                     expected,
+                     idx_bytes.len()
+                 );
+             }
+         }

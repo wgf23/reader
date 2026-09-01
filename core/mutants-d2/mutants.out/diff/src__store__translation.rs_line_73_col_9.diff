@@ -1,0 +1,40 @@
+--- src/store/translation.rs
++++ replace <impl TranslationCacheRepository for TranslationRepo>::cache_put -> Result<()> with Ok(())
+@@ -65,36 +65,17 @@
+             key: key.clone(),
+             result,
+             created_at,
+             hit_count: hit_count as u64,
+         }))
+     }
+ 
+     fn cache_put(&mut self, entry: &CacheEntry) -> Result<()> {
+-        let result_json = serde_json::to_string(&entry.result)
+-            .map_err(|e| Error::Other(format!("译文序列化失败: {e}")))?;
+-        self.conn
+-            .execute(
+-                "INSERT INTO translation_cache (source_text,from_lang,to_lang,provider,result,created_at,hit_count)
+-                 VALUES (?1,?2,?3,?4,?5,?6,?7)
+-                 ON CONFLICT(source_text,from_lang,to_lang,provider)
+-                 DO UPDATE SET result=excluded.result, created_at=excluded.created_at",
+-                params![
+-                    entry.key.source_text,
+-                    entry.key.from_lang.as_str(),
+-                    entry.key.to_lang.as_str(),
+-                    entry.key.provider,
+-                    result_json,
+-                    entry.created_at,
+-                    entry.hit_count as i64
+-                ],
+-            )
+-            .map_err(Error::from)?;
+-        Ok(())
++        Ok(()) /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     fn cache_incr_hit(&mut self, key: &CacheKey) -> Result<()> {
+         self.conn
+             .execute(
+                 "UPDATE translation_cache SET hit_count = hit_count + 1
+                  WHERE source_text=?1 AND from_lang=?2 AND to_lang=?3 AND provider=?4",
+                 params![

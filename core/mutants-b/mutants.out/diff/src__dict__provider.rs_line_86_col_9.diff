@@ -1,0 +1,26 @@
+--- src/dict/provider.rs
++++ replace <impl TranslationProvider for EchoProvider>::translate -> Result<Translation> with Ok(Default::default())
+@@ -78,22 +78,17 @@
+ pub struct EchoProvider;
+ 
+ impl TranslationProvider for EchoProvider {
+     fn name(&self) -> &str {
+         "echo"
+     }
+ 
+     fn translate(&self, text: &str, from: Lang, to: Lang) -> Result<Translation> {
+-        Ok(Translation {
+-            text: format!("译文:{text}"),
+-            from,
+-            to,
+-            provider: self.name().to_string(),
+-        })
++        Ok(Default::default()) /* ~ changed by cargo-mutants ~ */
+     }
+ }
+ 
+ /// DeepL 语言代码（大写）："en"→"EN"、"zh"→"ZH"…
+ fn deepl_code(l: Lang) -> &'static str {
+     match l {
+         Lang::Auto => "EN", // 不会被使用（Auto 分支不传 source_lang）
+         Lang::En => "EN",

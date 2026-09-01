@@ -1,0 +1,2 @@
+src/dict/stardict.rs:139:13: replace || with && in lookup_entry
+src/dict/stardict.rs:138:13: replace || with && in lookup_entry

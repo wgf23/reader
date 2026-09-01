@@ -1,0 +1,21 @@
+--- src/dict/stardict.rs
++++ replace < with <= in load_idx
+@@ -73,17 +73,17 @@
+ }
+ 
+ /// 加载 .idx 全量入内存（langdao 级 ~1-2MB；保存原序）。
+ /// 条目格式：word(UTF-8) \0 + offset(u32 BE) + size(u32 BE)。
+ /// 尾部残字节：全 0 视为填充忽略；非 0 残片 → Corrupt（.idx 截断，US-6）。
+ pub(crate) fn load_idx(idx_bytes: &[u8]) -> Result<Vec<IdxEntry>> {
+     let mut out = Vec::new();
+     let mut pos = 0usize;
+-    while pos < idx_bytes.len() {
++    while pos <= /* ~ changed by cargo-mutants ~ */ idx_bytes.len() {
+         // 尾部全 0 视为填充忽略（部分工具生成的 idx 带对齐 padding）
+         if idx_bytes[pos..].iter().all(|&b| b == 0) {
+             break;
+         }
+         let nul = match idx_bytes[pos..].iter().position(|&b| b == 0) {
+             Some(n) => pos + n,
+             None => {
+                 return Err(Error::Corrupt("词库 .idx 条目缺少 word 终止符（截断）".into()));

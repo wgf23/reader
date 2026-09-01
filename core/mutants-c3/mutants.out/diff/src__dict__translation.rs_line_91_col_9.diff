@@ -1,0 +1,97 @@
+--- src/dict/translation.rs
++++ replace DictService::install -> Result<DictInfo> with Ok(Default::default())
+@@ -83,93 +83,17 @@
+             idx_bytes,
+             dict_file,
+         })
+     }
+ 
+     /// 安装词库：校验三件套 → 拷贝 → .dz 流式解压落盘 → 注册（幂等）。
+     /// 入参为 `.ifo` 文件路径（或含 .ifo 的目录）；坏词库 → Err(Corrupt)，已装列表不受影响。
+     pub fn install(&mut self, path: &Path) -> Result<DictInfo> {
+-        let ifo_path = if path.is_dir() {
+-            find_ifo_in(path)
+-                .ok_or_else(|| Error::Corrupt(format!("目录内未找到 .ifo: {}", path.display())))?
+-        } else {
+-            path.to_path_buf()
+-        };
+-        let meta = stardict::parse_ifo(&ifo_path)?;
+-        // 幂等：同名（bookname）词库已注册 → 返回既有（不重复注册；US-7）
+-        if let Some(existing) = self
+-            .registry
+-            .iter()
+-            .find(|ld| ld.info.name == meta.bookname)
+-        {
+-            return Ok(existing.info.clone());
+-        }
+-        let id = self.unique_id(&meta.bookname);
+-
+-        let base = strip_ifo(&ifo_path);
+-        let idx_path = PathBuf::from(format!("{}.idx", base.display()));
+-        let idx_bytes = std::fs::read(&idx_path).map_err(|e| {
+-            Error::Corrupt(format!(
+-                "词库 .idx 缺失或不可读: {} ({e})",
+-                idx_path.display()
+-            ))
+-        })?;
+-        // 校验 .idx 可完整解析（截断 → Corrupt，US-6）
+-        let idx = stardict::load_idx(&idx_bytes).map_err(|e| {
+-            Error::Corrupt(format!("词库 .idx 损坏: {e}"))
+-        })?;
+-        if let Some(expected) = meta.idxfilesize {
+-            if expected != idx_bytes.len() as u64 {
+-                log::warn!(
+-                    "词库 {} 的 idxfilesize 声明 {} 与实际 {} 不一致",
+-                    meta.bookname,
+-                    expected,
+-                    idx_bytes.len()
+-                );
+-            }
+-        }
+-        // .dict 或 .dict.dz 至少存在其一
+-        let dict_src = dict_path_of(&base).ok_or_else(|| {
+-            Error::Corrupt(format!("词库缺少 .dict/.dict.dz: {}", base.display()))
+-        })?;
+-
+-        // 落盘到 <dicts_dir>/<id>/
+-        let target_dir = self.dicts_dir.join(&id);
+-        std::fs::create_dir_all(&target_dir).map_err(Error::Io)?;
+-        let target_ifo = target_dir.join(format!("{id}.ifo"));
+-        let target_idx = target_dir.join(format!("{id}.idx"));
+-        let target_dict = target_dir.join(format!("{id}.dict"));
+-        std::fs::copy(&ifo_path, &target_ifo).map_err(Error::Io)?;
+-        std::fs::copy(&idx_path, &target_idx).map_err(Error::Io)?;
+-        if dict_src.extension().and_then(|e| e.to_str()) == Some("dz") {
+-            // .dict.dz：流式解压落盘（ADR 关联裁定5）
+-            stardict::decompress_dz(&dict_src, &target_dict)?;
+-        } else {
+-            std::fs::copy(&dict_src, &target_dict).map_err(Error::Io)?;
+-        }
+-
+-        let info = DictInfo {
+-            id: id.clone(),
+-            name: meta.bookname.clone(),
+-            word_count: meta.wordcount,
+-            path: target_dir.display().to_string(),
+-        };
+-        self.registry.push(LoadedDict {
+-            info: info.clone(),
+-            ifo: meta,
+-            idx: {
+-                let cell = OnceCell::new();
+-                let _ = cell.set(Ok(idx));
+-                cell
+-            },
+-            idx_bytes,
+-            dict_file: File::open(&target_dict).ok(),
+-        });
+-        Ok(info)
++        Ok(Default::default()) /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     /// 移除词库：删目录 + 注销；未注册 → Err(NotFound)。
+     pub fn remove(&mut self, dict_id: &str) -> Result<()> {
+         let pos = self
+             .registry
+             .iter()
+             .position(|ld| ld.info.id == dict_id)

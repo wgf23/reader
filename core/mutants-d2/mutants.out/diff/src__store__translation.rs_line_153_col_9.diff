@@ -1,0 +1,21 @@
+--- src/store/translation.rs
++++ replace <impl ProviderConfig for TranslationRepo>::set_provider_key -> Result<()> with Ok(())
+@@ -145,17 +145,17 @@
+                 params![Self::provider_key_setting(provider)],
+                 |r| r.get(0),
+             )
+             .optional()
+             .map_err(Error::from)
+     }
+ 
+     fn set_provider_key(&mut self, provider: &str, key: &str) -> Result<()> {
+-        upsert_setting(&self.conn, &Self::provider_key_setting(provider), key)
++        Ok(()) /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     fn set_default_provider(&mut self, provider: &str) -> Result<()> {
+         upsert_setting(&self.conn, KEY_DEFAULT_PROVIDER, provider)
+     }
+ }
+ 
+ fn upsert_setting(conn: &Connection, key: &str, value: &str) -> Result<()> {

@@ -1,0 +1,21 @@
+--- src/dict/stardict.rs
++++ replace + with - in load_idx
+@@ -96,17 +96,17 @@
+         }
+         let offset = u32::from_be_bytes([
+             idx_bytes[tail_start],
+             idx_bytes[tail_start + 1],
+             idx_bytes[tail_start + 2],
+             idx_bytes[tail_start + 3],
+         ]);
+         let size = u32::from_be_bytes([
+-            idx_bytes[tail_start + 4],
++            idx_bytes[tail_start - /* ~ changed by cargo-mutants ~ */ 4],
+             idx_bytes[tail_start + 5],
+             idx_bytes[tail_start + 6],
+             idx_bytes[tail_start + 7],
+         ]);
+         out.push(IdxEntry { word, offset, size });
+         pos = tail_start + 8;
+     }
+     Ok(out)

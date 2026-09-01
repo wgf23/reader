@@ -1,0 +1,4 @@
+src/dict/translation.rs:121:25: replace != with == in DictService::install
+src/dict/translation.rs:272:15: replace += with -= in DictService::unique_id
+src/dict/translation.rs:272:15: replace += with *= in DictService::unique_id
+src/dict/translation.rs:336:16: replace > with >= in sanitize_id

@@ -1,0 +1,21 @@
+--- src/dict/provider.rs
++++ replace <impl TranslationProvider for DeepLProvider>::configure with ()
+@@ -57,17 +57,17 @@
+             text: translated.to_string(),
+             from,
+             to,
+             provider: self.name().to_string(),
+         })
+     }
+ 
+     fn configure(&mut self, key: Option<&str>) {
+-        self.key = key.map(|s| s.to_string());
++        () /* ~ changed by cargo-mutants ~ */
+     }
+ }
+ 
+ /// Echo Provider（mock/演示）：无 key 可用，返回 "译文:" + 原文。
+ /// 经 `translate_set_config("echo", "")` 切换默认 Provider 后即无 key 演示（ADR 关联裁定2）。
+ pub struct EchoProvider;
+ 
+ impl TranslationProvider for EchoProvider {

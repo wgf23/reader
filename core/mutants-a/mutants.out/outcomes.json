@@ -1,0 +1,2364 @@
+{
+  "outcomes": [
+    {
+      "scenario": "Baseline",
+      "summary": "Success",
+      "log_path": "log/baseline.log",
+      "diff_path": null,
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 17.498583253,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 2.560441235,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:36:5: replace parse_ifo -> Result<IfoMeta> with Ok(Default::default())",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "parse_ifo",
+            "return_type": "-> Result<IfoMeta>",
+            "span": {
+              "start": {
+                "line": 34,
+                "column": 1
+              },
+              "end": {
+                "line": 73,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 36,
+              "column": 5
+            },
+            "end": {
+              "line": 72,
+              "column": 7
+            }
+          },
+          "replacement": "Ok(Default::default())",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__stardict.rs_line_36_col_5.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_36_col_5.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 0.408302938,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:52:13: delete match arm \"idxfilesize\" in parse_ifo",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "parse_ifo",
+            "return_type": "-> Result<IfoMeta>",
+            "span": {
+              "start": {
+                "line": 34,
+                "column": 1
+              },
+              "end": {
+                "line": 73,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 52,
+              "column": 13
+            },
+            "end": {
+              "line": 54,
+              "column": 14
+            }
+          },
+          "replacement": "",
+          "genre": "MatchArm"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__stardict.rs_line_52_col_13.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_52_col_13.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 5.620170295,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.362257638,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:55:13: delete match arm \"sametypesequence\" in parse_ifo",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "parse_ifo",
+            "return_type": "-> Result<IfoMeta>",
+            "span": {
+              "start": {
+                "line": 34,
+                "column": 1
+              },
+              "end": {
+                "line": 73,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 55,
+              "column": 13
+            },
+            "end": {
+              "line": 55,
+              "column": 81
+            }
+          },
+          "replacement": "",
+          "genre": "MatchArm"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__stardict.rs_line_55_col_13.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_55_col_13.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 5.121238618,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.663993471,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:79:5: replace load_idx -> Result<Vec<IdxEntry>> with Ok(vec![])",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "load_idx",
+            "return_type": "-> Result<Vec<IdxEntry>>",
+            "span": {
+              "start": {
+                "line": 75,
+                "column": 1
+              },
+              "end": {
+                "line": 113,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 79,
+              "column": 5
+            },
+            "end": {
+              "line": 112,
+              "column": 12
+            }
+          },
+          "replacement": "Ok(vec![])",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__stardict.rs_line_79_col_5.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_79_col_5.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 6.240519318,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 0.95439697,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:79:5: replace load_idx -> Result<Vec<IdxEntry>> with Ok(vec![Default::default()])",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "load_idx",
+            "return_type": "-> Result<Vec<IdxEntry>>",
+            "span": {
+              "start": {
+                "line": 75,
+                "column": 1
+              },
+              "end": {
+                "line": 113,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 79,
+              "column": 5
+            },
+            "end": {
+              "line": 112,
+              "column": 12
+            }
+          },
+          "replacement": "Ok(vec![Default::default()])",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__stardict.rs_line_79_col_5_001.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_79_col_5_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 0.401690606,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:81:15: replace < with == in load_idx",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "load_idx",
+            "return_type": "-> Result<Vec<IdxEntry>>",
+            "span": {
+              "start": {
+                "line": 75,
+                "column": 1
+              },
+              "end": {
+                "line": 113,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 81,
+              "column": 15
+            },
+            "end": {
+              "line": 81,
+              "column": 16
+            }
+          },
+          "replacement": "==",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__stardict.rs_line_81_col_15.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_81_col_15.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 5.927047209,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.155297229,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:81:15: replace < with > in load_idx",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "load_idx",
+            "return_type": "-> Result<Vec<IdxEntry>>",
+            "span": {
+              "start": {
+                "line": 75,
+                "column": 1
+              },
+              "end": {
+                "line": 113,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 81,
+              "column": 15
+            },
+            "end": {
+              "line": 81,
+              "column": 16
+            }
+          },
+          "replacement": ">",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__stardict.rs_line_81_col_15_001.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_81_col_15_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 5.4279036529999996,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.062716181,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:49:13: delete match arm \"wordcount\" in parse_ifo",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "parse_ifo",
+            "return_type": "-> Result<IfoMeta>",
+            "span": {
+              "start": {
+                "line": 34,
+                "column": 1
+              },
+              "end": {
+                "line": 73,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 49,
+              "column": 13
+            },
+            "end": {
+              "line": 51,
+              "column": 14
+            }
+          },
+          "replacement": "",
+          "genre": "MatchArm"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__stardict.rs_line_49_col_13.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_49_col_13.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 39.304991923,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.00371055,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:43:28: replace || with && in parse_ifo",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "parse_ifo",
+            "return_type": "-> Result<IfoMeta>",
+            "span": {
+              "start": {
+                "line": 34,
+                "column": 1
+              },
+              "end": {
+                "line": 73,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 43,
+              "column": 28
+            },
+            "end": {
+              "line": 43,
+              "column": 30
+            }
+          },
+          "replacement": "&&",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__stardict.rs_line_43_col_28.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_43_col_28.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 41.475541075,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:83:47: replace == with != in load_idx",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "load_idx",
+            "return_type": "-> Result<Vec<IdxEntry>>",
+            "span": {
+              "start": {
+                "line": 75,
+                "column": 1
+              },
+              "end": {
+                "line": 113,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 83,
+              "column": 47
+            },
+            "end": {
+              "line": 83,
+              "column": 49
+            }
+          },
+          "replacement": "!=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__stardict.rs_line_83_col_47.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_83_col_47.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 1.515370412,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:48:13: delete match arm \"bookname\" in parse_ifo",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "parse_ifo",
+            "return_type": "-> Result<IfoMeta>",
+            "span": {
+              "start": {
+                "line": 34,
+                "column": 1
+              },
+              "end": {
+                "line": 73,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 48,
+              "column": 13
+            },
+            "end": {
+              "line": 48,
+              "column": 59
+            }
+          },
+          "replacement": "",
+          "genre": "MatchArm"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__stardict.rs_line_48_col_13.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_48_col_13.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 42.519549039,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:87:28: replace + with - in load_idx",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "load_idx",
+            "return_type": "-> Result<Vec<IdxEntry>>",
+            "span": {
+              "start": {
+                "line": 75,
+                "column": 1
+              },
+              "end": {
+                "line": 113,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 87,
+              "column": 28
+            },
+            "end": {
+              "line": 87,
+              "column": 29
+            }
+          },
+          "replacement": "-",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__stardict.rs_line_87_col_28.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_87_col_28.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 0.702577015,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:81:15: replace < with <= in load_idx",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "load_idx",
+            "return_type": "-> Result<Vec<IdxEntry>>",
+            "span": {
+              "start": {
+                "line": 75,
+                "column": 1
+              },
+              "end": {
+                "line": 113,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 81,
+              "column": 15
+            },
+            "end": {
+              "line": 81,
+              "column": 16
+            }
+          },
+          "replacement": "<=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__stardict.rs_line_81_col_15_002.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_81_col_15_002.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 5.282428974,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 2.024784572,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:93:30: replace + with * in load_idx",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "load_idx",
+            "return_type": "-> Result<Vec<IdxEntry>>",
+            "span": {
+              "start": {
+                "line": 75,
+                "column": 1
+              },
+              "end": {
+                "line": 113,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 93,
+              "column": 30
+            },
+            "end": {
+              "line": 93,
+              "column": 31
+            }
+          },
+          "replacement": "*",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__stardict.rs_line_93_col_30_001.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_93_col_30_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 0.656418868,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:93:30: replace + with - in load_idx",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "load_idx",
+            "return_type": "-> Result<Vec<IdxEntry>>",
+            "span": {
+              "start": {
+                "line": 75,
+                "column": 1
+              },
+              "end": {
+                "line": 113,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 93,
+              "column": 30
+            },
+            "end": {
+              "line": 93,
+              "column": 31
+            }
+          },
+          "replacement": "-",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__stardict.rs_line_93_col_30.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_93_col_30.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 0.959365205,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:94:27: replace > with == in load_idx",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "load_idx",
+            "return_type": "-> Result<Vec<IdxEntry>>",
+            "span": {
+              "start": {
+                "line": 75,
+                "column": 1
+              },
+              "end": {
+                "line": 113,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 94,
+              "column": 27
+            },
+            "end": {
+              "line": 94,
+              "column": 28
+            }
+          },
+          "replacement": "==",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__stardict.rs_line_94_col_27.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_94_col_27.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 0.45122929,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:86:65: replace == with != in load_idx",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "load_idx",
+            "return_type": "-> Result<Vec<IdxEntry>>",
+            "span": {
+              "start": {
+                "line": 75,
+                "column": 1
+              },
+              "end": {
+                "line": 113,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 86,
+              "column": 65
+            },
+            "end": {
+              "line": 86,
+              "column": 67
+            }
+          },
+          "replacement": "!=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__stardict.rs_line_86_col_65.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_86_col_65.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.365526481,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:94:27: replace > with < in load_idx",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "load_idx",
+            "return_type": "-> Result<Vec<IdxEntry>>",
+            "span": {
+              "start": {
+                "line": 75,
+                "column": 1
+              },
+              "end": {
+                "line": 113,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 94,
+              "column": 27
+            },
+            "end": {
+              "line": 94,
+              "column": 28
+            }
+          },
+          "replacement": "<",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__stardict.rs_line_94_col_27_001.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_94_col_27_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 1.259084901,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:87:28: replace + with * in load_idx",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "load_idx",
+            "return_type": "-> Result<Vec<IdxEntry>>",
+            "span": {
+              "start": {
+                "line": 75,
+                "column": 1
+              },
+              "end": {
+                "line": 113,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 87,
+              "column": 28
+            },
+            "end": {
+              "line": 87,
+              "column": 29
+            }
+          },
+          "replacement": "*",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__stardict.rs_line_87_col_28_001.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_87_col_28_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.2578150040000002,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:94:27: replace > with >= in load_idx",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "load_idx",
+            "return_type": "-> Result<Vec<IdxEntry>>",
+            "span": {
+              "start": {
+                "line": 75,
+                "column": 1
+              },
+              "end": {
+                "line": 113,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 94,
+              "column": 27
+            },
+            "end": {
+              "line": 94,
+              "column": 28
+            }
+          },
+          "replacement": ">=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__stardict.rs_line_94_col_27_002.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_94_col_27_002.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 1.058427519,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:94:23: replace + with * in load_idx",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "load_idx",
+            "return_type": "-> Result<Vec<IdxEntry>>",
+            "span": {
+              "start": {
+                "line": 75,
+                "column": 1
+              },
+              "end": {
+                "line": 113,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 94,
+              "column": 23
+            },
+            "end": {
+              "line": 94,
+              "column": 24
+            }
+          },
+          "replacement": "*",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__stardict.rs_line_94_col_23_001.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_94_col_23_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 0.701959363,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:99:34: replace + with * in load_idx",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "load_idx",
+            "return_type": "-> Result<Vec<IdxEntry>>",
+            "span": {
+              "start": {
+                "line": 75,
+                "column": 1
+              },
+              "end": {
+                "line": 113,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 99,
+              "column": 34
+            },
+            "end": {
+              "line": 99,
+              "column": 35
+            }
+          },
+          "replacement": "*",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__stardict.rs_line_99_col_34_001.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_99_col_34_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 0.962581868,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:94:23: replace + with - in load_idx",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "load_idx",
+            "return_type": "-> Result<Vec<IdxEntry>>",
+            "span": {
+              "start": {
+                "line": 75,
+                "column": 1
+              },
+              "end": {
+                "line": 113,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 94,
+              "column": 23
+            },
+            "end": {
+              "line": 94,
+              "column": 24
+            }
+          },
+          "replacement": "-",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__stardict.rs_line_94_col_23.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_94_col_23.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.162399536,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:100:34: replace + with - in load_idx",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "load_idx",
+            "return_type": "-> Result<Vec<IdxEntry>>",
+            "span": {
+              "start": {
+                "line": 75,
+                "column": 1
+              },
+              "end": {
+                "line": 113,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 100,
+              "column": 34
+            },
+            "end": {
+              "line": 100,
+              "column": 35
+            }
+          },
+          "replacement": "-",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__stardict.rs_line_100_col_34.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_100_col_34.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 0.604932935,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:100:34: replace + with * in load_idx",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "load_idx",
+            "return_type": "-> Result<Vec<IdxEntry>>",
+            "span": {
+              "start": {
+                "line": 75,
+                "column": 1
+              },
+              "end": {
+                "line": 113,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 100,
+              "column": 34
+            },
+            "end": {
+              "line": 100,
+              "column": 35
+            }
+          },
+          "replacement": "*",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__stardict.rs_line_100_col_34_001.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_100_col_34_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 0.70282967,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:101:34: replace + with * in load_idx",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "load_idx",
+            "return_type": "-> Result<Vec<IdxEntry>>",
+            "span": {
+              "start": {
+                "line": 75,
+                "column": 1
+              },
+              "end": {
+                "line": 113,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 101,
+              "column": 34
+            },
+            "end": {
+              "line": 101,
+              "column": 35
+            }
+          },
+          "replacement": "*",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__stardict.rs_line_101_col_34_001.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_101_col_34_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 0.458316734,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:104:34: replace + with - in load_idx",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "load_idx",
+            "return_type": "-> Result<Vec<IdxEntry>>",
+            "span": {
+              "start": {
+                "line": 75,
+                "column": 1
+              },
+              "end": {
+                "line": 113,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 104,
+              "column": 34
+            },
+            "end": {
+              "line": 104,
+              "column": 35
+            }
+          },
+          "replacement": "-",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__stardict.rs_line_104_col_34.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_104_col_34.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 0.30467402,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:104:34: replace + with * in load_idx",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "load_idx",
+            "return_type": "-> Result<Vec<IdxEntry>>",
+            "span": {
+              "start": {
+                "line": 75,
+                "column": 1
+              },
+              "end": {
+                "line": 113,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 104,
+              "column": 34
+            },
+            "end": {
+              "line": 104,
+              "column": 35
+            }
+          },
+          "replacement": "*",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__stardict.rs_line_104_col_34_001.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_104_col_34_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 0.501331408,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:99:34: replace + with - in load_idx",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "load_idx",
+            "return_type": "-> Result<Vec<IdxEntry>>",
+            "span": {
+              "start": {
+                "line": 75,
+                "column": 1
+              },
+              "end": {
+                "line": 113,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 99,
+              "column": 34
+            },
+            "end": {
+              "line": 99,
+              "column": 35
+            }
+          },
+          "replacement": "-",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__stardict.rs_line_99_col_34.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_99_col_34.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.303982547,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:105:34: replace + with - in load_idx",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "load_idx",
+            "return_type": "-> Result<Vec<IdxEntry>>",
+            "span": {
+              "start": {
+                "line": 75,
+                "column": 1
+              },
+              "end": {
+                "line": 113,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 105,
+              "column": 34
+            },
+            "end": {
+              "line": 105,
+              "column": 35
+            }
+          },
+          "replacement": "-",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__stardict.rs_line_105_col_34.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_105_col_34.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 0.756163839,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:105:34: replace + with * in load_idx",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "load_idx",
+            "return_type": "-> Result<Vec<IdxEntry>>",
+            "span": {
+              "start": {
+                "line": 75,
+                "column": 1
+              },
+              "end": {
+                "line": 113,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 105,
+              "column": 34
+            },
+            "end": {
+              "line": 105,
+              "column": 35
+            }
+          },
+          "replacement": "*",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__stardict.rs_line_105_col_34_001.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_105_col_34_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 0.76058053,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:106:34: replace + with * in load_idx",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "load_idx",
+            "return_type": "-> Result<Vec<IdxEntry>>",
+            "span": {
+              "start": {
+                "line": 75,
+                "column": 1
+              },
+              "end": {
+                "line": 113,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 106,
+              "column": 34
+            },
+            "end": {
+              "line": 106,
+              "column": 35
+            }
+          },
+          "replacement": "*",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__stardict.rs_line_106_col_34_001.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_106_col_34_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 0.501409132,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:107:34: replace + with - in load_idx",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "load_idx",
+            "return_type": "-> Result<Vec<IdxEntry>>",
+            "span": {
+              "start": {
+                "line": 75,
+                "column": 1
+              },
+              "end": {
+                "line": 113,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 107,
+              "column": 34
+            },
+            "end": {
+              "line": 107,
+              "column": 35
+            }
+          },
+          "replacement": "-",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__stardict.rs_line_107_col_34.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_107_col_34.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 0.501999237,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:101:34: replace + with - in load_idx",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "load_idx",
+            "return_type": "-> Result<Vec<IdxEntry>>",
+            "span": {
+              "start": {
+                "line": 75,
+                "column": 1
+              },
+              "end": {
+                "line": 113,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 101,
+              "column": 34
+            },
+            "end": {
+              "line": 101,
+              "column": 35
+            }
+          },
+          "replacement": "-",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__stardict.rs_line_101_col_34.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_101_col_34.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.410333863,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:110:26: replace + with - in load_idx",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "load_idx",
+            "return_type": "-> Result<Vec<IdxEntry>>",
+            "span": {
+              "start": {
+                "line": 75,
+                "column": 1
+              },
+              "end": {
+                "line": 113,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 110,
+              "column": 26
+            },
+            "end": {
+              "line": 110,
+              "column": 27
+            }
+          },
+          "replacement": "-",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__stardict.rs_line_110_col_26.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_110_col_26.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 0.604846526,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:107:34: replace + with * in load_idx",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "load_idx",
+            "return_type": "-> Result<Vec<IdxEntry>>",
+            "span": {
+              "start": {
+                "line": 75,
+                "column": 1
+              },
+              "end": {
+                "line": 113,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 107,
+              "column": 34
+            },
+            "end": {
+              "line": 107,
+              "column": 35
+            }
+          },
+          "replacement": "*",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__stardict.rs_line_107_col_34_001.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_107_col_34_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 0.904642893,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:106:34: replace + with - in load_idx",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "load_idx",
+            "return_type": "-> Result<Vec<IdxEntry>>",
+            "span": {
+              "start": {
+                "line": 75,
+                "column": 1
+              },
+              "end": {
+                "line": 113,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 106,
+              "column": 34
+            },
+            "end": {
+              "line": 106,
+              "column": 35
+            }
+          },
+          "replacement": "-",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__stardict.rs_line_106_col_34.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_106_col_34.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.22123419,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:118:5: replace lookup_entry -> Option<&'a IdxEntry> with Some(Box::leak(Box::new(Default::default())))",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "lookup_entry",
+            "return_type": "-> Option<&'a IdxEntry>",
+            "span": {
+              "start": {
+                "line": 115,
+                "column": 1
+              },
+              "end": {
+                "line": 146,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 118,
+              "column": 5
+            },
+            "end": {
+              "line": 145,
+              "column": 9
+            }
+          },
+          "replacement": "Some(Box::leak(Box::new(Default::default())))",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__stardict.rs_line_118_col_5_001.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_118_col_5_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 0.401250395,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:139:13: replace || with && in lookup_entry",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "lookup_entry",
+            "return_type": "-> Option<&'a IdxEntry>",
+            "span": {
+              "start": {
+                "line": 115,
+                "column": 1
+              },
+              "end": {
+                "line": 146,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 139,
+              "column": 13
+            },
+            "end": {
+              "line": 139,
+              "column": 15
+            }
+          },
+          "replacement": "&&",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "MissedMutant",
+      "log_path": "log/src__dict__stardict.rs_line_139_col_13.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_139_col_13.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.5681017649999998,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 3.334119868,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:138:13: replace || with && in lookup_entry",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "lookup_entry",
+            "return_type": "-> Option<&'a IdxEntry>",
+            "span": {
+              "start": {
+                "line": 115,
+                "column": 1
+              },
+              "end": {
+                "line": 146,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 138,
+              "column": 13
+            },
+            "end": {
+              "line": 138,
+              "column": 15
+            }
+          },
+          "replacement": "&&",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "MissedMutant",
+      "log_path": "log/src__dict__stardict.rs_line_138_col_13.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_138_col_13.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.722764189,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 3.465571126,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/stardict.rs:110:26: replace + with * in load_idx",
+          "package": "reader_core",
+          "file": "src/dict/stardict.rs",
+          "function": {
+            "function_name": "load_idx",
+            "return_type": "-> Result<Vec<IdxEntry>>",
+            "span": {
+              "start": {
+                "line": 75,
+                "column": 1
+              },
+              "end": {
+                "line": 113,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 110,
+              "column": 26
+            },
+            "end": {
+              "line": 110,
+              "column": 27
+            }
+          },
+          "replacement": "*",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__stardict.rs_line_110_col_26_001.log",
+      "diff_path": "diff/src__dict__stardict.rs_line_110_col_26_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 13.563691281,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 0.952045965,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    }
+  ],
+  "total_mutants": 41,
+  "missed": 2,
+  "caught": 8,
+  "timeout": 0,
+  "unviable": 31,
+  "success": 0,
+  "start_time": "2026-09-01T13:21:41.010762309Z",
+  "end_time": null,
+  "cargo_mutants_version": "27.1.0"
+}

@@ -1,0 +1,2306 @@
+[
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace DictService::scan_existing with ()\n@@ -42,31 +42,17 @@\n             dicts_dir,\n             registry: Vec::new(),\n         };\n         svc.scan_existing();\n         Ok(svc)\n     }\n \n     fn scan_existing(&mut self) {\n-        let Ok(entries) = std::fs::read_dir(&self.dicts_dir) else {\n-            return;\n-        };\n-        let mut dirs: Vec<PathBuf> = entries\n-            .filter_map(|e| e.ok().map(|e| e.path()))\n-            .filter(|p| p.is_dir())\n-            .collect();\n-        dirs.sort();\n-        for dir in dirs {\n-            let Some(ifo) = find_ifo_in(&dir) else { continue };\n-            match self.load_from_installed_dir(&dir, &ifo) {\n-                Ok(ld) => self.registry.push(ld),\n-                Err(e) => log::warn!(\"跳过损坏词库 {}: {e}\", dir.display()),\n-            }\n-        }\n+        () /* ~ changed by cargo-mutants ~ */\n     }\n \n     fn load_from_installed_dir(&self, dir: &Path, ifo: &Path) -> Result<LoadedDict> {\n         let meta = stardict::parse_ifo(ifo)?;\n         let stem = dict_stem(ifo);\n         let idx_path = dir.join(format!(\"{stem}.idx\"));\n         let idx_bytes = std::fs::read(&idx_path).map_err(Error::Io)?;\n         let dict_file = dict_path_of(&dir.join(&stem)).and_then(|p| File::open(p).ok());\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "DictService::scan_existing",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 65
+        },
+        "start": {
+          "column": 5,
+          "line": 49
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/translation.rs:50:9: replace DictService::scan_existing with ()",
+    "package": "reader_core",
+    "replacement": "()",
+    "span": {
+      "end": {
+        "column": 10,
+        "line": 64
+      },
+      "start": {
+        "column": 9,
+        "line": 50
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace DictService::load_from_installed_dir -> Result<LoadedDict> with Ok(Default::default())\n@@ -60,34 +60,17 @@\n             match self.load_from_installed_dir(&dir, &ifo) {\n                 Ok(ld) => self.registry.push(ld),\n                 Err(e) => log::warn!(\"跳过损坏词库 {}: {e}\", dir.display()),\n             }\n         }\n     }\n \n     fn load_from_installed_dir(&self, dir: &Path, ifo: &Path) -> Result<LoadedDict> {\n-        let meta = stardict::parse_ifo(ifo)?;\n-        let stem = dict_stem(ifo);\n-        let idx_path = dir.join(format!(\"{stem}.idx\"));\n-        let idx_bytes = std::fs::read(&idx_path).map_err(Error::Io)?;\n-        let dict_file = dict_path_of(&dir.join(&stem)).and_then(|p| File::open(p).ok());\n-        let id = sanitize_id(&meta.bookname);\n-        Ok(LoadedDict {\n-            info: DictInfo {\n-                id,\n-                name: meta.bookname.clone(),\n-                word_count: meta.wordcount,\n-                path: dir.display().to_string(),\n-            },\n-            ifo: meta,\n-            idx: OnceCell::new(),\n-            idx_bytes,\n-            dict_file,\n-        })\n+        Ok(Default::default()) /* ~ changed by cargo-mutants ~ */\n     }\n \n     /// 安装词库：校验三件套 → 拷贝 → .dz 流式解压落盘 → 注册（幂等）。\n     /// 入参为 `.ifo` 文件路径（或含 .ifo 的目录）；坏词库 → Err(Corrupt)，已装列表不受影响。\n     pub fn install(&mut self, path: &Path) -> Result<DictInfo> {\n         let ifo_path = if path.is_dir() {\n             find_ifo_in(path)\n                 .ok_or_else(|| Error::Corrupt(format!(\"目录内未找到 .ifo: {}\", path.display())))?\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "DictService::load_from_installed_dir",
+      "return_type": "-> Result<LoadedDict>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 86
+        },
+        "start": {
+          "column": 5,
+          "line": 67
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/translation.rs:68:9: replace DictService::load_from_installed_dir -> Result<LoadedDict> with Ok(Default::default())",
+    "package": "reader_core",
+    "replacement": "Ok(Default::default())",
+    "span": {
+      "end": {
+        "column": 11,
+        "line": 85
+      },
+      "start": {
+        "column": 9,
+        "line": 68
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace DictService::install -> Result<DictInfo> with Ok(Default::default())\n@@ -83,93 +83,17 @@\n             idx_bytes,\n             dict_file,\n         })\n     }\n \n     /// 安装词库：校验三件套 → 拷贝 → .dz 流式解压落盘 → 注册（幂等）。\n     /// 入参为 `.ifo` 文件路径（或含 .ifo 的目录）；坏词库 → Err(Corrupt)，已装列表不受影响。\n     pub fn install(&mut self, path: &Path) -> Result<DictInfo> {\n-        let ifo_path = if path.is_dir() {\n-            find_ifo_in(path)\n-                .ok_or_else(|| Error::Corrupt(format!(\"目录内未找到 .ifo: {}\", path.display())))?\n-        } else {\n-            path.to_path_buf()\n-        };\n-        let meta = stardict::parse_ifo(&ifo_path)?;\n-        // 幂等：同名（bookname）词库已注册 → 返回既有（不重复注册；US-7）\n-        if let Some(existing) = self\n-            .registry\n-            .iter()\n-            .find(|ld| ld.info.name == meta.bookname)\n-        {\n-            return Ok(existing.info.clone());\n-        }\n-        let id = self.unique_id(&meta.bookname);\n-\n-        let base = strip_ifo(&ifo_path);\n-        let idx_path = PathBuf::from(format!(\"{}.idx\", base.display()));\n-        let idx_bytes = std::fs::read(&idx_path).map_err(|e| {\n-            Error::Corrupt(format!(\n-                \"词库 .idx 缺失或不可读: {} ({e})\",\n-                idx_path.display()\n-            ))\n-        })?;\n-        // 校验 .idx 可完整解析（截断 → Corrupt，US-6）\n-        let idx = stardict::load_idx(&idx_bytes).map_err(|e| {\n-            Error::Corrupt(format!(\"词库 .idx 损坏: {e}\"))\n-        })?;\n-        if let Some(expected) = meta.idxfilesize {\n-            if expected != idx_bytes.len() as u64 {\n-                log::warn!(\n-                    \"词库 {} 的 idxfilesize 声明 {} 与实际 {} 不一致\",\n-                    meta.bookname,\n-                    expected,\n-                    idx_bytes.len()\n-                );\n-            }\n-        }\n-        // .dict 或 .dict.dz 至少存在其一\n-        let dict_src = dict_path_of(&base).ok_or_else(|| {\n-            Error::Corrupt(format!(\"词库缺少 .dict/.dict.dz: {}\", base.display()))\n-        })?;\n-\n-        // 落盘到 <dicts_dir>/<id>/\n-        let target_dir = self.dicts_dir.join(&id);\n-        std::fs::create_dir_all(&target_dir).map_err(Error::Io)?;\n-        let target_ifo = target_dir.join(format!(\"{id}.ifo\"));\n-        let target_idx = target_dir.join(format!(\"{id}.idx\"));\n-        let target_dict = target_dir.join(format!(\"{id}.dict\"));\n-        std::fs::copy(&ifo_path, &target_ifo).map_err(Error::Io)?;\n-        std::fs::copy(&idx_path, &target_idx).map_err(Error::Io)?;\n-        if dict_src.extension().and_then(|e| e.to_str()) == Some(\"dz\") {\n-            // .dict.dz：流式解压落盘（ADR 关联裁定5）\n-            stardict::decompress_dz(&dict_src, &target_dict)?;\n-        } else {\n-            std::fs::copy(&dict_src, &target_dict).map_err(Error::Io)?;\n-        }\n-\n-        let info = DictInfo {\n-            id: id.clone(),\n-            name: meta.bookname.clone(),\n-            word_count: meta.wordcount,\n-            path: target_dir.display().to_string(),\n-        };\n-        self.registry.push(LoadedDict {\n-            info: info.clone(),\n-            ifo: meta,\n-            idx: {\n-                let cell = OnceCell::new();\n-                let _ = cell.set(Ok(idx));\n-                cell\n-            },\n-            idx_bytes,\n-            dict_file: File::open(&target_dict).ok(),\n-        });\n-        Ok(info)\n+        Ok(Default::default()) /* ~ changed by cargo-mutants ~ */\n     }\n \n     /// 移除词库：删目录 + 注销；未注册 → Err(NotFound)。\n     pub fn remove(&mut self, dict_id: &str) -> Result<()> {\n         let pos = self\n             .registry\n             .iter()\n             .position(|ld| ld.info.id == dict_id)\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "DictService::install",
+      "return_type": "-> Result<DictInfo>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 168
+        },
+        "start": {
+          "column": 5,
+          "line": 88
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/translation.rs:91:9: replace DictService::install -> Result<DictInfo> with Ok(Default::default())",
+    "package": "reader_core",
+    "replacement": "Ok(Default::default())",
+    "span": {
+      "end": {
+        "column": 17,
+        "line": 167
+      },
+      "start": {
+        "column": 9,
+        "line": 91
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace == with != in DictService::install\n@@ -94,17 +94,17 @@\n         } else {\n             path.to_path_buf()\n         };\n         let meta = stardict::parse_ifo(&ifo_path)?;\n         // 幂等：同名（bookname）词库已注册 → 返回既有（不重复注册；US-7）\n         if let Some(existing) = self\n             .registry\n             .iter()\n-            .find(|ld| ld.info.name == meta.bookname)\n+            .find(|ld| ld.info.name != /* ~ changed by cargo-mutants ~ */ meta.bookname)\n         {\n             return Ok(existing.info.clone());\n         }\n         let id = self.unique_id(&meta.bookname);\n \n         let base = strip_ifo(&ifo_path);\n         let idx_path = PathBuf::from(format!(\"{}.idx\", base.display()));\n         let idx_bytes = std::fs::read(&idx_path).map_err(|e| {\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "DictService::install",
+      "return_type": "-> Result<DictInfo>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 168
+        },
+        "start": {
+          "column": 5,
+          "line": 88
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/translation.rs:102:37: replace == with != in DictService::install",
+    "package": "reader_core",
+    "replacement": "!=",
+    "span": {
+      "end": {
+        "column": 39,
+        "line": 102
+      },
+      "start": {
+        "column": 37,
+        "line": 102
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace != with == in DictService::install\n@@ -113,17 +113,17 @@\n                 idx_path.display()\n             ))\n         })?;\n         // 校验 .idx 可完整解析（截断 → Corrupt，US-6）\n         let idx = stardict::load_idx(&idx_bytes).map_err(|e| {\n             Error::Corrupt(format!(\"词库 .idx 损坏: {e}\"))\n         })?;\n         if let Some(expected) = meta.idxfilesize {\n-            if expected != idx_bytes.len() as u64 {\n+            if expected == /* ~ changed by cargo-mutants ~ */ idx_bytes.len() as u64 {\n                 log::warn!(\n                     \"词库 {} 的 idxfilesize 声明 {} 与实际 {} 不一致\",\n                     meta.bookname,\n                     expected,\n                     idx_bytes.len()\n                 );\n             }\n         }\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "DictService::install",
+      "return_type": "-> Result<DictInfo>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 168
+        },
+        "start": {
+          "column": 5,
+          "line": 88
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/translation.rs:121:25: replace != with == in DictService::install",
+    "package": "reader_core",
+    "replacement": "==",
+    "span": {
+      "end": {
+        "column": 27,
+        "line": 121
+      },
+      "start": {
+        "column": 25,
+        "line": 121
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace == with != in DictService::install\n@@ -135,17 +135,17 @@\n         // 落盘到 <dicts_dir>/<id>/\n         let target_dir = self.dicts_dir.join(&id);\n         std::fs::create_dir_all(&target_dir).map_err(Error::Io)?;\n         let target_ifo = target_dir.join(format!(\"{id}.ifo\"));\n         let target_idx = target_dir.join(format!(\"{id}.idx\"));\n         let target_dict = target_dir.join(format!(\"{id}.dict\"));\n         std::fs::copy(&ifo_path, &target_ifo).map_err(Error::Io)?;\n         std::fs::copy(&idx_path, &target_idx).map_err(Error::Io)?;\n-        if dict_src.extension().and_then(|e| e.to_str()) == Some(\"dz\") {\n+        if dict_src.extension().and_then(|e| e.to_str()) != /* ~ changed by cargo-mutants ~ */ Some(\"dz\") {\n             // .dict.dz：流式解压落盘（ADR 关联裁定5）\n             stardict::decompress_dz(&dict_src, &target_dict)?;\n         } else {\n             std::fs::copy(&dict_src, &target_dict).map_err(Error::Io)?;\n         }\n \n         let info = DictInfo {\n             id: id.clone(),\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "DictService::install",
+      "return_type": "-> Result<DictInfo>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 168
+        },
+        "start": {
+          "column": 5,
+          "line": 88
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/translation.rs:143:58: replace == with != in DictService::install",
+    "package": "reader_core",
+    "replacement": "!=",
+    "span": {
+      "end": {
+        "column": 60,
+        "line": 143
+      },
+      "start": {
+        "column": 58,
+        "line": 143
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace DictService::remove -> Result<()> with Ok(())\n@@ -164,27 +164,17 @@\n             idx_bytes,\n             dict_file: File::open(&target_dict).ok(),\n         });\n         Ok(info)\n     }\n \n     /// 移除词库：删目录 + 注销；未注册 → Err(NotFound)。\n     pub fn remove(&mut self, dict_id: &str) -> Result<()> {\n-        let pos = self\n-            .registry\n-            .iter()\n-            .position(|ld| ld.info.id == dict_id)\n-            .ok_or_else(|| Error::NotFound(format!(\"词库不存在: {dict_id}\")))?;\n-        let ld = self.registry.remove(pos);\n-        let dir = PathBuf::from(&ld.info.path);\n-        if dir.is_dir() {\n-            std::fs::remove_dir_all(&dir).map_err(Error::Io)?;\n-        }\n-        Ok(())\n+        Ok(()) /* ~ changed by cargo-mutants ~ */\n     }\n \n     /// 已装词库列表（安装顺序，US-5/7）\n     pub fn list(&self) -> Result<Vec<DictInfo>> {\n         Ok(self.registry.iter().map(|ld| ld.info.clone()).collect())\n     }\n \n     /// 查词：注册表空 → Err(\"未安装词库…\")（US-3）；多词库按安装顺序取首个命中（US-5）；\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "DictService::remove",
+      "return_type": "-> Result<()>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 183
+        },
+        "start": {
+          "column": 5,
+          "line": 170
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/translation.rs:172:9: replace DictService::remove -> Result<()> with Ok(())",
+    "package": "reader_core",
+    "replacement": "Ok(())",
+    "span": {
+      "end": {
+        "column": 15,
+        "line": 182
+      },
+      "start": {
+        "column": 9,
+        "line": 172
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace == with != in DictService::remove\n@@ -167,17 +167,17 @@\n         Ok(info)\n     }\n \n     /// 移除词库：删目录 + 注销；未注册 → Err(NotFound)。\n     pub fn remove(&mut self, dict_id: &str) -> Result<()> {\n         let pos = self\n             .registry\n             .iter()\n-            .position(|ld| ld.info.id == dict_id)\n+            .position(|ld| ld.info.id != /* ~ changed by cargo-mutants ~ */ dict_id)\n             .ok_or_else(|| Error::NotFound(format!(\"词库不存在: {dict_id}\")))?;\n         let ld = self.registry.remove(pos);\n         let dir = PathBuf::from(&ld.info.path);\n         if dir.is_dir() {\n             std::fs::remove_dir_all(&dir).map_err(Error::Io)?;\n         }\n         Ok(())\n     }\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "DictService::remove",
+      "return_type": "-> Result<()>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 183
+        },
+        "start": {
+          "column": 5,
+          "line": 170
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/translation.rs:175:39: replace == with != in DictService::remove",
+    "package": "reader_core",
+    "replacement": "!=",
+    "span": {
+      "end": {
+        "column": 41,
+        "line": 175
+      },
+      "start": {
+        "column": 39,
+        "line": 175
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace DictService::list -> Result<Vec<DictInfo>> with Ok(vec![])\n@@ -179,17 +179,17 @@\n         if dir.is_dir() {\n             std::fs::remove_dir_all(&dir).map_err(Error::Io)?;\n         }\n         Ok(())\n     }\n \n     /// 已装词库列表（安装顺序，US-5/7）\n     pub fn list(&self) -> Result<Vec<DictInfo>> {\n-        Ok(self.registry.iter().map(|ld| ld.info.clone()).collect())\n+        Ok(vec![]) /* ~ changed by cargo-mutants ~ */\n     }\n \n     /// 查词：注册表空 → Err(\"未安装词库…\")（US-3）；多词库按安装顺序取首个命中（US-5）；\n     /// 单词典索引加载失败跳过继续；全部失败 → Err(Corrupt)。\n     pub fn lookup(&self, word: &str, dict_id: Option<&str>) -> Result<Option<DictEntry>> {\n         if self.registry.is_empty() {\n             return Err(Error::NotFound(\n                 \"未安装词库，请先在设置中导入\".to_string(),\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "DictService::list",
+      "return_type": "-> Result<Vec<DictInfo>>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 188
+        },
+        "start": {
+          "column": 5,
+          "line": 185
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/translation.rs:187:9: replace DictService::list -> Result<Vec<DictInfo>> with Ok(vec![])",
+    "package": "reader_core",
+    "replacement": "Ok(vec![])",
+    "span": {
+      "end": {
+        "column": 69,
+        "line": 187
+      },
+      "start": {
+        "column": 9,
+        "line": 187
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace DictService::list -> Result<Vec<DictInfo>> with Ok(vec![Default::default()])\n@@ -179,17 +179,17 @@\n         if dir.is_dir() {\n             std::fs::remove_dir_all(&dir).map_err(Error::Io)?;\n         }\n         Ok(())\n     }\n \n     /// 已装词库列表（安装顺序，US-5/7）\n     pub fn list(&self) -> Result<Vec<DictInfo>> {\n-        Ok(self.registry.iter().map(|ld| ld.info.clone()).collect())\n+        Ok(vec![Default::default()]) /* ~ changed by cargo-mutants ~ */\n     }\n \n     /// 查词：注册表空 → Err(\"未安装词库…\")（US-3）；多词库按安装顺序取首个命中（US-5）；\n     /// 单词典索引加载失败跳过继续；全部失败 → Err(Corrupt)。\n     pub fn lookup(&self, word: &str, dict_id: Option<&str>) -> Result<Option<DictEntry>> {\n         if self.registry.is_empty() {\n             return Err(Error::NotFound(\n                 \"未安装词库，请先在设置中导入\".to_string(),\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "DictService::list",
+      "return_type": "-> Result<Vec<DictInfo>>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 188
+        },
+        "start": {
+          "column": 5,
+          "line": 185
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/translation.rs:187:9: replace DictService::list -> Result<Vec<DictInfo>> with Ok(vec![Default::default()])",
+    "package": "reader_core",
+    "replacement": "Ok(vec![Default::default()])",
+    "span": {
+      "end": {
+        "column": 69,
+        "line": 187
+      },
+      "start": {
+        "column": 9,
+        "line": 187
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace DictService::lookup -> Result<Option<DictEntry>> with Ok(None)\n@@ -185,65 +185,17 @@\n     /// 已装词库列表（安装顺序，US-5/7）\n     pub fn list(&self) -> Result<Vec<DictInfo>> {\n         Ok(self.registry.iter().map(|ld| ld.info.clone()).collect())\n     }\n \n     /// 查词：注册表空 → Err(\"未安装词库…\")（US-3）；多词库按安装顺序取首个命中（US-5）；\n     /// 单词典索引加载失败跳过继续；全部失败 → Err(Corrupt)。\n     pub fn lookup(&self, word: &str, dict_id: Option<&str>) -> Result<Option<DictEntry>> {\n-        if self.registry.is_empty() {\n-            return Err(Error::NotFound(\n-                \"未安装词库，请先在设置中导入\".to_string(),\n-            ));\n-        }\n-        if let Some(id) = dict_id {\n-            if !self.registry.iter().any(|ld| ld.info.id == id) {\n-                return Err(Error::NotFound(format!(\"词库不存在: {id}\")));\n-            }\n-        }\n-        let mut attempted = 0usize;\n-        for ld in &self.registry {\n-            if let Some(id) = dict_id {\n-                if ld.info.id != id {\n-                    continue;\n-                }\n-            }\n-            attempted += 1;\n-            let idx = match ld.idx.get_or_init(|| stardict::load_idx(&ld.idx_bytes)) {\n-                Ok(v) => v,\n-                Err(e) => {\n-                    log::warn!(\"词库 {} 索引加载失败，跳过: {e}\", ld.info.name);\n-                    continue;\n-                }\n-            };\n-            let Some(entry) = stardict::lookup_entry(idx, word) else {\n-                continue;\n-            };\n-            // 命中条目的区段读取/解析失败 = 词库损坏（US-6 偏移越界/截断）→ 直接透出\n-            let dict_bytes = self.read_region(ld, entry)?;\n-            let seq = ld\n-                .ifo\n-                .sametypesequence\n-                .as_deref()\n-                .map(|s| s.as_bytes())\n-                .unwrap_or(b\"\");\n-            // 区段字节即 [offset, offset+size)，重定基后交给 parse_entry（其边界校验针对全文件）\n-            let rebased = IdxEntry {\n-                word: entry.word.clone(),\n-                offset: 0,\n-                size: dict_bytes.len() as u32,\n-            };\n-            return stardict::parse_entry(seq, &dict_bytes, &rebased).map(Some);\n-        }\n-        if attempted == 0 {\n-            Err(Error::Corrupt(\"已安装词库均无法读取\".to_string()))\n-        } else {\n-            Ok(None) // 查遍无命中 → 未收录（US-2）\n-        }\n+        Ok(None) /* ~ changed by cargo-mutants ~ */\n     }\n \n     /// 随机读 .dict 区段（只读命中条目，大词库无整包读取峰值）；偏移越界 → Corrupt（US-6）\n     fn read_region(&self, ld: &LoadedDict, entry: &IdxEntry) -> Result<Vec<u8>> {\n         let file = ld\n             .dict_file\n             .as_ref()\n             .ok_or_else(|| Error::Corrupt(format!(\"词库 {} 缺少 .dict 文件\", ld.info.name)))?;\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "DictService::lookup",
+      "return_type": "-> Result<Option<DictEntry>>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 242
+        },
+        "start": {
+          "column": 5,
+          "line": 190
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/translation.rs:193:9: replace DictService::lookup -> Result<Option<DictEntry>> with Ok(None)",
+    "package": "reader_core",
+    "replacement": "Ok(None)",
+    "span": {
+      "end": {
+        "column": 10,
+        "line": 241
+      },
+      "start": {
+        "column": 9,
+        "line": 193
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace DictService::lookup -> Result<Option<DictEntry>> with Ok(Some(Default::default()))\n@@ -185,65 +185,17 @@\n     /// 已装词库列表（安装顺序，US-5/7）\n     pub fn list(&self) -> Result<Vec<DictInfo>> {\n         Ok(self.registry.iter().map(|ld| ld.info.clone()).collect())\n     }\n \n     /// 查词：注册表空 → Err(\"未安装词库…\")（US-3）；多词库按安装顺序取首个命中（US-5）；\n     /// 单词典索引加载失败跳过继续；全部失败 → Err(Corrupt)。\n     pub fn lookup(&self, word: &str, dict_id: Option<&str>) -> Result<Option<DictEntry>> {\n-        if self.registry.is_empty() {\n-            return Err(Error::NotFound(\n-                \"未安装词库，请先在设置中导入\".to_string(),\n-            ));\n-        }\n-        if let Some(id) = dict_id {\n-            if !self.registry.iter().any(|ld| ld.info.id == id) {\n-                return Err(Error::NotFound(format!(\"词库不存在: {id}\")));\n-            }\n-        }\n-        let mut attempted = 0usize;\n-        for ld in &self.registry {\n-            if let Some(id) = dict_id {\n-                if ld.info.id != id {\n-                    continue;\n-                }\n-            }\n-            attempted += 1;\n-            let idx = match ld.idx.get_or_init(|| stardict::load_idx(&ld.idx_bytes)) {\n-                Ok(v) => v,\n-                Err(e) => {\n-                    log::warn!(\"词库 {} 索引加载失败，跳过: {e}\", ld.info.name);\n-                    continue;\n-                }\n-            };\n-            let Some(entry) = stardict::lookup_entry(idx, word) else {\n-                continue;\n-            };\n-            // 命中条目的区段读取/解析失败 = 词库损坏（US-6 偏移越界/截断）→ 直接透出\n-            let dict_bytes = self.read_region(ld, entry)?;\n-            let seq = ld\n-                .ifo\n-                .sametypesequence\n-                .as_deref()\n-                .map(|s| s.as_bytes())\n-                .unwrap_or(b\"\");\n-            // 区段字节即 [offset, offset+size)，重定基后交给 parse_entry（其边界校验针对全文件）\n-            let rebased = IdxEntry {\n-                word: entry.word.clone(),\n-                offset: 0,\n-                size: dict_bytes.len() as u32,\n-            };\n-            return stardict::parse_entry(seq, &dict_bytes, &rebased).map(Some);\n-        }\n-        if attempted == 0 {\n-            Err(Error::Corrupt(\"已安装词库均无法读取\".to_string()))\n-        } else {\n-            Ok(None) // 查遍无命中 → 未收录（US-2）\n-        }\n+        Ok(Some(Default::default())) /* ~ changed by cargo-mutants ~ */\n     }\n \n     /// 随机读 .dict 区段（只读命中条目，大词库无整包读取峰值）；偏移越界 → Corrupt（US-6）\n     fn read_region(&self, ld: &LoadedDict, entry: &IdxEntry) -> Result<Vec<u8>> {\n         let file = ld\n             .dict_file\n             .as_ref()\n             .ok_or_else(|| Error::Corrupt(format!(\"词库 {} 缺少 .dict 文件\", ld.info.name)))?;\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "DictService::lookup",
+      "return_type": "-> Result<Option<DictEntry>>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 242
+        },
+        "start": {
+          "column": 5,
+          "line": 190
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/translation.rs:193:9: replace DictService::lookup -> Result<Option<DictEntry>> with Ok(Some(Default::default()))",
+    "package": "reader_core",
+    "replacement": "Ok(Some(Default::default()))",
+    "span": {
+      "end": {
+        "column": 10,
+        "line": 241
+      },
+      "start": {
+        "column": 9,
+        "line": 193
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ delete ! in DictService::lookup\n@@ -191,17 +191,17 @@\n     /// 单词典索引加载失败跳过继续；全部失败 → Err(Corrupt)。\n     pub fn lookup(&self, word: &str, dict_id: Option<&str>) -> Result<Option<DictEntry>> {\n         if self.registry.is_empty() {\n             return Err(Error::NotFound(\n                 \"未安装词库，请先在设置中导入\".to_string(),\n             ));\n         }\n         if let Some(id) = dict_id {\n-            if !self.registry.iter().any(|ld| ld.info.id == id) {\n+            if  /* ~ changed by cargo-mutants ~ */self.registry.iter().any(|ld| ld.info.id == id) {\n                 return Err(Error::NotFound(format!(\"词库不存在: {id}\")));\n             }\n         }\n         let mut attempted = 0usize;\n         for ld in &self.registry {\n             if let Some(id) = dict_id {\n                 if ld.info.id != id {\n                     continue;\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "DictService::lookup",
+      "return_type": "-> Result<Option<DictEntry>>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 242
+        },
+        "start": {
+          "column": 5,
+          "line": 190
+        }
+      }
+    },
+    "genre": "UnaryOperator",
+    "name": "src/dict/translation.rs:199:16: delete ! in DictService::lookup",
+    "package": "reader_core",
+    "replacement": "",
+    "span": {
+      "end": {
+        "column": 17,
+        "line": 199
+      },
+      "start": {
+        "column": 16,
+        "line": 199
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace == with != in DictService::lookup\n@@ -191,17 +191,17 @@\n     /// 单词典索引加载失败跳过继续；全部失败 → Err(Corrupt)。\n     pub fn lookup(&self, word: &str, dict_id: Option<&str>) -> Result<Option<DictEntry>> {\n         if self.registry.is_empty() {\n             return Err(Error::NotFound(\n                 \"未安装词库，请先在设置中导入\".to_string(),\n             ));\n         }\n         if let Some(id) = dict_id {\n-            if !self.registry.iter().any(|ld| ld.info.id == id) {\n+            if !self.registry.iter().any(|ld| ld.info.id != /* ~ changed by cargo-mutants ~ */ id) {\n                 return Err(Error::NotFound(format!(\"词库不存在: {id}\")));\n             }\n         }\n         let mut attempted = 0usize;\n         for ld in &self.registry {\n             if let Some(id) = dict_id {\n                 if ld.info.id != id {\n                     continue;\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "DictService::lookup",
+      "return_type": "-> Result<Option<DictEntry>>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 242
+        },
+        "start": {
+          "column": 5,
+          "line": 190
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/translation.rs:199:58: replace == with != in DictService::lookup",
+    "package": "reader_core",
+    "replacement": "!=",
+    "span": {
+      "end": {
+        "column": 60,
+        "line": 199
+      },
+      "start": {
+        "column": 58,
+        "line": 199
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace != with == in DictService::lookup\n@@ -198,17 +198,17 @@\n         if let Some(id) = dict_id {\n             if !self.registry.iter().any(|ld| ld.info.id == id) {\n                 return Err(Error::NotFound(format!(\"词库不存在: {id}\")));\n             }\n         }\n         let mut attempted = 0usize;\n         for ld in &self.registry {\n             if let Some(id) = dict_id {\n-                if ld.info.id != id {\n+                if ld.info.id == /* ~ changed by cargo-mutants ~ */ id {\n                     continue;\n                 }\n             }\n             attempted += 1;\n             let idx = match ld.idx.get_or_init(|| stardict::load_idx(&ld.idx_bytes)) {\n                 Ok(v) => v,\n                 Err(e) => {\n                     log::warn!(\"词库 {} 索引加载失败，跳过: {e}\", ld.info.name);\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "DictService::lookup",
+      "return_type": "-> Result<Option<DictEntry>>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 242
+        },
+        "start": {
+          "column": 5,
+          "line": 190
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/translation.rs:206:31: replace != with == in DictService::lookup",
+    "package": "reader_core",
+    "replacement": "==",
+    "span": {
+      "end": {
+        "column": 33,
+        "line": 206
+      },
+      "start": {
+        "column": 31,
+        "line": 206
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace += with -= in DictService::lookup\n@@ -202,17 +202,17 @@\n         }\n         let mut attempted = 0usize;\n         for ld in &self.registry {\n             if let Some(id) = dict_id {\n                 if ld.info.id != id {\n                     continue;\n                 }\n             }\n-            attempted += 1;\n+            attempted -= /* ~ changed by cargo-mutants ~ */ 1;\n             let idx = match ld.idx.get_or_init(|| stardict::load_idx(&ld.idx_bytes)) {\n                 Ok(v) => v,\n                 Err(e) => {\n                     log::warn!(\"词库 {} 索引加载失败，跳过: {e}\", ld.info.name);\n                     continue;\n                 }\n             };\n             let Some(entry) = stardict::lookup_entry(idx, word) else {\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "DictService::lookup",
+      "return_type": "-> Result<Option<DictEntry>>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 242
+        },
+        "start": {
+          "column": 5,
+          "line": 190
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/translation.rs:210:23: replace += with -= in DictService::lookup",
+    "package": "reader_core",
+    "replacement": "-=",
+    "span": {
+      "end": {
+        "column": 25,
+        "line": 210
+      },
+      "start": {
+        "column": 23,
+        "line": 210
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace += with *= in DictService::lookup\n@@ -202,17 +202,17 @@\n         }\n         let mut attempted = 0usize;\n         for ld in &self.registry {\n             if let Some(id) = dict_id {\n                 if ld.info.id != id {\n                     continue;\n                 }\n             }\n-            attempted += 1;\n+            attempted *= /* ~ changed by cargo-mutants ~ */ 1;\n             let idx = match ld.idx.get_or_init(|| stardict::load_idx(&ld.idx_bytes)) {\n                 Ok(v) => v,\n                 Err(e) => {\n                     log::warn!(\"词库 {} 索引加载失败，跳过: {e}\", ld.info.name);\n                     continue;\n                 }\n             };\n             let Some(entry) = stardict::lookup_entry(idx, word) else {\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "DictService::lookup",
+      "return_type": "-> Result<Option<DictEntry>>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 242
+        },
+        "start": {
+          "column": 5,
+          "line": 190
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/translation.rs:210:23: replace += with *= in DictService::lookup",
+    "package": "reader_core",
+    "replacement": "*=",
+    "span": {
+      "end": {
+        "column": 25,
+        "line": 210
+      },
+      "start": {
+        "column": 23,
+        "line": 210
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace == with != in DictService::lookup\n@@ -229,17 +229,17 @@\n             // 区段字节即 [offset, offset+size)，重定基后交给 parse_entry（其边界校验针对全文件）\n             let rebased = IdxEntry {\n                 word: entry.word.clone(),\n                 offset: 0,\n                 size: dict_bytes.len() as u32,\n             };\n             return stardict::parse_entry(seq, &dict_bytes, &rebased).map(Some);\n         }\n-        if attempted == 0 {\n+        if attempted != /* ~ changed by cargo-mutants ~ */ 0 {\n             Err(Error::Corrupt(\"已安装词库均无法读取\".to_string()))\n         } else {\n             Ok(None) // 查遍无命中 → 未收录（US-2）\n         }\n     }\n \n     /// 随机读 .dict 区段（只读命中条目，大词库无整包读取峰值）；偏移越界 → Corrupt（US-6）\n     fn read_region(&self, ld: &LoadedDict, entry: &IdxEntry) -> Result<Vec<u8>> {\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "DictService::lookup",
+      "return_type": "-> Result<Option<DictEntry>>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 242
+        },
+        "start": {
+          "column": 5,
+          "line": 190
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/translation.rs:237:22: replace == with != in DictService::lookup",
+    "package": "reader_core",
+    "replacement": "!=",
+    "span": {
+      "end": {
+        "column": 24,
+        "line": 237
+      },
+      "start": {
+        "column": 22,
+        "line": 237
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace DictService::read_region -> Result<Vec<u8>> with Ok(vec![])\n@@ -238,34 +238,17 @@\n             Err(Error::Corrupt(\"已安装词库均无法读取\".to_string()))\n         } else {\n             Ok(None) // 查遍无命中 → 未收录（US-2）\n         }\n     }\n \n     /// 随机读 .dict 区段（只读命中条目，大词库无整包读取峰值）；偏移越界 → Corrupt（US-6）\n     fn read_region(&self, ld: &LoadedDict, entry: &IdxEntry) -> Result<Vec<u8>> {\n-        let file = ld\n-            .dict_file\n-            .as_ref()\n-            .ok_or_else(|| Error::Corrupt(format!(\"词库 {} 缺少 .dict 文件\", ld.info.name)))?;\n-        let file_len = file.metadata().map_err(Error::Io)?.len();\n-        let end = entry.offset as u64 + entry.size as u64;\n-        if end > file_len {\n-            return Err(Error::Corrupt(format!(\n-                \"词条区段越界: {} (offset={} size={} file_len={})\",\n-                entry.word, entry.offset, entry.size, file_len\n-            )));\n-        }\n-        let mut buf = vec![0u8; entry.size as usize];\n-        (&*file).seek(SeekFrom::Start(entry.offset as u64)).map_err(Error::Io)?;\n-        (&*file)\n-            .read_exact(&mut buf)\n-            .map_err(Error::Io)?;\n-        Ok(buf)\n+        Ok(vec![]) /* ~ changed by cargo-mutants ~ */\n     }\n \n     fn unique_id(&self, bookname: &str) -> String {\n         let base = sanitize_id(bookname);\n         let mut candidate = base.clone();\n         let mut n = 2;\n         while self.registry.iter().any(|ld| ld.info.id == candidate) {\n             candidate = format!(\"{base}-{n}\");\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "DictService::read_region",
+      "return_type": "-> Result<Vec<u8>>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 264
+        },
+        "start": {
+          "column": 5,
+          "line": 244
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/translation.rs:246:9: replace DictService::read_region -> Result<Vec<u8>> with Ok(vec![])",
+    "package": "reader_core",
+    "replacement": "Ok(vec![])",
+    "span": {
+      "end": {
+        "column": 16,
+        "line": 263
+      },
+      "start": {
+        "column": 9,
+        "line": 246
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace DictService::read_region -> Result<Vec<u8>> with Ok(vec![0])\n@@ -238,34 +238,17 @@\n             Err(Error::Corrupt(\"已安装词库均无法读取\".to_string()))\n         } else {\n             Ok(None) // 查遍无命中 → 未收录（US-2）\n         }\n     }\n \n     /// 随机读 .dict 区段（只读命中条目，大词库无整包读取峰值）；偏移越界 → Corrupt（US-6）\n     fn read_region(&self, ld: &LoadedDict, entry: &IdxEntry) -> Result<Vec<u8>> {\n-        let file = ld\n-            .dict_file\n-            .as_ref()\n-            .ok_or_else(|| Error::Corrupt(format!(\"词库 {} 缺少 .dict 文件\", ld.info.name)))?;\n-        let file_len = file.metadata().map_err(Error::Io)?.len();\n-        let end = entry.offset as u64 + entry.size as u64;\n-        if end > file_len {\n-            return Err(Error::Corrupt(format!(\n-                \"词条区段越界: {} (offset={} size={} file_len={})\",\n-                entry.word, entry.offset, entry.size, file_len\n-            )));\n-        }\n-        let mut buf = vec![0u8; entry.size as usize];\n-        (&*file).seek(SeekFrom::Start(entry.offset as u64)).map_err(Error::Io)?;\n-        (&*file)\n-            .read_exact(&mut buf)\n-            .map_err(Error::Io)?;\n-        Ok(buf)\n+        Ok(vec![0]) /* ~ changed by cargo-mutants ~ */\n     }\n \n     fn unique_id(&self, bookname: &str) -> String {\n         let base = sanitize_id(bookname);\n         let mut candidate = base.clone();\n         let mut n = 2;\n         while self.registry.iter().any(|ld| ld.info.id == candidate) {\n             candidate = format!(\"{base}-{n}\");\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "DictService::read_region",
+      "return_type": "-> Result<Vec<u8>>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 264
+        },
+        "start": {
+          "column": 5,
+          "line": 244
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/translation.rs:246:9: replace DictService::read_region -> Result<Vec<u8>> with Ok(vec![0])",
+    "package": "reader_core",
+    "replacement": "Ok(vec![0])",
+    "span": {
+      "end": {
+        "column": 16,
+        "line": 263
+      },
+      "start": {
+        "column": 9,
+        "line": 246
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace DictService::read_region -> Result<Vec<u8>> with Ok(vec![1])\n@@ -238,34 +238,17 @@\n             Err(Error::Corrupt(\"已安装词库均无法读取\".to_string()))\n         } else {\n             Ok(None) // 查遍无命中 → 未收录（US-2）\n         }\n     }\n \n     /// 随机读 .dict 区段（只读命中条目，大词库无整包读取峰值）；偏移越界 → Corrupt（US-6）\n     fn read_region(&self, ld: &LoadedDict, entry: &IdxEntry) -> Result<Vec<u8>> {\n-        let file = ld\n-            .dict_file\n-            .as_ref()\n-            .ok_or_else(|| Error::Corrupt(format!(\"词库 {} 缺少 .dict 文件\", ld.info.name)))?;\n-        let file_len = file.metadata().map_err(Error::Io)?.len();\n-        let end = entry.offset as u64 + entry.size as u64;\n-        if end > file_len {\n-            return Err(Error::Corrupt(format!(\n-                \"词条区段越界: {} (offset={} size={} file_len={})\",\n-                entry.word, entry.offset, entry.size, file_len\n-            )));\n-        }\n-        let mut buf = vec![0u8; entry.size as usize];\n-        (&*file).seek(SeekFrom::Start(entry.offset as u64)).map_err(Error::Io)?;\n-        (&*file)\n-            .read_exact(&mut buf)\n-            .map_err(Error::Io)?;\n-        Ok(buf)\n+        Ok(vec![1]) /* ~ changed by cargo-mutants ~ */\n     }\n \n     fn unique_id(&self, bookname: &str) -> String {\n         let base = sanitize_id(bookname);\n         let mut candidate = base.clone();\n         let mut n = 2;\n         while self.registry.iter().any(|ld| ld.info.id == candidate) {\n             candidate = format!(\"{base}-{n}\");\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "DictService::read_region",
+      "return_type": "-> Result<Vec<u8>>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 264
+        },
+        "start": {
+          "column": 5,
+          "line": 244
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/translation.rs:246:9: replace DictService::read_region -> Result<Vec<u8>> with Ok(vec![1])",
+    "package": "reader_core",
+    "replacement": "Ok(vec![1])",
+    "span": {
+      "end": {
+        "column": 16,
+        "line": 263
+      },
+      "start": {
+        "column": 9,
+        "line": 246
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace + with - in DictService::read_region\n@@ -243,17 +243,17 @@\n \n     /// 随机读 .dict 区段（只读命中条目，大词库无整包读取峰值）；偏移越界 → Corrupt（US-6）\n     fn read_region(&self, ld: &LoadedDict, entry: &IdxEntry) -> Result<Vec<u8>> {\n         let file = ld\n             .dict_file\n             .as_ref()\n             .ok_or_else(|| Error::Corrupt(format!(\"词库 {} 缺少 .dict 文件\", ld.info.name)))?;\n         let file_len = file.metadata().map_err(Error::Io)?.len();\n-        let end = entry.offset as u64 + entry.size as u64;\n+        let end = entry.offset as u64 - /* ~ changed by cargo-mutants ~ */ entry.size as u64;\n         if end > file_len {\n             return Err(Error::Corrupt(format!(\n                 \"词条区段越界: {} (offset={} size={} file_len={})\",\n                 entry.word, entry.offset, entry.size, file_len\n             )));\n         }\n         let mut buf = vec![0u8; entry.size as usize];\n         (&*file).seek(SeekFrom::Start(entry.offset as u64)).map_err(Error::Io)?;\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "DictService::read_region",
+      "return_type": "-> Result<Vec<u8>>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 264
+        },
+        "start": {
+          "column": 5,
+          "line": 244
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/translation.rs:251:39: replace + with - in DictService::read_region",
+    "package": "reader_core",
+    "replacement": "-",
+    "span": {
+      "end": {
+        "column": 40,
+        "line": 251
+      },
+      "start": {
+        "column": 39,
+        "line": 251
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace + with * in DictService::read_region\n@@ -243,17 +243,17 @@\n \n     /// 随机读 .dict 区段（只读命中条目，大词库无整包读取峰值）；偏移越界 → Corrupt（US-6）\n     fn read_region(&self, ld: &LoadedDict, entry: &IdxEntry) -> Result<Vec<u8>> {\n         let file = ld\n             .dict_file\n             .as_ref()\n             .ok_or_else(|| Error::Corrupt(format!(\"词库 {} 缺少 .dict 文件\", ld.info.name)))?;\n         let file_len = file.metadata().map_err(Error::Io)?.len();\n-        let end = entry.offset as u64 + entry.size as u64;\n+        let end = entry.offset as u64 * /* ~ changed by cargo-mutants ~ */ entry.size as u64;\n         if end > file_len {\n             return Err(Error::Corrupt(format!(\n                 \"词条区段越界: {} (offset={} size={} file_len={})\",\n                 entry.word, entry.offset, entry.size, file_len\n             )));\n         }\n         let mut buf = vec![0u8; entry.size as usize];\n         (&*file).seek(SeekFrom::Start(entry.offset as u64)).map_err(Error::Io)?;\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "DictService::read_region",
+      "return_type": "-> Result<Vec<u8>>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 264
+        },
+        "start": {
+          "column": 5,
+          "line": 244
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/translation.rs:251:39: replace + with * in DictService::read_region",
+    "package": "reader_core",
+    "replacement": "*",
+    "span": {
+      "end": {
+        "column": 40,
+        "line": 251
+      },
+      "start": {
+        "column": 39,
+        "line": 251
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace > with == in DictService::read_region\n@@ -244,17 +244,17 @@\n     /// 随机读 .dict 区段（只读命中条目，大词库无整包读取峰值）；偏移越界 → Corrupt（US-6）\n     fn read_region(&self, ld: &LoadedDict, entry: &IdxEntry) -> Result<Vec<u8>> {\n         let file = ld\n             .dict_file\n             .as_ref()\n             .ok_or_else(|| Error::Corrupt(format!(\"词库 {} 缺少 .dict 文件\", ld.info.name)))?;\n         let file_len = file.metadata().map_err(Error::Io)?.len();\n         let end = entry.offset as u64 + entry.size as u64;\n-        if end > file_len {\n+        if end == /* ~ changed by cargo-mutants ~ */ file_len {\n             return Err(Error::Corrupt(format!(\n                 \"词条区段越界: {} (offset={} size={} file_len={})\",\n                 entry.word, entry.offset, entry.size, file_len\n             )));\n         }\n         let mut buf = vec![0u8; entry.size as usize];\n         (&*file).seek(SeekFrom::Start(entry.offset as u64)).map_err(Error::Io)?;\n         (&*file)\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "DictService::read_region",
+      "return_type": "-> Result<Vec<u8>>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 264
+        },
+        "start": {
+          "column": 5,
+          "line": 244
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/translation.rs:252:16: replace > with == in DictService::read_region",
+    "package": "reader_core",
+    "replacement": "==",
+    "span": {
+      "end": {
+        "column": 17,
+        "line": 252
+      },
+      "start": {
+        "column": 16,
+        "line": 252
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace > with < in DictService::read_region\n@@ -244,17 +244,17 @@\n     /// 随机读 .dict 区段（只读命中条目，大词库无整包读取峰值）；偏移越界 → Corrupt（US-6）\n     fn read_region(&self, ld: &LoadedDict, entry: &IdxEntry) -> Result<Vec<u8>> {\n         let file = ld\n             .dict_file\n             .as_ref()\n             .ok_or_else(|| Error::Corrupt(format!(\"词库 {} 缺少 .dict 文件\", ld.info.name)))?;\n         let file_len = file.metadata().map_err(Error::Io)?.len();\n         let end = entry.offset as u64 + entry.size as u64;\n-        if end > file_len {\n+        if end < /* ~ changed by cargo-mutants ~ */ file_len {\n             return Err(Error::Corrupt(format!(\n                 \"词条区段越界: {} (offset={} size={} file_len={})\",\n                 entry.word, entry.offset, entry.size, file_len\n             )));\n         }\n         let mut buf = vec![0u8; entry.size as usize];\n         (&*file).seek(SeekFrom::Start(entry.offset as u64)).map_err(Error::Io)?;\n         (&*file)\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "DictService::read_region",
+      "return_type": "-> Result<Vec<u8>>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 264
+        },
+        "start": {
+          "column": 5,
+          "line": 244
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/translation.rs:252:16: replace > with < in DictService::read_region",
+    "package": "reader_core",
+    "replacement": "<",
+    "span": {
+      "end": {
+        "column": 17,
+        "line": 252
+      },
+      "start": {
+        "column": 16,
+        "line": 252
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace > with >= in DictService::read_region\n@@ -244,17 +244,17 @@\n     /// 随机读 .dict 区段（只读命中条目，大词库无整包读取峰值）；偏移越界 → Corrupt（US-6）\n     fn read_region(&self, ld: &LoadedDict, entry: &IdxEntry) -> Result<Vec<u8>> {\n         let file = ld\n             .dict_file\n             .as_ref()\n             .ok_or_else(|| Error::Corrupt(format!(\"词库 {} 缺少 .dict 文件\", ld.info.name)))?;\n         let file_len = file.metadata().map_err(Error::Io)?.len();\n         let end = entry.offset as u64 + entry.size as u64;\n-        if end > file_len {\n+        if end >= /* ~ changed by cargo-mutants ~ */ file_len {\n             return Err(Error::Corrupt(format!(\n                 \"词条区段越界: {} (offset={} size={} file_len={})\",\n                 entry.word, entry.offset, entry.size, file_len\n             )));\n         }\n         let mut buf = vec![0u8; entry.size as usize];\n         (&*file).seek(SeekFrom::Start(entry.offset as u64)).map_err(Error::Io)?;\n         (&*file)\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "DictService::read_region",
+      "return_type": "-> Result<Vec<u8>>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 264
+        },
+        "start": {
+          "column": 5,
+          "line": 244
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/translation.rs:252:16: replace > with >= in DictService::read_region",
+    "package": "reader_core",
+    "replacement": ">=",
+    "span": {
+      "end": {
+        "column": 17,
+        "line": 252
+      },
+      "start": {
+        "column": 16,
+        "line": 252
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace DictService::unique_id -> String with String::new()\n@@ -259,24 +259,17 @@\n         (&*file).seek(SeekFrom::Start(entry.offset as u64)).map_err(Error::Io)?;\n         (&*file)\n             .read_exact(&mut buf)\n             .map_err(Error::Io)?;\n         Ok(buf)\n     }\n \n     fn unique_id(&self, bookname: &str) -> String {\n-        let base = sanitize_id(bookname);\n-        let mut candidate = base.clone();\n-        let mut n = 2;\n-        while self.registry.iter().any(|ld| ld.info.id == candidate) {\n-            candidate = format!(\"{base}-{n}\");\n-            n += 1;\n-        }\n-        candidate\n+        String::new() /* ~ changed by cargo-mutants ~ */\n     }\n }\n \n fn find_ifo_in(dir: &Path) -> Option<PathBuf> {\n     let entries = std::fs::read_dir(dir).ok()?;\n     let mut ifos: Vec<PathBuf> = entries\n         .filter_map(|e| e.ok().map(|e| e.path()))\n         .filter(|p| p.extension().and_then(|e| e.to_str()) == Some(\"ifo\"))\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "DictService::unique_id",
+      "return_type": "-> String",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 275
+        },
+        "start": {
+          "column": 5,
+          "line": 266
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/translation.rs:267:9: replace DictService::unique_id -> String with String::new()",
+    "package": "reader_core",
+    "replacement": "String::new()",
+    "span": {
+      "end": {
+        "column": 18,
+        "line": 274
+      },
+      "start": {
+        "column": 9,
+        "line": 267
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace DictService::unique_id -> String with \"xyzzy\".into()\n@@ -259,24 +259,17 @@\n         (&*file).seek(SeekFrom::Start(entry.offset as u64)).map_err(Error::Io)?;\n         (&*file)\n             .read_exact(&mut buf)\n             .map_err(Error::Io)?;\n         Ok(buf)\n     }\n \n     fn unique_id(&self, bookname: &str) -> String {\n-        let base = sanitize_id(bookname);\n-        let mut candidate = base.clone();\n-        let mut n = 2;\n-        while self.registry.iter().any(|ld| ld.info.id == candidate) {\n-            candidate = format!(\"{base}-{n}\");\n-            n += 1;\n-        }\n-        candidate\n+        \"xyzzy\".into() /* ~ changed by cargo-mutants ~ */\n     }\n }\n \n fn find_ifo_in(dir: &Path) -> Option<PathBuf> {\n     let entries = std::fs::read_dir(dir).ok()?;\n     let mut ifos: Vec<PathBuf> = entries\n         .filter_map(|e| e.ok().map(|e| e.path()))\n         .filter(|p| p.extension().and_then(|e| e.to_str()) == Some(\"ifo\"))\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "DictService::unique_id",
+      "return_type": "-> String",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 275
+        },
+        "start": {
+          "column": 5,
+          "line": 266
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/translation.rs:267:9: replace DictService::unique_id -> String with \"xyzzy\".into()",
+    "package": "reader_core",
+    "replacement": "\"xyzzy\".into()",
+    "span": {
+      "end": {
+        "column": 18,
+        "line": 274
+      },
+      "start": {
+        "column": 9,
+        "line": 267
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace == with != in DictService::unique_id\n@@ -262,17 +262,17 @@\n             .map_err(Error::Io)?;\n         Ok(buf)\n     }\n \n     fn unique_id(&self, bookname: &str) -> String {\n         let base = sanitize_id(bookname);\n         let mut candidate = base.clone();\n         let mut n = 2;\n-        while self.registry.iter().any(|ld| ld.info.id == candidate) {\n+        while self.registry.iter().any(|ld| ld.info.id != /* ~ changed by cargo-mutants ~ */ candidate) {\n             candidate = format!(\"{base}-{n}\");\n             n += 1;\n         }\n         candidate\n     }\n }\n \n fn find_ifo_in(dir: &Path) -> Option<PathBuf> {\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "DictService::unique_id",
+      "return_type": "-> String",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 275
+        },
+        "start": {
+          "column": 5,
+          "line": 266
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/translation.rs:270:56: replace == with != in DictService::unique_id",
+    "package": "reader_core",
+    "replacement": "!=",
+    "span": {
+      "end": {
+        "column": 58,
+        "line": 270
+      },
+      "start": {
+        "column": 56,
+        "line": 270
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace += with -= in DictService::unique_id\n@@ -264,17 +264,17 @@\n     }\n \n     fn unique_id(&self, bookname: &str) -> String {\n         let base = sanitize_id(bookname);\n         let mut candidate = base.clone();\n         let mut n = 2;\n         while self.registry.iter().any(|ld| ld.info.id == candidate) {\n             candidate = format!(\"{base}-{n}\");\n-            n += 1;\n+            n -= /* ~ changed by cargo-mutants ~ */ 1;\n         }\n         candidate\n     }\n }\n \n fn find_ifo_in(dir: &Path) -> Option<PathBuf> {\n     let entries = std::fs::read_dir(dir).ok()?;\n     let mut ifos: Vec<PathBuf> = entries\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "DictService::unique_id",
+      "return_type": "-> String",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 275
+        },
+        "start": {
+          "column": 5,
+          "line": 266
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/translation.rs:272:15: replace += with -= in DictService::unique_id",
+    "package": "reader_core",
+    "replacement": "-=",
+    "span": {
+      "end": {
+        "column": 17,
+        "line": 272
+      },
+      "start": {
+        "column": 15,
+        "line": 272
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace += with *= in DictService::unique_id\n@@ -264,17 +264,17 @@\n     }\n \n     fn unique_id(&self, bookname: &str) -> String {\n         let base = sanitize_id(bookname);\n         let mut candidate = base.clone();\n         let mut n = 2;\n         while self.registry.iter().any(|ld| ld.info.id == candidate) {\n             candidate = format!(\"{base}-{n}\");\n-            n += 1;\n+            n *= /* ~ changed by cargo-mutants ~ */ 1;\n         }\n         candidate\n     }\n }\n \n fn find_ifo_in(dir: &Path) -> Option<PathBuf> {\n     let entries = std::fs::read_dir(dir).ok()?;\n     let mut ifos: Vec<PathBuf> = entries\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "DictService::unique_id",
+      "return_type": "-> String",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 275
+        },
+        "start": {
+          "column": 5,
+          "line": 266
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/translation.rs:272:15: replace += with *= in DictService::unique_id",
+    "package": "reader_core",
+    "replacement": "*=",
+    "span": {
+      "end": {
+        "column": 17,
+        "line": 272
+      },
+      "start": {
+        "column": 15,
+        "line": 272
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace find_ifo_in -> Option<PathBuf> with None\n@@ -271,23 +271,17 @@\n             candidate = format!(\"{base}-{n}\");\n             n += 1;\n         }\n         candidate\n     }\n }\n \n fn find_ifo_in(dir: &Path) -> Option<PathBuf> {\n-    let entries = std::fs::read_dir(dir).ok()?;\n-    let mut ifos: Vec<PathBuf> = entries\n-        .filter_map(|e| e.ok().map(|e| e.path()))\n-        .filter(|p| p.extension().and_then(|e| e.to_str()) == Some(\"ifo\"))\n-        .collect();\n-    ifos.sort();\n-    ifos.into_iter().next()\n+    None /* ~ changed by cargo-mutants ~ */\n }\n \n /// 目录内词库文件名主干（id.ifo → id）\n fn dict_stem(ifo: &Path) -> String {\n     ifo.file_stem()\n         .map(|s| s.to_string_lossy().into_owned())\n         .unwrap_or_else(|| \"dict\".to_string())\n }\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "find_ifo_in",
+      "return_type": "-> Option<PathBuf>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 286
+        },
+        "start": {
+          "column": 1,
+          "line": 278
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/translation.rs:279:5: replace find_ifo_in -> Option<PathBuf> with None",
+    "package": "reader_core",
+    "replacement": "None",
+    "span": {
+      "end": {
+        "column": 28,
+        "line": 285
+      },
+      "start": {
+        "column": 5,
+        "line": 279
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace find_ifo_in -> Option<PathBuf> with Some(Default::default())\n@@ -271,23 +271,17 @@\n             candidate = format!(\"{base}-{n}\");\n             n += 1;\n         }\n         candidate\n     }\n }\n \n fn find_ifo_in(dir: &Path) -> Option<PathBuf> {\n-    let entries = std::fs::read_dir(dir).ok()?;\n-    let mut ifos: Vec<PathBuf> = entries\n-        .filter_map(|e| e.ok().map(|e| e.path()))\n-        .filter(|p| p.extension().and_then(|e| e.to_str()) == Some(\"ifo\"))\n-        .collect();\n-    ifos.sort();\n-    ifos.into_iter().next()\n+    Some(Default::default()) /* ~ changed by cargo-mutants ~ */\n }\n \n /// 目录内词库文件名主干（id.ifo → id）\n fn dict_stem(ifo: &Path) -> String {\n     ifo.file_stem()\n         .map(|s| s.to_string_lossy().into_owned())\n         .unwrap_or_else(|| \"dict\".to_string())\n }\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "find_ifo_in",
+      "return_type": "-> Option<PathBuf>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 286
+        },
+        "start": {
+          "column": 1,
+          "line": 278
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/translation.rs:279:5: replace find_ifo_in -> Option<PathBuf> with Some(Default::default())",
+    "package": "reader_core",
+    "replacement": "Some(Default::default())",
+    "span": {
+      "end": {
+        "column": 28,
+        "line": 285
+      },
+      "start": {
+        "column": 5,
+        "line": 279
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace == with != in find_ifo_in\n@@ -274,17 +274,17 @@\n         candidate\n     }\n }\n \n fn find_ifo_in(dir: &Path) -> Option<PathBuf> {\n     let entries = std::fs::read_dir(dir).ok()?;\n     let mut ifos: Vec<PathBuf> = entries\n         .filter_map(|e| e.ok().map(|e| e.path()))\n-        .filter(|p| p.extension().and_then(|e| e.to_str()) == Some(\"ifo\"))\n+        .filter(|p| p.extension().and_then(|e| e.to_str()) != /* ~ changed by cargo-mutants ~ */ Some(\"ifo\"))\n         .collect();\n     ifos.sort();\n     ifos.into_iter().next()\n }\n \n /// 目录内词库文件名主干（id.ifo → id）\n fn dict_stem(ifo: &Path) -> String {\n     ifo.file_stem()\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "find_ifo_in",
+      "return_type": "-> Option<PathBuf>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 286
+        },
+        "start": {
+          "column": 1,
+          "line": 278
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/translation.rs:282:60: replace == with != in find_ifo_in",
+    "package": "reader_core",
+    "replacement": "!=",
+    "span": {
+      "end": {
+        "column": 62,
+        "line": 282
+      },
+      "start": {
+        "column": 60,
+        "line": 282
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace dict_stem -> String with String::new()\n@@ -282,19 +282,17 @@\n         .filter(|p| p.extension().and_then(|e| e.to_str()) == Some(\"ifo\"))\n         .collect();\n     ifos.sort();\n     ifos.into_iter().next()\n }\n \n /// 目录内词库文件名主干（id.ifo → id）\n fn dict_stem(ifo: &Path) -> String {\n-    ifo.file_stem()\n-        .map(|s| s.to_string_lossy().into_owned())\n-        .unwrap_or_else(|| \"dict\".to_string())\n+    String::new() /* ~ changed by cargo-mutants ~ */\n }\n \n /// 取 `<base>.dict` 或 `<base>.dict.dz`（都存在时优先 .dict）；base 无扩展名\n fn dict_path_of(base: &Path) -> Option<PathBuf> {\n     let plain = base.with_extension(\"dict\");\n     if plain.exists() {\n         return Some(plain);\n     }\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "dict_stem",
+      "return_type": "-> String",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 293
+        },
+        "start": {
+          "column": 1,
+          "line": 288
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/translation.rs:290:5: replace dict_stem -> String with String::new()",
+    "package": "reader_core",
+    "replacement": "String::new()",
+    "span": {
+      "end": {
+        "column": 47,
+        "line": 292
+      },
+      "start": {
+        "column": 5,
+        "line": 290
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace dict_stem -> String with \"xyzzy\".into()\n@@ -282,19 +282,17 @@\n         .filter(|p| p.extension().and_then(|e| e.to_str()) == Some(\"ifo\"))\n         .collect();\n     ifos.sort();\n     ifos.into_iter().next()\n }\n \n /// 目录内词库文件名主干（id.ifo → id）\n fn dict_stem(ifo: &Path) -> String {\n-    ifo.file_stem()\n-        .map(|s| s.to_string_lossy().into_owned())\n-        .unwrap_or_else(|| \"dict\".to_string())\n+    \"xyzzy\".into() /* ~ changed by cargo-mutants ~ */\n }\n \n /// 取 `<base>.dict` 或 `<base>.dict.dz`（都存在时优先 .dict）；base 无扩展名\n fn dict_path_of(base: &Path) -> Option<PathBuf> {\n     let plain = base.with_extension(\"dict\");\n     if plain.exists() {\n         return Some(plain);\n     }\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "dict_stem",
+      "return_type": "-> String",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 293
+        },
+        "start": {
+          "column": 1,
+          "line": 288
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/translation.rs:290:5: replace dict_stem -> String with \"xyzzy\".into()",
+    "package": "reader_core",
+    "replacement": "\"xyzzy\".into()",
+    "span": {
+      "end": {
+        "column": 47,
+        "line": 292
+      },
+      "start": {
+        "column": 5,
+        "line": 290
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace dict_path_of -> Option<PathBuf> with None\n@@ -289,25 +289,17 @@\n fn dict_stem(ifo: &Path) -> String {\n     ifo.file_stem()\n         .map(|s| s.to_string_lossy().into_owned())\n         .unwrap_or_else(|| \"dict\".to_string())\n }\n \n /// 取 `<base>.dict` 或 `<base>.dict.dz`（都存在时优先 .dict）；base 无扩展名\n fn dict_path_of(base: &Path) -> Option<PathBuf> {\n-    let plain = base.with_extension(\"dict\");\n-    if plain.exists() {\n-        return Some(plain);\n-    }\n-    let dz = PathBuf::from(format!(\"{}.dict.dz\", base.display()));\n-    if dz.exists() {\n-        return Some(dz);\n-    }\n-    None\n+    None /* ~ changed by cargo-mutants ~ */\n }\n \n /// 去掉 .ifo 后缀（大小写不敏感）得基名\n fn strip_ifo(path: &Path) -> PathBuf {\n     let s = path.display().to_string();\n     let lower = s.to_ascii_lowercase();\n     if lower.ends_with(\".ifo\") {\n         PathBuf::from(&s[..s.len() - 4])\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "dict_path_of",
+      "return_type": "-> Option<PathBuf>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 306
+        },
+        "start": {
+          "column": 1,
+          "line": 295
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/translation.rs:297:5: replace dict_path_of -> Option<PathBuf> with None",
+    "package": "reader_core",
+    "replacement": "None",
+    "span": {
+      "end": {
+        "column": 9,
+        "line": 305
+      },
+      "start": {
+        "column": 5,
+        "line": 297
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace dict_path_of -> Option<PathBuf> with Some(Default::default())\n@@ -289,25 +289,17 @@\n fn dict_stem(ifo: &Path) -> String {\n     ifo.file_stem()\n         .map(|s| s.to_string_lossy().into_owned())\n         .unwrap_or_else(|| \"dict\".to_string())\n }\n \n /// 取 `<base>.dict` 或 `<base>.dict.dz`（都存在时优先 .dict）；base 无扩展名\n fn dict_path_of(base: &Path) -> Option<PathBuf> {\n-    let plain = base.with_extension(\"dict\");\n-    if plain.exists() {\n-        return Some(plain);\n-    }\n-    let dz = PathBuf::from(format!(\"{}.dict.dz\", base.display()));\n-    if dz.exists() {\n-        return Some(dz);\n-    }\n-    None\n+    Some(Default::default()) /* ~ changed by cargo-mutants ~ */\n }\n \n /// 去掉 .ifo 后缀（大小写不敏感）得基名\n fn strip_ifo(path: &Path) -> PathBuf {\n     let s = path.display().to_string();\n     let lower = s.to_ascii_lowercase();\n     if lower.ends_with(\".ifo\") {\n         PathBuf::from(&s[..s.len() - 4])\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "dict_path_of",
+      "return_type": "-> Option<PathBuf>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 306
+        },
+        "start": {
+          "column": 1,
+          "line": 295
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/translation.rs:297:5: replace dict_path_of -> Option<PathBuf> with Some(Default::default())",
+    "package": "reader_core",
+    "replacement": "Some(Default::default())",
+    "span": {
+      "end": {
+        "column": 9,
+        "line": 305
+      },
+      "start": {
+        "column": 5,
+        "line": 297
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace strip_ifo -> PathBuf with Default::default()\n@@ -302,23 +302,17 @@\n     if dz.exists() {\n         return Some(dz);\n     }\n     None\n }\n \n /// 去掉 .ifo 后缀（大小写不敏感）得基名\n fn strip_ifo(path: &Path) -> PathBuf {\n-    let s = path.display().to_string();\n-    let lower = s.to_ascii_lowercase();\n-    if lower.ends_with(\".ifo\") {\n-        PathBuf::from(&s[..s.len() - 4])\n-    } else {\n-        path.with_extension(\"\")\n-    }\n+    Default::default() /* ~ changed by cargo-mutants ~ */\n }\n \n /// bookname 消毒作目录名/id（幂等键）；空 → \"dict\"；截断防超长路径。\n /// 消毒结果过于退化（如中文词库名全映射为下划线，仅剩 \"5_0\" 这类）→ 回退\n /// \"dict-<fnv32 哈希>\"，避免不同中文名词库 id 碰撞（langdao-ec/ce 实测）。\n fn sanitize_id(name: &str) -> String {\n     let mut s: String = name\n         .chars()\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "strip_ifo",
+      "return_type": "-> PathBuf",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 317
+        },
+        "start": {
+          "column": 1,
+          "line": 308
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/translation.rs:310:5: replace strip_ifo -> PathBuf with Default::default()",
+    "package": "reader_core",
+    "replacement": "Default::default()",
+    "span": {
+      "end": {
+        "column": 6,
+        "line": 316
+      },
+      "start": {
+        "column": 5,
+        "line": 310
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace - with + in strip_ifo\n@@ -305,17 +305,17 @@\n     None\n }\n \n /// 去掉 .ifo 后缀（大小写不敏感）得基名\n fn strip_ifo(path: &Path) -> PathBuf {\n     let s = path.display().to_string();\n     let lower = s.to_ascii_lowercase();\n     if lower.ends_with(\".ifo\") {\n-        PathBuf::from(&s[..s.len() - 4])\n+        PathBuf::from(&s[..s.len() + /* ~ changed by cargo-mutants ~ */ 4])\n     } else {\n         path.with_extension(\"\")\n     }\n }\n \n /// bookname 消毒作目录名/id（幂等键）；空 → \"dict\"；截断防超长路径。\n /// 消毒结果过于退化（如中文词库名全映射为下划线，仅剩 \"5_0\" 这类）→ 回退\n /// \"dict-<fnv32 哈希>\"，避免不同中文名词库 id 碰撞（langdao-ec/ce 实测）。\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "strip_ifo",
+      "return_type": "-> PathBuf",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 317
+        },
+        "start": {
+          "column": 1,
+          "line": 308
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/translation.rs:313:36: replace - with + in strip_ifo",
+    "package": "reader_core",
+    "replacement": "+",
+    "span": {
+      "end": {
+        "column": 37,
+        "line": 313
+      },
+      "start": {
+        "column": 36,
+        "line": 313
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace - with / in strip_ifo\n@@ -305,17 +305,17 @@\n     None\n }\n \n /// 去掉 .ifo 后缀（大小写不敏感）得基名\n fn strip_ifo(path: &Path) -> PathBuf {\n     let s = path.display().to_string();\n     let lower = s.to_ascii_lowercase();\n     if lower.ends_with(\".ifo\") {\n-        PathBuf::from(&s[..s.len() - 4])\n+        PathBuf::from(&s[..s.len() / /* ~ changed by cargo-mutants ~ */ 4])\n     } else {\n         path.with_extension(\"\")\n     }\n }\n \n /// bookname 消毒作目录名/id（幂等键）；空 → \"dict\"；截断防超长路径。\n /// 消毒结果过于退化（如中文词库名全映射为下划线，仅剩 \"5_0\" 这类）→ 回退\n /// \"dict-<fnv32 哈希>\"，避免不同中文名词库 id 碰撞（langdao-ec/ce 实测）。\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "strip_ifo",
+      "return_type": "-> PathBuf",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 317
+        },
+        "start": {
+          "column": 1,
+          "line": 308
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/translation.rs:313:36: replace - with / in strip_ifo",
+    "package": "reader_core",
+    "replacement": "/",
+    "span": {
+      "end": {
+        "column": 37,
+        "line": 313
+      },
+      "start": {
+        "column": 36,
+        "line": 313
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace sanitize_id -> String with String::new()\n@@ -315,37 +315,17 @@\n         path.with_extension(\"\")\n     }\n }\n \n /// bookname 消毒作目录名/id（幂等键）；空 → \"dict\"；截断防超长路径。\n /// 消毒结果过于退化（如中文词库名全映射为下划线，仅剩 \"5_0\" 这类）→ 回退\n /// \"dict-<fnv32 哈希>\"，避免不同中文名词库 id 碰撞（langdao-ec/ce 实测）。\n fn sanitize_id(name: &str) -> String {\n-    let mut s: String = name\n-        .chars()\n-        .map(|c| {\n-            if c.is_ascii_alphanumeric() || c == '-' || c == '_' {\n-                c\n-            } else {\n-                '_'\n-            }\n-        })\n-        .collect();\n-    if s.is_empty() {\n-        s = \"dict\".to_string();\n-    }\n-    if s.len() > 64 {\n-        s.truncate(64);\n-    }\n-    let alnum_count = s.chars().filter(|c| c.is_ascii_alphanumeric()).count();\n-    if alnum_count < 3 {\n-        s = format!(\"dict-{:08x}\", fnv32(name));\n-    }\n-    s\n+    String::new() /* ~ changed by cargo-mutants ~ */\n }\n \n /// FNV-1a 32 位稳定哈希（仅用于 id 消歧，无密码学用途）\n fn fnv32(s: &str) -> u32 {\n     let mut h: u32 = 0x811c_9dc5;\n     for b in s.as_bytes() {\n         h ^= *b as u32;\n         h = h.wrapping_mul(0x0100_0193);\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "sanitize_id",
+      "return_type": "-> String",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 344
+        },
+        "start": {
+          "column": 1,
+          "line": 319
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/translation.rs:323:5: replace sanitize_id -> String with String::new()",
+    "package": "reader_core",
+    "replacement": "String::new()",
+    "span": {
+      "end": {
+        "column": 6,
+        "line": 343
+      },
+      "start": {
+        "column": 5,
+        "line": 323
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace sanitize_id -> String with \"xyzzy\".into()\n@@ -315,37 +315,17 @@\n         path.with_extension(\"\")\n     }\n }\n \n /// bookname 消毒作目录名/id（幂等键）；空 → \"dict\"；截断防超长路径。\n /// 消毒结果过于退化（如中文词库名全映射为下划线，仅剩 \"5_0\" 这类）→ 回退\n /// \"dict-<fnv32 哈希>\"，避免不同中文名词库 id 碰撞（langdao-ec/ce 实测）。\n fn sanitize_id(name: &str) -> String {\n-    let mut s: String = name\n-        .chars()\n-        .map(|c| {\n-            if c.is_ascii_alphanumeric() || c == '-' || c == '_' {\n-                c\n-            } else {\n-                '_'\n-            }\n-        })\n-        .collect();\n-    if s.is_empty() {\n-        s = \"dict\".to_string();\n-    }\n-    if s.len() > 64 {\n-        s.truncate(64);\n-    }\n-    let alnum_count = s.chars().filter(|c| c.is_ascii_alphanumeric()).count();\n-    if alnum_count < 3 {\n-        s = format!(\"dict-{:08x}\", fnv32(name));\n-    }\n-    s\n+    \"xyzzy\".into() /* ~ changed by cargo-mutants ~ */\n }\n \n /// FNV-1a 32 位稳定哈希（仅用于 id 消歧，无密码学用途）\n fn fnv32(s: &str) -> u32 {\n     let mut h: u32 = 0x811c_9dc5;\n     for b in s.as_bytes() {\n         h ^= *b as u32;\n         h = h.wrapping_mul(0x0100_0193);\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "sanitize_id",
+      "return_type": "-> String",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 344
+        },
+        "start": {
+          "column": 1,
+          "line": 319
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/translation.rs:323:5: replace sanitize_id -> String with \"xyzzy\".into()",
+    "package": "reader_core",
+    "replacement": "\"xyzzy\".into()",
+    "span": {
+      "end": {
+        "column": 6,
+        "line": 343
+      },
+      "start": {
+        "column": 5,
+        "line": 323
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace || with && in sanitize_id\n@@ -318,17 +318,17 @@\n \n /// bookname 消毒作目录名/id（幂等键）；空 → \"dict\"；截断防超长路径。\n /// 消毒结果过于退化（如中文词库名全映射为下划线，仅剩 \"5_0\" 这类）→ 回退\n /// \"dict-<fnv32 哈希>\"，避免不同中文名词库 id 碰撞（langdao-ec/ce 实测）。\n fn sanitize_id(name: &str) -> String {\n     let mut s: String = name\n         .chars()\n         .map(|c| {\n-            if c.is_ascii_alphanumeric() || c == '-' || c == '_' {\n+            if c.is_ascii_alphanumeric() || c == '-' && /* ~ changed by cargo-mutants ~ */ c == '_' {\n                 c\n             } else {\n                 '_'\n             }\n         })\n         .collect();\n     if s.is_empty() {\n         s = \"dict\".to_string();\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "sanitize_id",
+      "return_type": "-> String",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 344
+        },
+        "start": {
+          "column": 1,
+          "line": 319
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/translation.rs:326:54: replace || with && in sanitize_id",
+    "package": "reader_core",
+    "replacement": "&&",
+    "span": {
+      "end": {
+        "column": 56,
+        "line": 326
+      },
+      "start": {
+        "column": 54,
+        "line": 326
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace || with && in sanitize_id\n@@ -318,17 +318,17 @@\n \n /// bookname 消毒作目录名/id（幂等键）；空 → \"dict\"；截断防超长路径。\n /// 消毒结果过于退化（如中文词库名全映射为下划线，仅剩 \"5_0\" 这类）→ 回退\n /// \"dict-<fnv32 哈希>\"，避免不同中文名词库 id 碰撞（langdao-ec/ce 实测）。\n fn sanitize_id(name: &str) -> String {\n     let mut s: String = name\n         .chars()\n         .map(|c| {\n-            if c.is_ascii_alphanumeric() || c == '-' || c == '_' {\n+            if c.is_ascii_alphanumeric() && /* ~ changed by cargo-mutants ~ */ c == '-' || c == '_' {\n                 c\n             } else {\n                 '_'\n             }\n         })\n         .collect();\n     if s.is_empty() {\n         s = \"dict\".to_string();\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "sanitize_id",
+      "return_type": "-> String",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 344
+        },
+        "start": {
+          "column": 1,
+          "line": 319
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/translation.rs:326:42: replace || with && in sanitize_id",
+    "package": "reader_core",
+    "replacement": "&&",
+    "span": {
+      "end": {
+        "column": 44,
+        "line": 326
+      },
+      "start": {
+        "column": 42,
+        "line": 326
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace == with != in sanitize_id\n@@ -318,17 +318,17 @@\n \n /// bookname 消毒作目录名/id（幂等键）；空 → \"dict\"；截断防超长路径。\n /// 消毒结果过于退化（如中文词库名全映射为下划线，仅剩 \"5_0\" 这类）→ 回退\n /// \"dict-<fnv32 哈希>\"，避免不同中文名词库 id 碰撞（langdao-ec/ce 实测）。\n fn sanitize_id(name: &str) -> String {\n     let mut s: String = name\n         .chars()\n         .map(|c| {\n-            if c.is_ascii_alphanumeric() || c == '-' || c == '_' {\n+            if c.is_ascii_alphanumeric() || c != /* ~ changed by cargo-mutants ~ */ '-' || c == '_' {\n                 c\n             } else {\n                 '_'\n             }\n         })\n         .collect();\n     if s.is_empty() {\n         s = \"dict\".to_string();\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "sanitize_id",
+      "return_type": "-> String",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 344
+        },
+        "start": {
+          "column": 1,
+          "line": 319
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/translation.rs:326:47: replace == with != in sanitize_id",
+    "package": "reader_core",
+    "replacement": "!=",
+    "span": {
+      "end": {
+        "column": 49,
+        "line": 326
+      },
+      "start": {
+        "column": 47,
+        "line": 326
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace == with != in sanitize_id\n@@ -318,17 +318,17 @@\n \n /// bookname 消毒作目录名/id（幂等键）；空 → \"dict\"；截断防超长路径。\n /// 消毒结果过于退化（如中文词库名全映射为下划线，仅剩 \"5_0\" 这类）→ 回退\n /// \"dict-<fnv32 哈希>\"，避免不同中文名词库 id 碰撞（langdao-ec/ce 实测）。\n fn sanitize_id(name: &str) -> String {\n     let mut s: String = name\n         .chars()\n         .map(|c| {\n-            if c.is_ascii_alphanumeric() || c == '-' || c == '_' {\n+            if c.is_ascii_alphanumeric() || c == '-' || c != /* ~ changed by cargo-mutants ~ */ '_' {\n                 c\n             } else {\n                 '_'\n             }\n         })\n         .collect();\n     if s.is_empty() {\n         s = \"dict\".to_string();\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "sanitize_id",
+      "return_type": "-> String",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 344
+        },
+        "start": {
+          "column": 1,
+          "line": 319
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/translation.rs:326:59: replace == with != in sanitize_id",
+    "package": "reader_core",
+    "replacement": "!=",
+    "span": {
+      "end": {
+        "column": 61,
+        "line": 326
+      },
+      "start": {
+        "column": 59,
+        "line": 326
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace > with == in sanitize_id\n@@ -328,17 +328,17 @@\n             } else {\n                 '_'\n             }\n         })\n         .collect();\n     if s.is_empty() {\n         s = \"dict\".to_string();\n     }\n-    if s.len() > 64 {\n+    if s.len() == /* ~ changed by cargo-mutants ~ */ 64 {\n         s.truncate(64);\n     }\n     let alnum_count = s.chars().filter(|c| c.is_ascii_alphanumeric()).count();\n     if alnum_count < 3 {\n         s = format!(\"dict-{:08x}\", fnv32(name));\n     }\n     s\n }\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "sanitize_id",
+      "return_type": "-> String",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 344
+        },
+        "start": {
+          "column": 1,
+          "line": 319
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/translation.rs:336:16: replace > with == in sanitize_id",
+    "package": "reader_core",
+    "replacement": "==",
+    "span": {
+      "end": {
+        "column": 17,
+        "line": 336
+      },
+      "start": {
+        "column": 16,
+        "line": 336
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace > with < in sanitize_id\n@@ -328,17 +328,17 @@\n             } else {\n                 '_'\n             }\n         })\n         .collect();\n     if s.is_empty() {\n         s = \"dict\".to_string();\n     }\n-    if s.len() > 64 {\n+    if s.len() < /* ~ changed by cargo-mutants ~ */ 64 {\n         s.truncate(64);\n     }\n     let alnum_count = s.chars().filter(|c| c.is_ascii_alphanumeric()).count();\n     if alnum_count < 3 {\n         s = format!(\"dict-{:08x}\", fnv32(name));\n     }\n     s\n }\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "sanitize_id",
+      "return_type": "-> String",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 344
+        },
+        "start": {
+          "column": 1,
+          "line": 319
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/translation.rs:336:16: replace > with < in sanitize_id",
+    "package": "reader_core",
+    "replacement": "<",
+    "span": {
+      "end": {
+        "column": 17,
+        "line": 336
+      },
+      "start": {
+        "column": 16,
+        "line": 336
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace > with >= in sanitize_id\n@@ -328,17 +328,17 @@\n             } else {\n                 '_'\n             }\n         })\n         .collect();\n     if s.is_empty() {\n         s = \"dict\".to_string();\n     }\n-    if s.len() > 64 {\n+    if s.len() >= /* ~ changed by cargo-mutants ~ */ 64 {\n         s.truncate(64);\n     }\n     let alnum_count = s.chars().filter(|c| c.is_ascii_alphanumeric()).count();\n     if alnum_count < 3 {\n         s = format!(\"dict-{:08x}\", fnv32(name));\n     }\n     s\n }\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "sanitize_id",
+      "return_type": "-> String",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 344
+        },
+        "start": {
+          "column": 1,
+          "line": 319
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/translation.rs:336:16: replace > with >= in sanitize_id",
+    "package": "reader_core",
+    "replacement": ">=",
+    "span": {
+      "end": {
+        "column": 17,
+        "line": 336
+      },
+      "start": {
+        "column": 16,
+        "line": 336
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace < with == in sanitize_id\n@@ -332,17 +332,17 @@\n         .collect();\n     if s.is_empty() {\n         s = \"dict\".to_string();\n     }\n     if s.len() > 64 {\n         s.truncate(64);\n     }\n     let alnum_count = s.chars().filter(|c| c.is_ascii_alphanumeric()).count();\n-    if alnum_count < 3 {\n+    if alnum_count == /* ~ changed by cargo-mutants ~ */ 3 {\n         s = format!(\"dict-{:08x}\", fnv32(name));\n     }\n     s\n }\n \n /// FNV-1a 32 位稳定哈希（仅用于 id 消歧，无密码学用途）\n fn fnv32(s: &str) -> u32 {\n     let mut h: u32 = 0x811c_9dc5;\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "sanitize_id",
+      "return_type": "-> String",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 344
+        },
+        "start": {
+          "column": 1,
+          "line": 319
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/translation.rs:340:20: replace < with == in sanitize_id",
+    "package": "reader_core",
+    "replacement": "==",
+    "span": {
+      "end": {
+        "column": 21,
+        "line": 340
+      },
+      "start": {
+        "column": 20,
+        "line": 340
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace < with > in sanitize_id\n@@ -332,17 +332,17 @@\n         .collect();\n     if s.is_empty() {\n         s = \"dict\".to_string();\n     }\n     if s.len() > 64 {\n         s.truncate(64);\n     }\n     let alnum_count = s.chars().filter(|c| c.is_ascii_alphanumeric()).count();\n-    if alnum_count < 3 {\n+    if alnum_count > /* ~ changed by cargo-mutants ~ */ 3 {\n         s = format!(\"dict-{:08x}\", fnv32(name));\n     }\n     s\n }\n \n /// FNV-1a 32 位稳定哈希（仅用于 id 消歧，无密码学用途）\n fn fnv32(s: &str) -> u32 {\n     let mut h: u32 = 0x811c_9dc5;\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "sanitize_id",
+      "return_type": "-> String",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 344
+        },
+        "start": {
+          "column": 1,
+          "line": 319
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/translation.rs:340:20: replace < with > in sanitize_id",
+    "package": "reader_core",
+    "replacement": ">",
+    "span": {
+      "end": {
+        "column": 21,
+        "line": 340
+      },
+      "start": {
+        "column": 20,
+        "line": 340
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace < with <= in sanitize_id\n@@ -332,17 +332,17 @@\n         .collect();\n     if s.is_empty() {\n         s = \"dict\".to_string();\n     }\n     if s.len() > 64 {\n         s.truncate(64);\n     }\n     let alnum_count = s.chars().filter(|c| c.is_ascii_alphanumeric()).count();\n-    if alnum_count < 3 {\n+    if alnum_count <= /* ~ changed by cargo-mutants ~ */ 3 {\n         s = format!(\"dict-{:08x}\", fnv32(name));\n     }\n     s\n }\n \n /// FNV-1a 32 位稳定哈希（仅用于 id 消歧，无密码学用途）\n fn fnv32(s: &str) -> u32 {\n     let mut h: u32 = 0x811c_9dc5;\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "sanitize_id",
+      "return_type": "-> String",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 344
+        },
+        "start": {
+          "column": 1,
+          "line": 319
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/translation.rs:340:20: replace < with <= in sanitize_id",
+    "package": "reader_core",
+    "replacement": "<=",
+    "span": {
+      "end": {
+        "column": 21,
+        "line": 340
+      },
+      "start": {
+        "column": 20,
+        "line": 340
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace fnv32 -> u32 with 0\n@@ -340,22 +340,17 @@\n     if alnum_count < 3 {\n         s = format!(\"dict-{:08x}\", fnv32(name));\n     }\n     s\n }\n \n /// FNV-1a 32 位稳定哈希（仅用于 id 消歧，无密码学用途）\n fn fnv32(s: &str) -> u32 {\n-    let mut h: u32 = 0x811c_9dc5;\n-    for b in s.as_bytes() {\n-        h ^= *b as u32;\n-        h = h.wrapping_mul(0x0100_0193);\n-    }\n-    h\n+    0 /* ~ changed by cargo-mutants ~ */\n }\n \n // ===================== TranslationService（缓存优先编排） =====================\n \n /// 翻译服务（缓存优先；US-9~14）\n pub struct TranslationService {\n     cache: Box<dyn TranslationCacheRepository + Send>,\n     config: Box<dyn ProviderConfig + Send>,\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "fnv32",
+      "return_type": "-> u32",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 354
+        },
+        "start": {
+          "column": 1,
+          "line": 346
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/translation.rs:348:5: replace fnv32 -> u32 with 0",
+    "package": "reader_core",
+    "replacement": "0",
+    "span": {
+      "end": {
+        "column": 6,
+        "line": 353
+      },
+      "start": {
+        "column": 5,
+        "line": 348
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace fnv32 -> u32 with 1\n@@ -340,22 +340,17 @@\n     if alnum_count < 3 {\n         s = format!(\"dict-{:08x}\", fnv32(name));\n     }\n     s\n }\n \n /// FNV-1a 32 位稳定哈希（仅用于 id 消歧，无密码学用途）\n fn fnv32(s: &str) -> u32 {\n-    let mut h: u32 = 0x811c_9dc5;\n-    for b in s.as_bytes() {\n-        h ^= *b as u32;\n-        h = h.wrapping_mul(0x0100_0193);\n-    }\n-    h\n+    1 /* ~ changed by cargo-mutants ~ */\n }\n \n // ===================== TranslationService（缓存优先编排） =====================\n \n /// 翻译服务（缓存优先；US-9~14）\n pub struct TranslationService {\n     cache: Box<dyn TranslationCacheRepository + Send>,\n     config: Box<dyn ProviderConfig + Send>,\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "fnv32",
+      "return_type": "-> u32",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 354
+        },
+        "start": {
+          "column": 1,
+          "line": 346
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/translation.rs:348:5: replace fnv32 -> u32 with 1",
+    "package": "reader_core",
+    "replacement": "1",
+    "span": {
+      "end": {
+        "column": 6,
+        "line": 353
+      },
+      "start": {
+        "column": 5,
+        "line": 348
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace ^= with |= in fnv32\n@@ -342,17 +342,17 @@\n     }\n     s\n }\n \n /// FNV-1a 32 位稳定哈希（仅用于 id 消歧，无密码学用途）\n fn fnv32(s: &str) -> u32 {\n     let mut h: u32 = 0x811c_9dc5;\n     for b in s.as_bytes() {\n-        h ^= *b as u32;\n+        h |= /* ~ changed by cargo-mutants ~ */ *b as u32;\n         h = h.wrapping_mul(0x0100_0193);\n     }\n     h\n }\n \n // ===================== TranslationService（缓存优先编排） =====================\n \n /// 翻译服务（缓存优先；US-9~14）\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "fnv32",
+      "return_type": "-> u32",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 354
+        },
+        "start": {
+          "column": 1,
+          "line": 346
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/translation.rs:350:11: replace ^= with |= in fnv32",
+    "package": "reader_core",
+    "replacement": "|=",
+    "span": {
+      "end": {
+        "column": 13,
+        "line": 350
+      },
+      "start": {
+        "column": 11,
+        "line": 350
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace ^= with &= in fnv32\n@@ -342,17 +342,17 @@\n     }\n     s\n }\n \n /// FNV-1a 32 位稳定哈希（仅用于 id 消歧，无密码学用途）\n fn fnv32(s: &str) -> u32 {\n     let mut h: u32 = 0x811c_9dc5;\n     for b in s.as_bytes() {\n-        h ^= *b as u32;\n+        h &= /* ~ changed by cargo-mutants ~ */ *b as u32;\n         h = h.wrapping_mul(0x0100_0193);\n     }\n     h\n }\n \n // ===================== TranslationService（缓存优先编排） =====================\n \n /// 翻译服务（缓存优先；US-9~14）\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "fnv32",
+      "return_type": "-> u32",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 354
+        },
+        "start": {
+          "column": 1,
+          "line": 346
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/translation.rs:350:11: replace ^= with &= in fnv32",
+    "package": "reader_core",
+    "replacement": "&=",
+    "span": {
+      "end": {
+        "column": 13,
+        "line": 350
+      },
+      "start": {
+        "column": 11,
+        "line": 350
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace TranslationService::translate_cached -> Result<(Translation, bool)> with Ok((Default::default(), true))\n@@ -377,55 +377,17 @@\n \n     /// 翻译（缓存优先）；返回 (译文, 是否命中缓存)。from_cache 供 api 层标注（US-10/13）。\n     pub fn translate_cached(\n         &mut self,\n         text: &str,\n         from: Lang,\n         to: Lang,\n     ) -> Result<(Translation, bool)> {\n-        let norm = normalize_text(text);\n-        if norm.is_empty() {\n-            return Err(Error::Other(\"待翻译文本为空\".to_string()));\n-        }\n-        let provider_name = self.config.default_provider()?;\n-        let provider = self\n-            .providers\n-            .iter()\n-            .find(|p| p.name() == provider_name)\n-            .ok_or_else(|| Error::NotConfigured(format!(\"未知翻译 Provider: {provider_name}\")))?\n-            .as_ref();\n-\n-        // US-12：未配置 key → NotConfigured（含\"API Key\"语义），不 panic\n-        if self.config.provider_key(&provider_name)?.is_none() {\n-            return Err(Error::NotConfigured(format!(\n-                \"翻译服务未配置：{provider_name} 未配置 API Key，请先在设置中配置\"\n-            )));\n-        }\n-\n-        let key = CacheKey {\n-            source_text: norm.clone(),\n-            from_lang: from,\n-            to_lang: to,\n-            provider: provider_name.clone(),\n-        };\n-        // 缓存优先：命中 → incr_hit + 直返（0 网络，US-10/14）\n-        if let Some(entry) = self.cache.cache_get(&key)? {\n-            self.cache.cache_incr_hit(&key)?;\n-            return Ok((entry.result, true));\n-        }\n-        // 未命中 → 调 Provider；失败不写缓存（US-12），Network 错误已携带原文\n-        let t = provider.translate(&norm, from, to)?;\n-        self.cache.cache_put(&CacheEntry {\n-            key,\n-            result: t.clone(),\n-            created_at: now_unix(),\n-            hit_count: 1,\n-        })?;\n-        Ok((t, false))\n+        Ok((Default::default(), true)) /* ~ changed by cargo-mutants ~ */\n     }\n \n     /// 翻译（薄包装，保持 02-design §2.4 签名）\n     pub fn translate(&mut self, text: &str, from: Lang, to: Lang) -> Result<Translation> {\n         self.translate_cached(text, from, to).map(|(t, _)| t)\n     }\n \n     pub fn clear_cache(&mut self) -> Result<()> {\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "TranslationService::translate_cached",
+      "return_type": "-> Result<(Translation, bool)>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 424
+        },
+        "start": {
+          "column": 5,
+          "line": 378
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/translation.rs:385:9: replace TranslationService::translate_cached -> Result<(Translation, bool)> with Ok((Default::default(), true))",
+    "package": "reader_core",
+    "replacement": "Ok((Default::default(), true))",
+    "span": {
+      "end": {
+        "column": 23,
+        "line": 423
+      },
+      "start": {
+        "column": 9,
+        "line": 385
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace TranslationService::translate_cached -> Result<(Translation, bool)> with Ok((Default::default(), false))\n@@ -377,55 +377,17 @@\n \n     /// 翻译（缓存优先）；返回 (译文, 是否命中缓存)。from_cache 供 api 层标注（US-10/13）。\n     pub fn translate_cached(\n         &mut self,\n         text: &str,\n         from: Lang,\n         to: Lang,\n     ) -> Result<(Translation, bool)> {\n-        let norm = normalize_text(text);\n-        if norm.is_empty() {\n-            return Err(Error::Other(\"待翻译文本为空\".to_string()));\n-        }\n-        let provider_name = self.config.default_provider()?;\n-        let provider = self\n-            .providers\n-            .iter()\n-            .find(|p| p.name() == provider_name)\n-            .ok_or_else(|| Error::NotConfigured(format!(\"未知翻译 Provider: {provider_name}\")))?\n-            .as_ref();\n-\n-        // US-12：未配置 key → NotConfigured（含\"API Key\"语义），不 panic\n-        if self.config.provider_key(&provider_name)?.is_none() {\n-            return Err(Error::NotConfigured(format!(\n-                \"翻译服务未配置：{provider_name} 未配置 API Key，请先在设置中配置\"\n-            )));\n-        }\n-\n-        let key = CacheKey {\n-            source_text: norm.clone(),\n-            from_lang: from,\n-            to_lang: to,\n-            provider: provider_name.clone(),\n-        };\n-        // 缓存优先：命中 → incr_hit + 直返（0 网络，US-10/14）\n-        if let Some(entry) = self.cache.cache_get(&key)? {\n-            self.cache.cache_incr_hit(&key)?;\n-            return Ok((entry.result, true));\n-        }\n-        // 未命中 → 调 Provider；失败不写缓存（US-12），Network 错误已携带原文\n-        let t = provider.translate(&norm, from, to)?;\n-        self.cache.cache_put(&CacheEntry {\n-            key,\n-            result: t.clone(),\n-            created_at: now_unix(),\n-            hit_count: 1,\n-        })?;\n-        Ok((t, false))\n+        Ok((Default::default(), false)) /* ~ changed by cargo-mutants ~ */\n     }\n \n     /// 翻译（薄包装，保持 02-design §2.4 签名）\n     pub fn translate(&mut self, text: &str, from: Lang, to: Lang) -> Result<Translation> {\n         self.translate_cached(text, from, to).map(|(t, _)| t)\n     }\n \n     pub fn clear_cache(&mut self) -> Result<()> {\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "TranslationService::translate_cached",
+      "return_type": "-> Result<(Translation, bool)>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 424
+        },
+        "start": {
+          "column": 5,
+          "line": 378
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/translation.rs:385:9: replace TranslationService::translate_cached -> Result<(Translation, bool)> with Ok((Default::default(), false))",
+    "package": "reader_core",
+    "replacement": "Ok((Default::default(), false))",
+    "span": {
+      "end": {
+        "column": 23,
+        "line": 423
+      },
+      "start": {
+        "column": 9,
+        "line": 385
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace == with != in TranslationService::translate_cached\n@@ -385,17 +385,17 @@\n         let norm = normalize_text(text);\n         if norm.is_empty() {\n             return Err(Error::Other(\"待翻译文本为空\".to_string()));\n         }\n         let provider_name = self.config.default_provider()?;\n         let provider = self\n             .providers\n             .iter()\n-            .find(|p| p.name() == provider_name)\n+            .find(|p| p.name() != /* ~ changed by cargo-mutants ~ */ provider_name)\n             .ok_or_else(|| Error::NotConfigured(format!(\"未知翻译 Provider: {provider_name}\")))?\n             .as_ref();\n \n         // US-12：未配置 key → NotConfigured（含\"API Key\"语义），不 panic\n         if self.config.provider_key(&provider_name)?.is_none() {\n             return Err(Error::NotConfigured(format!(\n                 \"翻译服务未配置：{provider_name} 未配置 API Key，请先在设置中配置\"\n             )));\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "TranslationService::translate_cached",
+      "return_type": "-> Result<(Translation, bool)>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 424
+        },
+        "start": {
+          "column": 5,
+          "line": 378
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/translation.rs:393:32: replace == with != in TranslationService::translate_cached",
+    "package": "reader_core",
+    "replacement": "!=",
+    "span": {
+      "end": {
+        "column": 34,
+        "line": 393
+      },
+      "start": {
+        "column": 32,
+        "line": 393
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace TranslationService::translate -> Result<Translation> with Ok(Default::default())\n@@ -420,17 +420,17 @@\n             created_at: now_unix(),\n             hit_count: 1,\n         })?;\n         Ok((t, false))\n     }\n \n     /// 翻译（薄包装，保持 02-design §2.4 签名）\n     pub fn translate(&mut self, text: &str, from: Lang, to: Lang) -> Result<Translation> {\n-        self.translate_cached(text, from, to).map(|(t, _)| t)\n+        Ok(Default::default()) /* ~ changed by cargo-mutants ~ */\n     }\n \n     pub fn clear_cache(&mut self) -> Result<()> {\n         self.cache.cache_clear()\n     }\n \n     /// 写 settings（set_provider_key + set_default_provider）并对注册 Provider 调 configure\n     /// （ADR 关联裁定2：`translate_set_config(\"echo\",\"\")` 切 echo 即无 key 演示）\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "TranslationService::translate",
+      "return_type": "-> Result<Translation>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 429
+        },
+        "start": {
+          "column": 5,
+          "line": 426
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/translation.rs:428:9: replace TranslationService::translate -> Result<Translation> with Ok(Default::default())",
+    "package": "reader_core",
+    "replacement": "Ok(Default::default())",
+    "span": {
+      "end": {
+        "column": 62,
+        "line": 428
+      },
+      "start": {
+        "column": 9,
+        "line": 428
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace TranslationService::clear_cache -> Result<()> with Ok(())\n@@ -424,17 +424,17 @@\n     }\n \n     /// 翻译（薄包装，保持 02-design §2.4 签名）\n     pub fn translate(&mut self, text: &str, from: Lang, to: Lang) -> Result<Translation> {\n         self.translate_cached(text, from, to).map(|(t, _)| t)\n     }\n \n     pub fn clear_cache(&mut self) -> Result<()> {\n-        self.cache.cache_clear()\n+        Ok(()) /* ~ changed by cargo-mutants ~ */\n     }\n \n     /// 写 settings（set_provider_key + set_default_provider）并对注册 Provider 调 configure\n     /// （ADR 关联裁定2：`translate_set_config(\"echo\",\"\")` 切 echo 即无 key 演示）\n     pub fn set_config(&mut self, provider: &str, key: &str) -> Result<()> {\n         self.config.set_provider_key(provider, key)?;\n         self.config.set_default_provider(provider)?;\n         for p in &mut self.providers {\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "TranslationService::clear_cache",
+      "return_type": "-> Result<()>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 433
+        },
+        "start": {
+          "column": 5,
+          "line": 431
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/translation.rs:432:9: replace TranslationService::clear_cache -> Result<()> with Ok(())",
+    "package": "reader_core",
+    "replacement": "Ok(())",
+    "span": {
+      "end": {
+        "column": 33,
+        "line": 432
+      },
+      "start": {
+        "column": 9,
+        "line": 432
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace TranslationService::set_config -> Result<()> with Ok(())\n@@ -430,24 +430,17 @@\n \n     pub fn clear_cache(&mut self) -> Result<()> {\n         self.cache.cache_clear()\n     }\n \n     /// 写 settings（set_provider_key + set_default_provider）并对注册 Provider 调 configure\n     /// （ADR 关联裁定2：`translate_set_config(\"echo\",\"\")` 切 echo 即无 key 演示）\n     pub fn set_config(&mut self, provider: &str, key: &str) -> Result<()> {\n-        self.config.set_provider_key(provider, key)?;\n-        self.config.set_default_provider(provider)?;\n-        for p in &mut self.providers {\n-            if p.name() == provider {\n-                p.configure(Some(key));\n-            }\n-        }\n-        Ok(())\n+        Ok(()) /* ~ changed by cargo-mutants ~ */\n     }\n }\n \n /// 连续空白折叠为单空格并 trim（US-9 跨行自动合并）\n pub fn normalize_text(s: &str) -> String {\n     let mut out = String::with_capacity(s.len());\n     let mut last_ws = false;\n     for c in s.chars() {\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "TranslationService::set_config",
+      "return_type": "-> Result<()>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 446
+        },
+        "start": {
+          "column": 5,
+          "line": 435
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/translation.rs:438:9: replace TranslationService::set_config -> Result<()> with Ok(())",
+    "package": "reader_core",
+    "replacement": "Ok(())",
+    "span": {
+      "end": {
+        "column": 15,
+        "line": 445
+      },
+      "start": {
+        "column": 9,
+        "line": 438
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace == with != in TranslationService::set_config\n@@ -433,17 +433,17 @@\n     }\n \n     /// 写 settings（set_provider_key + set_default_provider）并对注册 Provider 调 configure\n     /// （ADR 关联裁定2：`translate_set_config(\"echo\",\"\")` 切 echo 即无 key 演示）\n     pub fn set_config(&mut self, provider: &str, key: &str) -> Result<()> {\n         self.config.set_provider_key(provider, key)?;\n         self.config.set_default_provider(provider)?;\n         for p in &mut self.providers {\n-            if p.name() == provider {\n+            if p.name() != /* ~ changed by cargo-mutants ~ */ provider {\n                 p.configure(Some(key));\n             }\n         }\n         Ok(())\n     }\n }\n \n /// 连续空白折叠为单空格并 trim（US-9 跨行自动合并）\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "TranslationService::set_config",
+      "return_type": "-> Result<()>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 446
+        },
+        "start": {
+          "column": 5,
+          "line": 435
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/translation.rs:441:25: replace == with != in TranslationService::set_config",
+    "package": "reader_core",
+    "replacement": "!=",
+    "span": {
+      "end": {
+        "column": 27,
+        "line": 441
+      },
+      "start": {
+        "column": 25,
+        "line": 441
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace normalize_text -> String with String::new()\n@@ -443,30 +443,17 @@\n             }\n         }\n         Ok(())\n     }\n }\n \n /// 连续空白折叠为单空格并 trim（US-9 跨行自动合并）\n pub fn normalize_text(s: &str) -> String {\n-    let mut out = String::with_capacity(s.len());\n-    let mut last_ws = false;\n-    for c in s.chars() {\n-        if c.is_whitespace() {\n-            if !out.is_empty() && !last_ws {\n-                out.push(' ');\n-            }\n-            last_ws = true;\n-        } else {\n-            out.push(c);\n-            last_ws = false;\n-        }\n-    }\n-    out.trim().to_string()\n+    String::new() /* ~ changed by cargo-mutants ~ */\n }\n \n fn now_unix() -> i64 {\n     std::time::SystemTime::now()\n         .duration_since(std::time::UNIX_EPOCH)\n         .map(|d| d.as_secs() as i64)\n         .unwrap_or(0)\n }\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "normalize_text",
+      "return_type": "-> String",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 465
+        },
+        "start": {
+          "column": 1,
+          "line": 449
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/translation.rs:451:5: replace normalize_text -> String with String::new()",
+    "package": "reader_core",
+    "replacement": "String::new()",
+    "span": {
+      "end": {
+        "column": 27,
+        "line": 464
+      },
+      "start": {
+        "column": 5,
+        "line": 451
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace normalize_text -> String with \"xyzzy\".into()\n@@ -443,30 +443,17 @@\n             }\n         }\n         Ok(())\n     }\n }\n \n /// 连续空白折叠为单空格并 trim（US-9 跨行自动合并）\n pub fn normalize_text(s: &str) -> String {\n-    let mut out = String::with_capacity(s.len());\n-    let mut last_ws = false;\n-    for c in s.chars() {\n-        if c.is_whitespace() {\n-            if !out.is_empty() && !last_ws {\n-                out.push(' ');\n-            }\n-            last_ws = true;\n-        } else {\n-            out.push(c);\n-            last_ws = false;\n-        }\n-    }\n-    out.trim().to_string()\n+    \"xyzzy\".into() /* ~ changed by cargo-mutants ~ */\n }\n \n fn now_unix() -> i64 {\n     std::time::SystemTime::now()\n         .duration_since(std::time::UNIX_EPOCH)\n         .map(|d| d.as_secs() as i64)\n         .unwrap_or(0)\n }\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "normalize_text",
+      "return_type": "-> String",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 465
+        },
+        "start": {
+          "column": 1,
+          "line": 449
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/translation.rs:451:5: replace normalize_text -> String with \"xyzzy\".into()",
+    "package": "reader_core",
+    "replacement": "\"xyzzy\".into()",
+    "span": {
+      "end": {
+        "column": 27,
+        "line": 464
+      },
+      "start": {
+        "column": 5,
+        "line": 451
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace && with || in normalize_text\n@@ -447,17 +447,17 @@\n }\n \n /// 连续空白折叠为单空格并 trim（US-9 跨行自动合并）\n pub fn normalize_text(s: &str) -> String {\n     let mut out = String::with_capacity(s.len());\n     let mut last_ws = false;\n     for c in s.chars() {\n         if c.is_whitespace() {\n-            if !out.is_empty() && !last_ws {\n+            if !out.is_empty() || /* ~ changed by cargo-mutants ~ */ !last_ws {\n                 out.push(' ');\n             }\n             last_ws = true;\n         } else {\n             out.push(c);\n             last_ws = false;\n         }\n     }\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "normalize_text",
+      "return_type": "-> String",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 465
+        },
+        "start": {
+          "column": 1,
+          "line": 449
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/translation.rs:455:32: replace && with || in normalize_text",
+    "package": "reader_core",
+    "replacement": "||",
+    "span": {
+      "end": {
+        "column": 34,
+        "line": 455
+      },
+      "start": {
+        "column": 32,
+        "line": 455
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ delete ! in normalize_text\n@@ -447,17 +447,17 @@\n }\n \n /// 连续空白折叠为单空格并 trim（US-9 跨行自动合并）\n pub fn normalize_text(s: &str) -> String {\n     let mut out = String::with_capacity(s.len());\n     let mut last_ws = false;\n     for c in s.chars() {\n         if c.is_whitespace() {\n-            if !out.is_empty() && !last_ws {\n+            if  /* ~ changed by cargo-mutants ~ */out.is_empty() && !last_ws {\n                 out.push(' ');\n             }\n             last_ws = true;\n         } else {\n             out.push(c);\n             last_ws = false;\n         }\n     }\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "normalize_text",
+      "return_type": "-> String",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 465
+        },
+        "start": {
+          "column": 1,
+          "line": 449
+        }
+      }
+    },
+    "genre": "UnaryOperator",
+    "name": "src/dict/translation.rs:455:16: delete ! in normalize_text",
+    "package": "reader_core",
+    "replacement": "",
+    "span": {
+      "end": {
+        "column": 17,
+        "line": 455
+      },
+      "start": {
+        "column": 16,
+        "line": 455
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ delete ! in normalize_text\n@@ -447,17 +447,17 @@\n }\n \n /// 连续空白折叠为单空格并 trim（US-9 跨行自动合并）\n pub fn normalize_text(s: &str) -> String {\n     let mut out = String::with_capacity(s.len());\n     let mut last_ws = false;\n     for c in s.chars() {\n         if c.is_whitespace() {\n-            if !out.is_empty() && !last_ws {\n+            if !out.is_empty() &&  /* ~ changed by cargo-mutants ~ */last_ws {\n                 out.push(' ');\n             }\n             last_ws = true;\n         } else {\n             out.push(c);\n             last_ws = false;\n         }\n     }\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "normalize_text",
+      "return_type": "-> String",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 465
+        },
+        "start": {
+          "column": 1,
+          "line": 449
+        }
+      }
+    },
+    "genre": "UnaryOperator",
+    "name": "src/dict/translation.rs:455:35: delete ! in normalize_text",
+    "package": "reader_core",
+    "replacement": "",
+    "span": {
+      "end": {
+        "column": 36,
+        "line": 455
+      },
+      "start": {
+        "column": 35,
+        "line": 455
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace now_unix -> i64 with 0\n@@ -460,20 +460,17 @@\n             out.push(c);\n             last_ws = false;\n         }\n     }\n     out.trim().to_string()\n }\n \n fn now_unix() -> i64 {\n-    std::time::SystemTime::now()\n-        .duration_since(std::time::UNIX_EPOCH)\n-        .map(|d| d.as_secs() as i64)\n-        .unwrap_or(0)\n+    0 /* ~ changed by cargo-mutants ~ */\n }\n \n #[cfg(test)]\n mod tests {\n     use super::*;\n     use crate::dict::provider::{CountingProvider, EchoProvider, FailingProvider};\n     use std::collections::HashMap;\n     use std::io::Write;\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "now_unix",
+      "return_type": "-> i64",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 472
+        },
+        "start": {
+          "column": 1,
+          "line": 467
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/translation.rs:468:5: replace now_unix -> i64 with 0",
+    "package": "reader_core",
+    "replacement": "0",
+    "span": {
+      "end": {
+        "column": 22,
+        "line": 471
+      },
+      "start": {
+        "column": 5,
+        "line": 468
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace now_unix -> i64 with 1\n@@ -460,20 +460,17 @@\n             out.push(c);\n             last_ws = false;\n         }\n     }\n     out.trim().to_string()\n }\n \n fn now_unix() -> i64 {\n-    std::time::SystemTime::now()\n-        .duration_since(std::time::UNIX_EPOCH)\n-        .map(|d| d.as_secs() as i64)\n-        .unwrap_or(0)\n+    1 /* ~ changed by cargo-mutants ~ */\n }\n \n #[cfg(test)]\n mod tests {\n     use super::*;\n     use crate::dict::provider::{CountingProvider, EchoProvider, FailingProvider};\n     use std::collections::HashMap;\n     use std::io::Write;\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "now_unix",
+      "return_type": "-> i64",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 472
+        },
+        "start": {
+          "column": 1,
+          "line": 467
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/translation.rs:468:5: replace now_unix -> i64 with 1",
+    "package": "reader_core",
+    "replacement": "1",
+    "span": {
+      "end": {
+        "column": 22,
+        "line": 471
+      },
+      "start": {
+        "column": 5,
+        "line": 468
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/translation.rs\n+++ replace now_unix -> i64 with -1\n@@ -460,20 +460,17 @@\n             out.push(c);\n             last_ws = false;\n         }\n     }\n     out.trim().to_string()\n }\n \n fn now_unix() -> i64 {\n-    std::time::SystemTime::now()\n-        .duration_since(std::time::UNIX_EPOCH)\n-        .map(|d| d.as_secs() as i64)\n-        .unwrap_or(0)\n+    -1 /* ~ changed by cargo-mutants ~ */\n }\n \n #[cfg(test)]\n mod tests {\n     use super::*;\n     use crate::dict::provider::{CountingProvider, EchoProvider, FailingProvider};\n     use std::collections::HashMap;\n     use std::io::Write;\n",
+    "file": "src/dict/translation.rs",
+    "function": {
+      "function_name": "now_unix",
+      "return_type": "-> i64",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 472
+        },
+        "start": {
+          "column": 1,
+          "line": 467
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/translation.rs:468:5: replace now_unix -> i64 with -1",
+    "package": "reader_core",
+    "replacement": "-1",
+    "span": {
+      "end": {
+        "column": 22,
+        "line": 471
+      },
+      "start": {
+        "column": 5,
+        "line": 468
+      }
+    }
+  }
+]

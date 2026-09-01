@@ -1,0 +1,21 @@
+--- src/store/translation.rs
++++ replace TranslationRepo::provider_key_setting -> String with String::new()
+@@ -30,17 +30,17 @@
+         let conn = Connection::open(data_dir.join("library.db")).map_err(Error::from)?;
+         conn.execute_batch("PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;")
+             .map_err(Error::from)?;
+         migrate_conn(&conn)?;
+         Ok(TranslationRepo { conn })
+     }
+ 
+     fn provider_key_setting(provider: &str) -> String {
+-        format!("translate.key.{provider}")
++        String::new() /* ~ changed by cargo-mutants ~ */
+     }
+ }
+ 
+ impl TranslationCacheRepository for TranslationRepo {
+     fn cache_get(&self, key: &CacheKey) -> Result<Option<CacheEntry>> {
+         let row: Option<(String, i64, i64)> = self
+             .conn
+             .query_row(

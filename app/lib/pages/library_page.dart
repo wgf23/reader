@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../services/library_backend.dart';
 import '../services/rust_library_backend.dart';
+import '../services/rust_translate_backend.dart';
 import 'reader_page.dart';
 
 /// 书架页（线框 01）。P0：真实接入 Rust 书库（导入/列表/打开）。
@@ -134,6 +135,8 @@ class _LibraryPageState extends State<LibraryPage> {
                   bookId: b.id,
                   bookTitle: b.title,
                   backend: _backend,
+                  // REQ-003：翻译/查词后端（选中文本入口）
+                  translateBackend: RustTranslateBackend(),
                 ),
               ),
             );

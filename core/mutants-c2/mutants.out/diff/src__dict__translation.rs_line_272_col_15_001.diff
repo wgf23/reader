@@ -1,0 +1,21 @@
+--- src/dict/translation.rs
++++ replace += with *= in DictService::unique_id
+@@ -264,17 +264,17 @@
+     }
+ 
+     fn unique_id(&self, bookname: &str) -> String {
+         let base = sanitize_id(bookname);
+         let mut candidate = base.clone();
+         let mut n = 2;
+         while self.registry.iter().any(|ld| ld.info.id == candidate) {
+             candidate = format!("{base}-{n}");
+-            n += 1;
++            n *= /* ~ changed by cargo-mutants ~ */ 1;
+         }
+         candidate
+     }
+ }
+ 
+ fn find_ifo_in(dir: &Path) -> Option<PathBuf> {
+     let entries = std::fs::read_dir(dir).ok()?;
+     let mut ifos: Vec<PathBuf> = entries

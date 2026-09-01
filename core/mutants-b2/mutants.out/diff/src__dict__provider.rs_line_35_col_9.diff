@@ -1,0 +1,47 @@
+--- src/dict/provider.rs
++++ replace <impl TranslationProvider for DeepLProvider>::translate -> Result<Translation> with Ok(Default::default())
+@@ -27,43 +27,17 @@
+ }
+ 
+ impl TranslationProvider for DeepLProvider {
+     fn name(&self) -> &str {
+         "deepl"
+     }
+ 
+     fn translate(&self, text: &str, from: Lang, to: Lang) -> Result<Translation> {
+-        let key = self.key.clone().ok_or_else(|| {
+-            Error::NotConfigured("DeepL 未配置 API Key，请先在设置中配置".to_string())
+-        })?;
+-        let body = deepl_body(text, from, to);
+-        let resp = ureq::post("https://api-free.deepl.com/v2/translate")
+-            .set("Authorization", &format!("DeepL-Auth-Key {key}"))
+-            .send_json(body)
+-            .map_err(|e| Error::Network {
+-                detail: format!("DeepL 请求失败: {e}"),
+-                source_text: text.to_string(),
+-            })?;
+-        let json: serde_json::Value = resp.into_json().map_err(|e| Error::Network {
+-            detail: format!("DeepL 响应解析失败: {e}"),
+-            source_text: text.to_string(),
+-        })?;
+-        let translated = json["translations"][0]["text"].as_str().ok_or_else(|| {
+-            Error::Network {
+-                detail: "DeepL 响应缺少 translations[0].text".to_string(),
+-                source_text: text.to_string(),
+-            }
+-        })?;
+-        Ok(Translation {
+-            text: translated.to_string(),
+-            from,
+-            to,
+-            provider: self.name().to_string(),
+-        })
++        Ok(Default::default()) /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     fn configure(&mut self, key: Option<&str>) {
+         self.key = key.map(|s| s.to_string());
+     }
+ }
+ 
+ /// Echo Provider（mock/演示）：无 key 可用，返回 "译文:" + 原文。

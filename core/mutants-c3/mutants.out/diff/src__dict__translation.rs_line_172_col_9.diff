@@ -1,0 +1,31 @@
+--- src/dict/translation.rs
++++ replace DictService::remove -> Result<()> with Ok(())
+@@ -164,27 +164,17 @@
+             idx_bytes,
+             dict_file: File::open(&target_dict).ok(),
+         });
+         Ok(info)
+     }
+ 
+     /// 移除词库：删目录 + 注销；未注册 → Err(NotFound)。
+     pub fn remove(&mut self, dict_id: &str) -> Result<()> {
+-        let pos = self
+-            .registry
+-            .iter()
+-            .position(|ld| ld.info.id == dict_id)
+-            .ok_or_else(|| Error::NotFound(format!("词库不存在: {dict_id}")))?;
+-        let ld = self.registry.remove(pos);
+-        let dir = PathBuf::from(&ld.info.path);
+-        if dir.is_dir() {
+-            std::fs::remove_dir_all(&dir).map_err(Error::Io)?;
+-        }
+-        Ok(())
++        Ok(()) /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     /// 已装词库列表（安装顺序，US-5/7）
+     pub fn list(&self) -> Result<Vec<DictInfo>> {
+         Ok(self.registry.iter().map(|ld| ld.info.clone()).collect())
+     }
+ 
+     /// 查词：注册表空 → Err("未安装词库…")（US-3）；多词库按安装顺序取首个命中（US-5）；

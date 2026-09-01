@@ -25,6 +25,7 @@ class PagedWebView extends StatefulWidget {
     this.fontSize = 16,
     this.theme = 'light',
     this.onProgress,
+    this.onSelectedText,
   });
 
   final String bookId;
@@ -36,6 +37,9 @@ class PagedWebView extends StatefulWidget {
 
   /// 章内进度回调（0..1，由分页 JS 上报）
   final ValueChanged<double>? onProgress;
+
+  /// REQ-003：选区文本回传（最小选区机制，ADR 决策点2；`selectionchange` JS 监听上报）
+  final ValueChanged<String>? onSelectedText;
 
   @override
   State<PagedWebView> createState() => PagedWebViewState();
@@ -93,6 +97,29 @@ class PagedWebViewState extends State<PagedWebView> {
     return v == 'true';
   }
 
+  /// JS → Dart 回调：`readerFlutter`（进度）与 `selectedText`（选区文本，REQ-003）。
+  /// flutter_inappwebview 6.x：经 `addJavaScriptHandler` 在控制器上注册。
+  void _registerJsHandlers(InAppWebViewController controller) {
+    controller.addJavaScriptHandler(
+      handlerName: 'readerFlutter',
+      callback: (args) {
+        final p = args.isNotEmpty ? args[0] : null;
+        widget.onProgress?.call(p is num ? p.toDouble() : 0.0);
+        return null;
+      },
+    );
+    controller.addJavaScriptHandler(
+      handlerName: 'selectedText',
+      callback: (args) {
+        final text = args.isNotEmpty ? args[0] : null;
+        if (text is String && text.isNotEmpty) {
+          widget.onSelectedText?.call(text);
+        }
+        return null;
+      },
+    );
+  }
+
   // ---- 对外操作（阅读器页调用） ----
   Future<bool> nextPage() => _runBool('readerPager.next()');
   Future<bool> prevPage() => _runBool('readerPager.prev()');
@@ -114,7 +141,10 @@ class PagedWebViewState extends State<PagedWebView> {
         useShouldInterceptRequest: true,
         transparentBackground: false,
       ),
-      onWebViewCreated: (c) => _controller = c,
+      onWebViewCreated: (c) {
+        _controller = c;
+        _registerJsHandlers(c);
+      },
       shouldInterceptRequest: _intercept,
       onLoadStop: _onLoadStop,
       onConsoleMessage: (_, __) {},
@@ -171,6 +201,16 @@ const String paginationJs = r'''
   window.readerPager = api;
   window.addEventListener('load', function () {
     try { window.readerPager.applyStyle(16, 'light'); window.readerPager.relayout(); } catch (e) {}
+  });
+  // REQ-003：最小选区回传（ADR 决策点2）——选区文本非空时经 callHandler 上报
+  document.addEventListener('selectionchange', function () {
+    try {
+      var sel = window.getSelection();
+      var txt = sel ? sel.toString() : '';
+      if (txt && txt.trim().length > 0) {
+        window.flutter_inappwebview.callHandler('selectedText', txt);
+      }
+    } catch (e) {}
   });
   return api;
 })();

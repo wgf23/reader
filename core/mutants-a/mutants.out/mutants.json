@@ -1,0 +1,3042 @@
+[
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace parse_ifo -> Result<IfoMeta> with Ok(Default::default())\n@@ -28,53 +28,17 @@\n pub(crate) struct IdxEntry {\n     pub word: String,\n     pub offset: u32,\n     pub size: u32,\n }\n \n /// 解析 .ifo：`key=value` 行；`wordcount` 必填（缺失 → Corrupt）。\n pub(crate) fn parse_ifo(path: &Path) -> Result<IfoMeta> {\n-    let text = std::fs::read_to_string(path).map_err(Error::Io)?;\n-    let mut bookname = String::new();\n-    let mut wordcount: Option<u64> = None;\n-    let mut idxfilesize: Option<u64> = None;\n-    let mut sametypesequence: Option<String> = None;\n-    for line in text.lines() {\n-        let line = line.trim();\n-        if line.is_empty() || line.starts_with('#') {\n-            continue;\n-        }\n-        let Some((k, v)) = line.split_once('=') else { continue };\n-        match k.trim() {\n-            \"bookname\" => bookname = v.trim().to_string(),\n-            \"wordcount\" => {\n-                wordcount = v.trim().parse::<u64>().ok().or(wordcount);\n-            }\n-            \"idxfilesize\" => {\n-                idxfilesize = v.trim().parse::<u64>().ok().or(idxfilesize);\n-            }\n-            \"sametypesequence\" => sametypesequence = Some(v.trim().to_string()),\n-            _ => {}\n-        }\n-    }\n-    let wordcount = wordcount\n-        .ok_or_else(|| Error::Corrupt(format!(\"词库 .ifo 缺少 wordcount 字段: {}\", path.display())))?;\n-    if bookname.is_empty() {\n-        bookname = path\n-            .file_stem()\n-            .map(|s| s.to_string_lossy().into_owned())\n-            .unwrap_or_else(|| \"未命名词库\".to_string());\n-    }\n-    Ok(IfoMeta {\n-        bookname,\n-        wordcount,\n-        idxfilesize,\n-        sametypesequence,\n-    })\n+    Ok(Default::default()) /* ~ changed by cargo-mutants ~ */\n }\n \n /// 加载 .idx 全量入内存（langdao 级 ~1-2MB；保存原序）。\n /// 条目格式：word(UTF-8) \\0 + offset(u32 BE) + size(u32 BE)。\n /// 尾部残字节：全 0 视为填充忽略；非 0 残片 → Corrupt（.idx 截断，US-6）。\n pub(crate) fn load_idx(idx_bytes: &[u8]) -> Result<Vec<IdxEntry>> {\n     let mut out = Vec::new();\n     let mut pos = 0usize;\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "parse_ifo",
+      "return_type": "-> Result<IfoMeta>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 73
+        },
+        "start": {
+          "column": 1,
+          "line": 34
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/stardict.rs:36:5: replace parse_ifo -> Result<IfoMeta> with Ok(Default::default())",
+    "package": "reader_core",
+    "replacement": "Ok(Default::default())",
+    "span": {
+      "end": {
+        "column": 7,
+        "line": 72
+      },
+      "start": {
+        "column": 5,
+        "line": 36
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace || with && in parse_ifo\n@@ -35,17 +35,17 @@\n pub(crate) fn parse_ifo(path: &Path) -> Result<IfoMeta> {\n     let text = std::fs::read_to_string(path).map_err(Error::Io)?;\n     let mut bookname = String::new();\n     let mut wordcount: Option<u64> = None;\n     let mut idxfilesize: Option<u64> = None;\n     let mut sametypesequence: Option<String> = None;\n     for line in text.lines() {\n         let line = line.trim();\n-        if line.is_empty() || line.starts_with('#') {\n+        if line.is_empty() && /* ~ changed by cargo-mutants ~ */ line.starts_with('#') {\n             continue;\n         }\n         let Some((k, v)) = line.split_once('=') else { continue };\n         match k.trim() {\n             \"bookname\" => bookname = v.trim().to_string(),\n             \"wordcount\" => {\n                 wordcount = v.trim().parse::<u64>().ok().or(wordcount);\n             }\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "parse_ifo",
+      "return_type": "-> Result<IfoMeta>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 73
+        },
+        "start": {
+          "column": 1,
+          "line": 34
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:43:28: replace || with && in parse_ifo",
+    "package": "reader_core",
+    "replacement": "&&",
+    "span": {
+      "end": {
+        "column": 30,
+        "line": 43
+      },
+      "start": {
+        "column": 28,
+        "line": 43
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ delete match arm \"bookname\" in parse_ifo\n@@ -40,17 +40,17 @@\n     let mut sametypesequence: Option<String> = None;\n     for line in text.lines() {\n         let line = line.trim();\n         if line.is_empty() || line.starts_with('#') {\n             continue;\n         }\n         let Some((k, v)) = line.split_once('=') else { continue };\n         match k.trim() {\n-            \"bookname\" => bookname = v.trim().to_string(),\n+             /* ~ changed by cargo-mutants ~ */\n             \"wordcount\" => {\n                 wordcount = v.trim().parse::<u64>().ok().or(wordcount);\n             }\n             \"idxfilesize\" => {\n                 idxfilesize = v.trim().parse::<u64>().ok().or(idxfilesize);\n             }\n             \"sametypesequence\" => sametypesequence = Some(v.trim().to_string()),\n             _ => {}\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "parse_ifo",
+      "return_type": "-> Result<IfoMeta>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 73
+        },
+        "start": {
+          "column": 1,
+          "line": 34
+        }
+      }
+    },
+    "genre": "MatchArm",
+    "name": "src/dict/stardict.rs:48:13: delete match arm \"bookname\" in parse_ifo",
+    "package": "reader_core",
+    "replacement": "",
+    "span": {
+      "end": {
+        "column": 59,
+        "line": 48
+      },
+      "start": {
+        "column": 13,
+        "line": 48
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ delete match arm \"wordcount\" in parse_ifo\n@@ -41,19 +41,17 @@\n     for line in text.lines() {\n         let line = line.trim();\n         if line.is_empty() || line.starts_with('#') {\n             continue;\n         }\n         let Some((k, v)) = line.split_once('=') else { continue };\n         match k.trim() {\n             \"bookname\" => bookname = v.trim().to_string(),\n-            \"wordcount\" => {\n-                wordcount = v.trim().parse::<u64>().ok().or(wordcount);\n-            }\n+             /* ~ changed by cargo-mutants ~ */\n             \"idxfilesize\" => {\n                 idxfilesize = v.trim().parse::<u64>().ok().or(idxfilesize);\n             }\n             \"sametypesequence\" => sametypesequence = Some(v.trim().to_string()),\n             _ => {}\n         }\n     }\n     let wordcount = wordcount\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "parse_ifo",
+      "return_type": "-> Result<IfoMeta>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 73
+        },
+        "start": {
+          "column": 1,
+          "line": 34
+        }
+      }
+    },
+    "genre": "MatchArm",
+    "name": "src/dict/stardict.rs:49:13: delete match arm \"wordcount\" in parse_ifo",
+    "package": "reader_core",
+    "replacement": "",
+    "span": {
+      "end": {
+        "column": 14,
+        "line": 51
+      },
+      "start": {
+        "column": 13,
+        "line": 49
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ delete match arm \"idxfilesize\" in parse_ifo\n@@ -44,19 +44,17 @@\n             continue;\n         }\n         let Some((k, v)) = line.split_once('=') else { continue };\n         match k.trim() {\n             \"bookname\" => bookname = v.trim().to_string(),\n             \"wordcount\" => {\n                 wordcount = v.trim().parse::<u64>().ok().or(wordcount);\n             }\n-            \"idxfilesize\" => {\n-                idxfilesize = v.trim().parse::<u64>().ok().or(idxfilesize);\n-            }\n+             /* ~ changed by cargo-mutants ~ */\n             \"sametypesequence\" => sametypesequence = Some(v.trim().to_string()),\n             _ => {}\n         }\n     }\n     let wordcount = wordcount\n         .ok_or_else(|| Error::Corrupt(format!(\"词库 .ifo 缺少 wordcount 字段: {}\", path.display())))?;\n     if bookname.is_empty() {\n         bookname = path\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "parse_ifo",
+      "return_type": "-> Result<IfoMeta>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 73
+        },
+        "start": {
+          "column": 1,
+          "line": 34
+        }
+      }
+    },
+    "genre": "MatchArm",
+    "name": "src/dict/stardict.rs:52:13: delete match arm \"idxfilesize\" in parse_ifo",
+    "package": "reader_core",
+    "replacement": "",
+    "span": {
+      "end": {
+        "column": 14,
+        "line": 54
+      },
+      "start": {
+        "column": 13,
+        "line": 52
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ delete match arm \"sametypesequence\" in parse_ifo\n@@ -47,17 +47,17 @@\n         match k.trim() {\n             \"bookname\" => bookname = v.trim().to_string(),\n             \"wordcount\" => {\n                 wordcount = v.trim().parse::<u64>().ok().or(wordcount);\n             }\n             \"idxfilesize\" => {\n                 idxfilesize = v.trim().parse::<u64>().ok().or(idxfilesize);\n             }\n-            \"sametypesequence\" => sametypesequence = Some(v.trim().to_string()),\n+             /* ~ changed by cargo-mutants ~ */\n             _ => {}\n         }\n     }\n     let wordcount = wordcount\n         .ok_or_else(|| Error::Corrupt(format!(\"词库 .ifo 缺少 wordcount 字段: {}\", path.display())))?;\n     if bookname.is_empty() {\n         bookname = path\n             .file_stem()\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "parse_ifo",
+      "return_type": "-> Result<IfoMeta>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 73
+        },
+        "start": {
+          "column": 1,
+          "line": 34
+        }
+      }
+    },
+    "genre": "MatchArm",
+    "name": "src/dict/stardict.rs:55:13: delete match arm \"sametypesequence\" in parse_ifo",
+    "package": "reader_core",
+    "replacement": "",
+    "span": {
+      "end": {
+        "column": 81,
+        "line": 55
+      },
+      "start": {
+        "column": 13,
+        "line": 55
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace load_idx -> Result<Vec<IdxEntry>> with Ok(vec![])\n@@ -71,50 +71,17 @@\n         sametypesequence,\n     })\n }\n \n /// 加载 .idx 全量入内存（langdao 级 ~1-2MB；保存原序）。\n /// 条目格式：word(UTF-8) \\0 + offset(u32 BE) + size(u32 BE)。\n /// 尾部残字节：全 0 视为填充忽略；非 0 残片 → Corrupt（.idx 截断，US-6）。\n pub(crate) fn load_idx(idx_bytes: &[u8]) -> Result<Vec<IdxEntry>> {\n-    let mut out = Vec::new();\n-    let mut pos = 0usize;\n-    while pos < idx_bytes.len() {\n-        // 尾部全 0 视为填充忽略（部分工具生成的 idx 带对齐 padding）\n-        if idx_bytes[pos..].iter().all(|&b| b == 0) {\n-            break;\n-        }\n-        let nul = match idx_bytes[pos..].iter().position(|&b| b == 0) {\n-            Some(n) => pos + n,\n-            None => {\n-                return Err(Error::Corrupt(\"词库 .idx 条目缺少 word 终止符（截断）\".into()));\n-            }\n-        };\n-        let word = String::from_utf8_lossy(&idx_bytes[pos..nul]).into_owned();\n-        let tail_start = nul + 1;\n-        if tail_start + 8 > idx_bytes.len() {\n-            return Err(Error::Corrupt(\"词库 .idx 条目偏移/长度字段截断\".into()));\n-        }\n-        let offset = u32::from_be_bytes([\n-            idx_bytes[tail_start],\n-            idx_bytes[tail_start + 1],\n-            idx_bytes[tail_start + 2],\n-            idx_bytes[tail_start + 3],\n-        ]);\n-        let size = u32::from_be_bytes([\n-            idx_bytes[tail_start + 4],\n-            idx_bytes[tail_start + 5],\n-            idx_bytes[tail_start + 6],\n-            idx_bytes[tail_start + 7],\n-        ]);\n-        out.push(IdxEntry { word, offset, size });\n-        pos = tail_start + 8;\n-    }\n-    Ok(out)\n+    Ok(vec![]) /* ~ changed by cargo-mutants ~ */\n }\n \n /// 查词：二分精确命中；未中则线性扫描做\"首字母大小写归一 / 全小写 / 忽略大小写\"匹配\n /// （US-5；n≤10^5 实测 <1ms）。\n pub(crate) fn lookup_entry<'a>(idx: &'a [IdxEntry], word: &str) -> Option<&'a IdxEntry> {\n     if let Ok(found) = idx.binary_search_by(|e| e.word.as_bytes().cmp(word.as_bytes())) {\n         return Some(&idx[found]);\n     }\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "load_idx",
+      "return_type": "-> Result<Vec<IdxEntry>>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 113
+        },
+        "start": {
+          "column": 1,
+          "line": 75
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/stardict.rs:79:5: replace load_idx -> Result<Vec<IdxEntry>> with Ok(vec![])",
+    "package": "reader_core",
+    "replacement": "Ok(vec![])",
+    "span": {
+      "end": {
+        "column": 12,
+        "line": 112
+      },
+      "start": {
+        "column": 5,
+        "line": 79
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace load_idx -> Result<Vec<IdxEntry>> with Ok(vec![Default::default()])\n@@ -71,50 +71,17 @@\n         sametypesequence,\n     })\n }\n \n /// 加载 .idx 全量入内存（langdao 级 ~1-2MB；保存原序）。\n /// 条目格式：word(UTF-8) \\0 + offset(u32 BE) + size(u32 BE)。\n /// 尾部残字节：全 0 视为填充忽略；非 0 残片 → Corrupt（.idx 截断，US-6）。\n pub(crate) fn load_idx(idx_bytes: &[u8]) -> Result<Vec<IdxEntry>> {\n-    let mut out = Vec::new();\n-    let mut pos = 0usize;\n-    while pos < idx_bytes.len() {\n-        // 尾部全 0 视为填充忽略（部分工具生成的 idx 带对齐 padding）\n-        if idx_bytes[pos..].iter().all(|&b| b == 0) {\n-            break;\n-        }\n-        let nul = match idx_bytes[pos..].iter().position(|&b| b == 0) {\n-            Some(n) => pos + n,\n-            None => {\n-                return Err(Error::Corrupt(\"词库 .idx 条目缺少 word 终止符（截断）\".into()));\n-            }\n-        };\n-        let word = String::from_utf8_lossy(&idx_bytes[pos..nul]).into_owned();\n-        let tail_start = nul + 1;\n-        if tail_start + 8 > idx_bytes.len() {\n-            return Err(Error::Corrupt(\"词库 .idx 条目偏移/长度字段截断\".into()));\n-        }\n-        let offset = u32::from_be_bytes([\n-            idx_bytes[tail_start],\n-            idx_bytes[tail_start + 1],\n-            idx_bytes[tail_start + 2],\n-            idx_bytes[tail_start + 3],\n-        ]);\n-        let size = u32::from_be_bytes([\n-            idx_bytes[tail_start + 4],\n-            idx_bytes[tail_start + 5],\n-            idx_bytes[tail_start + 6],\n-            idx_bytes[tail_start + 7],\n-        ]);\n-        out.push(IdxEntry { word, offset, size });\n-        pos = tail_start + 8;\n-    }\n-    Ok(out)\n+    Ok(vec![Default::default()]) /* ~ changed by cargo-mutants ~ */\n }\n \n /// 查词：二分精确命中；未中则线性扫描做\"首字母大小写归一 / 全小写 / 忽略大小写\"匹配\n /// （US-5；n≤10^5 实测 <1ms）。\n pub(crate) fn lookup_entry<'a>(idx: &'a [IdxEntry], word: &str) -> Option<&'a IdxEntry> {\n     if let Ok(found) = idx.binary_search_by(|e| e.word.as_bytes().cmp(word.as_bytes())) {\n         return Some(&idx[found]);\n     }\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "load_idx",
+      "return_type": "-> Result<Vec<IdxEntry>>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 113
+        },
+        "start": {
+          "column": 1,
+          "line": 75
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/stardict.rs:79:5: replace load_idx -> Result<Vec<IdxEntry>> with Ok(vec![Default::default()])",
+    "package": "reader_core",
+    "replacement": "Ok(vec![Default::default()])",
+    "span": {
+      "end": {
+        "column": 12,
+        "line": 112
+      },
+      "start": {
+        "column": 5,
+        "line": 79
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace < with == in load_idx\n@@ -73,17 +73,17 @@\n }\n \n /// 加载 .idx 全量入内存（langdao 级 ~1-2MB；保存原序）。\n /// 条目格式：word(UTF-8) \\0 + offset(u32 BE) + size(u32 BE)。\n /// 尾部残字节：全 0 视为填充忽略；非 0 残片 → Corrupt（.idx 截断，US-6）。\n pub(crate) fn load_idx(idx_bytes: &[u8]) -> Result<Vec<IdxEntry>> {\n     let mut out = Vec::new();\n     let mut pos = 0usize;\n-    while pos < idx_bytes.len() {\n+    while pos == /* ~ changed by cargo-mutants ~ */ idx_bytes.len() {\n         // 尾部全 0 视为填充忽略（部分工具生成的 idx 带对齐 padding）\n         if idx_bytes[pos..].iter().all(|&b| b == 0) {\n             break;\n         }\n         let nul = match idx_bytes[pos..].iter().position(|&b| b == 0) {\n             Some(n) => pos + n,\n             None => {\n                 return Err(Error::Corrupt(\"词库 .idx 条目缺少 word 终止符（截断）\".into()));\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "load_idx",
+      "return_type": "-> Result<Vec<IdxEntry>>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 113
+        },
+        "start": {
+          "column": 1,
+          "line": 75
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:81:15: replace < with == in load_idx",
+    "package": "reader_core",
+    "replacement": "==",
+    "span": {
+      "end": {
+        "column": 16,
+        "line": 81
+      },
+      "start": {
+        "column": 15,
+        "line": 81
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace < with > in load_idx\n@@ -73,17 +73,17 @@\n }\n \n /// 加载 .idx 全量入内存（langdao 级 ~1-2MB；保存原序）。\n /// 条目格式：word(UTF-8) \\0 + offset(u32 BE) + size(u32 BE)。\n /// 尾部残字节：全 0 视为填充忽略；非 0 残片 → Corrupt（.idx 截断，US-6）。\n pub(crate) fn load_idx(idx_bytes: &[u8]) -> Result<Vec<IdxEntry>> {\n     let mut out = Vec::new();\n     let mut pos = 0usize;\n-    while pos < idx_bytes.len() {\n+    while pos > /* ~ changed by cargo-mutants ~ */ idx_bytes.len() {\n         // 尾部全 0 视为填充忽略（部分工具生成的 idx 带对齐 padding）\n         if idx_bytes[pos..].iter().all(|&b| b == 0) {\n             break;\n         }\n         let nul = match idx_bytes[pos..].iter().position(|&b| b == 0) {\n             Some(n) => pos + n,\n             None => {\n                 return Err(Error::Corrupt(\"词库 .idx 条目缺少 word 终止符（截断）\".into()));\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "load_idx",
+      "return_type": "-> Result<Vec<IdxEntry>>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 113
+        },
+        "start": {
+          "column": 1,
+          "line": 75
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:81:15: replace < with > in load_idx",
+    "package": "reader_core",
+    "replacement": ">",
+    "span": {
+      "end": {
+        "column": 16,
+        "line": 81
+      },
+      "start": {
+        "column": 15,
+        "line": 81
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace < with <= in load_idx\n@@ -73,17 +73,17 @@\n }\n \n /// 加载 .idx 全量入内存（langdao 级 ~1-2MB；保存原序）。\n /// 条目格式：word(UTF-8) \\0 + offset(u32 BE) + size(u32 BE)。\n /// 尾部残字节：全 0 视为填充忽略；非 0 残片 → Corrupt（.idx 截断，US-6）。\n pub(crate) fn load_idx(idx_bytes: &[u8]) -> Result<Vec<IdxEntry>> {\n     let mut out = Vec::new();\n     let mut pos = 0usize;\n-    while pos < idx_bytes.len() {\n+    while pos <= /* ~ changed by cargo-mutants ~ */ idx_bytes.len() {\n         // 尾部全 0 视为填充忽略（部分工具生成的 idx 带对齐 padding）\n         if idx_bytes[pos..].iter().all(|&b| b == 0) {\n             break;\n         }\n         let nul = match idx_bytes[pos..].iter().position(|&b| b == 0) {\n             Some(n) => pos + n,\n             None => {\n                 return Err(Error::Corrupt(\"词库 .idx 条目缺少 word 终止符（截断）\".into()));\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "load_idx",
+      "return_type": "-> Result<Vec<IdxEntry>>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 113
+        },
+        "start": {
+          "column": 1,
+          "line": 75
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:81:15: replace < with <= in load_idx",
+    "package": "reader_core",
+    "replacement": "<=",
+    "span": {
+      "end": {
+        "column": 16,
+        "line": 81
+      },
+      "start": {
+        "column": 15,
+        "line": 81
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace == with != in load_idx\n@@ -75,17 +75,17 @@\n /// 加载 .idx 全量入内存（langdao 级 ~1-2MB；保存原序）。\n /// 条目格式：word(UTF-8) \\0 + offset(u32 BE) + size(u32 BE)。\n /// 尾部残字节：全 0 视为填充忽略；非 0 残片 → Corrupt（.idx 截断，US-6）。\n pub(crate) fn load_idx(idx_bytes: &[u8]) -> Result<Vec<IdxEntry>> {\n     let mut out = Vec::new();\n     let mut pos = 0usize;\n     while pos < idx_bytes.len() {\n         // 尾部全 0 视为填充忽略（部分工具生成的 idx 带对齐 padding）\n-        if idx_bytes[pos..].iter().all(|&b| b == 0) {\n+        if idx_bytes[pos..].iter().all(|&b| b != /* ~ changed by cargo-mutants ~ */ 0) {\n             break;\n         }\n         let nul = match idx_bytes[pos..].iter().position(|&b| b == 0) {\n             Some(n) => pos + n,\n             None => {\n                 return Err(Error::Corrupt(\"词库 .idx 条目缺少 word 终止符（截断）\".into()));\n             }\n         };\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "load_idx",
+      "return_type": "-> Result<Vec<IdxEntry>>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 113
+        },
+        "start": {
+          "column": 1,
+          "line": 75
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:83:47: replace == with != in load_idx",
+    "package": "reader_core",
+    "replacement": "!=",
+    "span": {
+      "end": {
+        "column": 49,
+        "line": 83
+      },
+      "start": {
+        "column": 47,
+        "line": 83
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace == with != in load_idx\n@@ -78,17 +78,17 @@\n pub(crate) fn load_idx(idx_bytes: &[u8]) -> Result<Vec<IdxEntry>> {\n     let mut out = Vec::new();\n     let mut pos = 0usize;\n     while pos < idx_bytes.len() {\n         // 尾部全 0 视为填充忽略（部分工具生成的 idx 带对齐 padding）\n         if idx_bytes[pos..].iter().all(|&b| b == 0) {\n             break;\n         }\n-        let nul = match idx_bytes[pos..].iter().position(|&b| b == 0) {\n+        let nul = match idx_bytes[pos..].iter().position(|&b| b != /* ~ changed by cargo-mutants ~ */ 0) {\n             Some(n) => pos + n,\n             None => {\n                 return Err(Error::Corrupt(\"词库 .idx 条目缺少 word 终止符（截断）\".into()));\n             }\n         };\n         let word = String::from_utf8_lossy(&idx_bytes[pos..nul]).into_owned();\n         let tail_start = nul + 1;\n         if tail_start + 8 > idx_bytes.len() {\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "load_idx",
+      "return_type": "-> Result<Vec<IdxEntry>>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 113
+        },
+        "start": {
+          "column": 1,
+          "line": 75
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:86:65: replace == with != in load_idx",
+    "package": "reader_core",
+    "replacement": "!=",
+    "span": {
+      "end": {
+        "column": 67,
+        "line": 86
+      },
+      "start": {
+        "column": 65,
+        "line": 86
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace + with - in load_idx\n@@ -79,17 +79,17 @@\n     let mut out = Vec::new();\n     let mut pos = 0usize;\n     while pos < idx_bytes.len() {\n         // 尾部全 0 视为填充忽略（部分工具生成的 idx 带对齐 padding）\n         if idx_bytes[pos..].iter().all(|&b| b == 0) {\n             break;\n         }\n         let nul = match idx_bytes[pos..].iter().position(|&b| b == 0) {\n-            Some(n) => pos + n,\n+            Some(n) => pos - /* ~ changed by cargo-mutants ~ */ n,\n             None => {\n                 return Err(Error::Corrupt(\"词库 .idx 条目缺少 word 终止符（截断）\".into()));\n             }\n         };\n         let word = String::from_utf8_lossy(&idx_bytes[pos..nul]).into_owned();\n         let tail_start = nul + 1;\n         if tail_start + 8 > idx_bytes.len() {\n             return Err(Error::Corrupt(\"词库 .idx 条目偏移/长度字段截断\".into()));\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "load_idx",
+      "return_type": "-> Result<Vec<IdxEntry>>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 113
+        },
+        "start": {
+          "column": 1,
+          "line": 75
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:87:28: replace + with - in load_idx",
+    "package": "reader_core",
+    "replacement": "-",
+    "span": {
+      "end": {
+        "column": 29,
+        "line": 87
+      },
+      "start": {
+        "column": 28,
+        "line": 87
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace + with * in load_idx\n@@ -79,17 +79,17 @@\n     let mut out = Vec::new();\n     let mut pos = 0usize;\n     while pos < idx_bytes.len() {\n         // 尾部全 0 视为填充忽略（部分工具生成的 idx 带对齐 padding）\n         if idx_bytes[pos..].iter().all(|&b| b == 0) {\n             break;\n         }\n         let nul = match idx_bytes[pos..].iter().position(|&b| b == 0) {\n-            Some(n) => pos + n,\n+            Some(n) => pos * /* ~ changed by cargo-mutants ~ */ n,\n             None => {\n                 return Err(Error::Corrupt(\"词库 .idx 条目缺少 word 终止符（截断）\".into()));\n             }\n         };\n         let word = String::from_utf8_lossy(&idx_bytes[pos..nul]).into_owned();\n         let tail_start = nul + 1;\n         if tail_start + 8 > idx_bytes.len() {\n             return Err(Error::Corrupt(\"词库 .idx 条目偏移/长度字段截断\".into()));\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "load_idx",
+      "return_type": "-> Result<Vec<IdxEntry>>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 113
+        },
+        "start": {
+          "column": 1,
+          "line": 75
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:87:28: replace + with * in load_idx",
+    "package": "reader_core",
+    "replacement": "*",
+    "span": {
+      "end": {
+        "column": 29,
+        "line": 87
+      },
+      "start": {
+        "column": 28,
+        "line": 87
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace + with - in load_idx\n@@ -85,17 +85,17 @@\n         }\n         let nul = match idx_bytes[pos..].iter().position(|&b| b == 0) {\n             Some(n) => pos + n,\n             None => {\n                 return Err(Error::Corrupt(\"词库 .idx 条目缺少 word 终止符（截断）\".into()));\n             }\n         };\n         let word = String::from_utf8_lossy(&idx_bytes[pos..nul]).into_owned();\n-        let tail_start = nul + 1;\n+        let tail_start = nul - /* ~ changed by cargo-mutants ~ */ 1;\n         if tail_start + 8 > idx_bytes.len() {\n             return Err(Error::Corrupt(\"词库 .idx 条目偏移/长度字段截断\".into()));\n         }\n         let offset = u32::from_be_bytes([\n             idx_bytes[tail_start],\n             idx_bytes[tail_start + 1],\n             idx_bytes[tail_start + 2],\n             idx_bytes[tail_start + 3],\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "load_idx",
+      "return_type": "-> Result<Vec<IdxEntry>>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 113
+        },
+        "start": {
+          "column": 1,
+          "line": 75
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:93:30: replace + with - in load_idx",
+    "package": "reader_core",
+    "replacement": "-",
+    "span": {
+      "end": {
+        "column": 31,
+        "line": 93
+      },
+      "start": {
+        "column": 30,
+        "line": 93
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace + with * in load_idx\n@@ -85,17 +85,17 @@\n         }\n         let nul = match idx_bytes[pos..].iter().position(|&b| b == 0) {\n             Some(n) => pos + n,\n             None => {\n                 return Err(Error::Corrupt(\"词库 .idx 条目缺少 word 终止符（截断）\".into()));\n             }\n         };\n         let word = String::from_utf8_lossy(&idx_bytes[pos..nul]).into_owned();\n-        let tail_start = nul + 1;\n+        let tail_start = nul * /* ~ changed by cargo-mutants ~ */ 1;\n         if tail_start + 8 > idx_bytes.len() {\n             return Err(Error::Corrupt(\"词库 .idx 条目偏移/长度字段截断\".into()));\n         }\n         let offset = u32::from_be_bytes([\n             idx_bytes[tail_start],\n             idx_bytes[tail_start + 1],\n             idx_bytes[tail_start + 2],\n             idx_bytes[tail_start + 3],\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "load_idx",
+      "return_type": "-> Result<Vec<IdxEntry>>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 113
+        },
+        "start": {
+          "column": 1,
+          "line": 75
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:93:30: replace + with * in load_idx",
+    "package": "reader_core",
+    "replacement": "*",
+    "span": {
+      "end": {
+        "column": 31,
+        "line": 93
+      },
+      "start": {
+        "column": 30,
+        "line": 93
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace > with == in load_idx\n@@ -86,17 +86,17 @@\n         let nul = match idx_bytes[pos..].iter().position(|&b| b == 0) {\n             Some(n) => pos + n,\n             None => {\n                 return Err(Error::Corrupt(\"词库 .idx 条目缺少 word 终止符（截断）\".into()));\n             }\n         };\n         let word = String::from_utf8_lossy(&idx_bytes[pos..nul]).into_owned();\n         let tail_start = nul + 1;\n-        if tail_start + 8 > idx_bytes.len() {\n+        if tail_start + 8 == /* ~ changed by cargo-mutants ~ */ idx_bytes.len() {\n             return Err(Error::Corrupt(\"词库 .idx 条目偏移/长度字段截断\".into()));\n         }\n         let offset = u32::from_be_bytes([\n             idx_bytes[tail_start],\n             idx_bytes[tail_start + 1],\n             idx_bytes[tail_start + 2],\n             idx_bytes[tail_start + 3],\n         ]);\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "load_idx",
+      "return_type": "-> Result<Vec<IdxEntry>>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 113
+        },
+        "start": {
+          "column": 1,
+          "line": 75
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:94:27: replace > with == in load_idx",
+    "package": "reader_core",
+    "replacement": "==",
+    "span": {
+      "end": {
+        "column": 28,
+        "line": 94
+      },
+      "start": {
+        "column": 27,
+        "line": 94
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace > with < in load_idx\n@@ -86,17 +86,17 @@\n         let nul = match idx_bytes[pos..].iter().position(|&b| b == 0) {\n             Some(n) => pos + n,\n             None => {\n                 return Err(Error::Corrupt(\"词库 .idx 条目缺少 word 终止符（截断）\".into()));\n             }\n         };\n         let word = String::from_utf8_lossy(&idx_bytes[pos..nul]).into_owned();\n         let tail_start = nul + 1;\n-        if tail_start + 8 > idx_bytes.len() {\n+        if tail_start + 8 < /* ~ changed by cargo-mutants ~ */ idx_bytes.len() {\n             return Err(Error::Corrupt(\"词库 .idx 条目偏移/长度字段截断\".into()));\n         }\n         let offset = u32::from_be_bytes([\n             idx_bytes[tail_start],\n             idx_bytes[tail_start + 1],\n             idx_bytes[tail_start + 2],\n             idx_bytes[tail_start + 3],\n         ]);\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "load_idx",
+      "return_type": "-> Result<Vec<IdxEntry>>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 113
+        },
+        "start": {
+          "column": 1,
+          "line": 75
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:94:27: replace > with < in load_idx",
+    "package": "reader_core",
+    "replacement": "<",
+    "span": {
+      "end": {
+        "column": 28,
+        "line": 94
+      },
+      "start": {
+        "column": 27,
+        "line": 94
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace > with >= in load_idx\n@@ -86,17 +86,17 @@\n         let nul = match idx_bytes[pos..].iter().position(|&b| b == 0) {\n             Some(n) => pos + n,\n             None => {\n                 return Err(Error::Corrupt(\"词库 .idx 条目缺少 word 终止符（截断）\".into()));\n             }\n         };\n         let word = String::from_utf8_lossy(&idx_bytes[pos..nul]).into_owned();\n         let tail_start = nul + 1;\n-        if tail_start + 8 > idx_bytes.len() {\n+        if tail_start + 8 >= /* ~ changed by cargo-mutants ~ */ idx_bytes.len() {\n             return Err(Error::Corrupt(\"词库 .idx 条目偏移/长度字段截断\".into()));\n         }\n         let offset = u32::from_be_bytes([\n             idx_bytes[tail_start],\n             idx_bytes[tail_start + 1],\n             idx_bytes[tail_start + 2],\n             idx_bytes[tail_start + 3],\n         ]);\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "load_idx",
+      "return_type": "-> Result<Vec<IdxEntry>>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 113
+        },
+        "start": {
+          "column": 1,
+          "line": 75
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:94:27: replace > with >= in load_idx",
+    "package": "reader_core",
+    "replacement": ">=",
+    "span": {
+      "end": {
+        "column": 28,
+        "line": 94
+      },
+      "start": {
+        "column": 27,
+        "line": 94
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace + with - in load_idx\n@@ -86,17 +86,17 @@\n         let nul = match idx_bytes[pos..].iter().position(|&b| b == 0) {\n             Some(n) => pos + n,\n             None => {\n                 return Err(Error::Corrupt(\"词库 .idx 条目缺少 word 终止符（截断）\".into()));\n             }\n         };\n         let word = String::from_utf8_lossy(&idx_bytes[pos..nul]).into_owned();\n         let tail_start = nul + 1;\n-        if tail_start + 8 > idx_bytes.len() {\n+        if tail_start - /* ~ changed by cargo-mutants ~ */ 8 > idx_bytes.len() {\n             return Err(Error::Corrupt(\"词库 .idx 条目偏移/长度字段截断\".into()));\n         }\n         let offset = u32::from_be_bytes([\n             idx_bytes[tail_start],\n             idx_bytes[tail_start + 1],\n             idx_bytes[tail_start + 2],\n             idx_bytes[tail_start + 3],\n         ]);\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "load_idx",
+      "return_type": "-> Result<Vec<IdxEntry>>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 113
+        },
+        "start": {
+          "column": 1,
+          "line": 75
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:94:23: replace + with - in load_idx",
+    "package": "reader_core",
+    "replacement": "-",
+    "span": {
+      "end": {
+        "column": 24,
+        "line": 94
+      },
+      "start": {
+        "column": 23,
+        "line": 94
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace + with * in load_idx\n@@ -86,17 +86,17 @@\n         let nul = match idx_bytes[pos..].iter().position(|&b| b == 0) {\n             Some(n) => pos + n,\n             None => {\n                 return Err(Error::Corrupt(\"词库 .idx 条目缺少 word 终止符（截断）\".into()));\n             }\n         };\n         let word = String::from_utf8_lossy(&idx_bytes[pos..nul]).into_owned();\n         let tail_start = nul + 1;\n-        if tail_start + 8 > idx_bytes.len() {\n+        if tail_start * /* ~ changed by cargo-mutants ~ */ 8 > idx_bytes.len() {\n             return Err(Error::Corrupt(\"词库 .idx 条目偏移/长度字段截断\".into()));\n         }\n         let offset = u32::from_be_bytes([\n             idx_bytes[tail_start],\n             idx_bytes[tail_start + 1],\n             idx_bytes[tail_start + 2],\n             idx_bytes[tail_start + 3],\n         ]);\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "load_idx",
+      "return_type": "-> Result<Vec<IdxEntry>>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 113
+        },
+        "start": {
+          "column": 1,
+          "line": 75
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:94:23: replace + with * in load_idx",
+    "package": "reader_core",
+    "replacement": "*",
+    "span": {
+      "end": {
+        "column": 24,
+        "line": 94
+      },
+      "start": {
+        "column": 23,
+        "line": 94
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace + with - in load_idx\n@@ -91,17 +91,17 @@\n         };\n         let word = String::from_utf8_lossy(&idx_bytes[pos..nul]).into_owned();\n         let tail_start = nul + 1;\n         if tail_start + 8 > idx_bytes.len() {\n             return Err(Error::Corrupt(\"词库 .idx 条目偏移/长度字段截断\".into()));\n         }\n         let offset = u32::from_be_bytes([\n             idx_bytes[tail_start],\n-            idx_bytes[tail_start + 1],\n+            idx_bytes[tail_start - /* ~ changed by cargo-mutants ~ */ 1],\n             idx_bytes[tail_start + 2],\n             idx_bytes[tail_start + 3],\n         ]);\n         let size = u32::from_be_bytes([\n             idx_bytes[tail_start + 4],\n             idx_bytes[tail_start + 5],\n             idx_bytes[tail_start + 6],\n             idx_bytes[tail_start + 7],\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "load_idx",
+      "return_type": "-> Result<Vec<IdxEntry>>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 113
+        },
+        "start": {
+          "column": 1,
+          "line": 75
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:99:34: replace + with - in load_idx",
+    "package": "reader_core",
+    "replacement": "-",
+    "span": {
+      "end": {
+        "column": 35,
+        "line": 99
+      },
+      "start": {
+        "column": 34,
+        "line": 99
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace + with * in load_idx\n@@ -91,17 +91,17 @@\n         };\n         let word = String::from_utf8_lossy(&idx_bytes[pos..nul]).into_owned();\n         let tail_start = nul + 1;\n         if tail_start + 8 > idx_bytes.len() {\n             return Err(Error::Corrupt(\"词库 .idx 条目偏移/长度字段截断\".into()));\n         }\n         let offset = u32::from_be_bytes([\n             idx_bytes[tail_start],\n-            idx_bytes[tail_start + 1],\n+            idx_bytes[tail_start * /* ~ changed by cargo-mutants ~ */ 1],\n             idx_bytes[tail_start + 2],\n             idx_bytes[tail_start + 3],\n         ]);\n         let size = u32::from_be_bytes([\n             idx_bytes[tail_start + 4],\n             idx_bytes[tail_start + 5],\n             idx_bytes[tail_start + 6],\n             idx_bytes[tail_start + 7],\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "load_idx",
+      "return_type": "-> Result<Vec<IdxEntry>>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 113
+        },
+        "start": {
+          "column": 1,
+          "line": 75
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:99:34: replace + with * in load_idx",
+    "package": "reader_core",
+    "replacement": "*",
+    "span": {
+      "end": {
+        "column": 35,
+        "line": 99
+      },
+      "start": {
+        "column": 34,
+        "line": 99
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace + with - in load_idx\n@@ -92,17 +92,17 @@\n         let word = String::from_utf8_lossy(&idx_bytes[pos..nul]).into_owned();\n         let tail_start = nul + 1;\n         if tail_start + 8 > idx_bytes.len() {\n             return Err(Error::Corrupt(\"词库 .idx 条目偏移/长度字段截断\".into()));\n         }\n         let offset = u32::from_be_bytes([\n             idx_bytes[tail_start],\n             idx_bytes[tail_start + 1],\n-            idx_bytes[tail_start + 2],\n+            idx_bytes[tail_start - /* ~ changed by cargo-mutants ~ */ 2],\n             idx_bytes[tail_start + 3],\n         ]);\n         let size = u32::from_be_bytes([\n             idx_bytes[tail_start + 4],\n             idx_bytes[tail_start + 5],\n             idx_bytes[tail_start + 6],\n             idx_bytes[tail_start + 7],\n         ]);\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "load_idx",
+      "return_type": "-> Result<Vec<IdxEntry>>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 113
+        },
+        "start": {
+          "column": 1,
+          "line": 75
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:100:34: replace + with - in load_idx",
+    "package": "reader_core",
+    "replacement": "-",
+    "span": {
+      "end": {
+        "column": 35,
+        "line": 100
+      },
+      "start": {
+        "column": 34,
+        "line": 100
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace + with * in load_idx\n@@ -92,17 +92,17 @@\n         let word = String::from_utf8_lossy(&idx_bytes[pos..nul]).into_owned();\n         let tail_start = nul + 1;\n         if tail_start + 8 > idx_bytes.len() {\n             return Err(Error::Corrupt(\"词库 .idx 条目偏移/长度字段截断\".into()));\n         }\n         let offset = u32::from_be_bytes([\n             idx_bytes[tail_start],\n             idx_bytes[tail_start + 1],\n-            idx_bytes[tail_start + 2],\n+            idx_bytes[tail_start * /* ~ changed by cargo-mutants ~ */ 2],\n             idx_bytes[tail_start + 3],\n         ]);\n         let size = u32::from_be_bytes([\n             idx_bytes[tail_start + 4],\n             idx_bytes[tail_start + 5],\n             idx_bytes[tail_start + 6],\n             idx_bytes[tail_start + 7],\n         ]);\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "load_idx",
+      "return_type": "-> Result<Vec<IdxEntry>>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 113
+        },
+        "start": {
+          "column": 1,
+          "line": 75
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:100:34: replace + with * in load_idx",
+    "package": "reader_core",
+    "replacement": "*",
+    "span": {
+      "end": {
+        "column": 35,
+        "line": 100
+      },
+      "start": {
+        "column": 34,
+        "line": 100
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace + with - in load_idx\n@@ -93,17 +93,17 @@\n         let tail_start = nul + 1;\n         if tail_start + 8 > idx_bytes.len() {\n             return Err(Error::Corrupt(\"词库 .idx 条目偏移/长度字段截断\".into()));\n         }\n         let offset = u32::from_be_bytes([\n             idx_bytes[tail_start],\n             idx_bytes[tail_start + 1],\n             idx_bytes[tail_start + 2],\n-            idx_bytes[tail_start + 3],\n+            idx_bytes[tail_start - /* ~ changed by cargo-mutants ~ */ 3],\n         ]);\n         let size = u32::from_be_bytes([\n             idx_bytes[tail_start + 4],\n             idx_bytes[tail_start + 5],\n             idx_bytes[tail_start + 6],\n             idx_bytes[tail_start + 7],\n         ]);\n         out.push(IdxEntry { word, offset, size });\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "load_idx",
+      "return_type": "-> Result<Vec<IdxEntry>>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 113
+        },
+        "start": {
+          "column": 1,
+          "line": 75
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:101:34: replace + with - in load_idx",
+    "package": "reader_core",
+    "replacement": "-",
+    "span": {
+      "end": {
+        "column": 35,
+        "line": 101
+      },
+      "start": {
+        "column": 34,
+        "line": 101
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace + with * in load_idx\n@@ -93,17 +93,17 @@\n         let tail_start = nul + 1;\n         if tail_start + 8 > idx_bytes.len() {\n             return Err(Error::Corrupt(\"词库 .idx 条目偏移/长度字段截断\".into()));\n         }\n         let offset = u32::from_be_bytes([\n             idx_bytes[tail_start],\n             idx_bytes[tail_start + 1],\n             idx_bytes[tail_start + 2],\n-            idx_bytes[tail_start + 3],\n+            idx_bytes[tail_start * /* ~ changed by cargo-mutants ~ */ 3],\n         ]);\n         let size = u32::from_be_bytes([\n             idx_bytes[tail_start + 4],\n             idx_bytes[tail_start + 5],\n             idx_bytes[tail_start + 6],\n             idx_bytes[tail_start + 7],\n         ]);\n         out.push(IdxEntry { word, offset, size });\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "load_idx",
+      "return_type": "-> Result<Vec<IdxEntry>>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 113
+        },
+        "start": {
+          "column": 1,
+          "line": 75
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:101:34: replace + with * in load_idx",
+    "package": "reader_core",
+    "replacement": "*",
+    "span": {
+      "end": {
+        "column": 35,
+        "line": 101
+      },
+      "start": {
+        "column": 34,
+        "line": 101
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace + with - in load_idx\n@@ -96,17 +96,17 @@\n         }\n         let offset = u32::from_be_bytes([\n             idx_bytes[tail_start],\n             idx_bytes[tail_start + 1],\n             idx_bytes[tail_start + 2],\n             idx_bytes[tail_start + 3],\n         ]);\n         let size = u32::from_be_bytes([\n-            idx_bytes[tail_start + 4],\n+            idx_bytes[tail_start - /* ~ changed by cargo-mutants ~ */ 4],\n             idx_bytes[tail_start + 5],\n             idx_bytes[tail_start + 6],\n             idx_bytes[tail_start + 7],\n         ]);\n         out.push(IdxEntry { word, offset, size });\n         pos = tail_start + 8;\n     }\n     Ok(out)\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "load_idx",
+      "return_type": "-> Result<Vec<IdxEntry>>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 113
+        },
+        "start": {
+          "column": 1,
+          "line": 75
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:104:34: replace + with - in load_idx",
+    "package": "reader_core",
+    "replacement": "-",
+    "span": {
+      "end": {
+        "column": 35,
+        "line": 104
+      },
+      "start": {
+        "column": 34,
+        "line": 104
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace + with * in load_idx\n@@ -96,17 +96,17 @@\n         }\n         let offset = u32::from_be_bytes([\n             idx_bytes[tail_start],\n             idx_bytes[tail_start + 1],\n             idx_bytes[tail_start + 2],\n             idx_bytes[tail_start + 3],\n         ]);\n         let size = u32::from_be_bytes([\n-            idx_bytes[tail_start + 4],\n+            idx_bytes[tail_start * /* ~ changed by cargo-mutants ~ */ 4],\n             idx_bytes[tail_start + 5],\n             idx_bytes[tail_start + 6],\n             idx_bytes[tail_start + 7],\n         ]);\n         out.push(IdxEntry { word, offset, size });\n         pos = tail_start + 8;\n     }\n     Ok(out)\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "load_idx",
+      "return_type": "-> Result<Vec<IdxEntry>>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 113
+        },
+        "start": {
+          "column": 1,
+          "line": 75
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:104:34: replace + with * in load_idx",
+    "package": "reader_core",
+    "replacement": "*",
+    "span": {
+      "end": {
+        "column": 35,
+        "line": 104
+      },
+      "start": {
+        "column": 34,
+        "line": 104
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace + with - in load_idx\n@@ -97,17 +97,17 @@\n         let offset = u32::from_be_bytes([\n             idx_bytes[tail_start],\n             idx_bytes[tail_start + 1],\n             idx_bytes[tail_start + 2],\n             idx_bytes[tail_start + 3],\n         ]);\n         let size = u32::from_be_bytes([\n             idx_bytes[tail_start + 4],\n-            idx_bytes[tail_start + 5],\n+            idx_bytes[tail_start - /* ~ changed by cargo-mutants ~ */ 5],\n             idx_bytes[tail_start + 6],\n             idx_bytes[tail_start + 7],\n         ]);\n         out.push(IdxEntry { word, offset, size });\n         pos = tail_start + 8;\n     }\n     Ok(out)\n }\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "load_idx",
+      "return_type": "-> Result<Vec<IdxEntry>>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 113
+        },
+        "start": {
+          "column": 1,
+          "line": 75
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:105:34: replace + with - in load_idx",
+    "package": "reader_core",
+    "replacement": "-",
+    "span": {
+      "end": {
+        "column": 35,
+        "line": 105
+      },
+      "start": {
+        "column": 34,
+        "line": 105
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace + with * in load_idx\n@@ -97,17 +97,17 @@\n         let offset = u32::from_be_bytes([\n             idx_bytes[tail_start],\n             idx_bytes[tail_start + 1],\n             idx_bytes[tail_start + 2],\n             idx_bytes[tail_start + 3],\n         ]);\n         let size = u32::from_be_bytes([\n             idx_bytes[tail_start + 4],\n-            idx_bytes[tail_start + 5],\n+            idx_bytes[tail_start * /* ~ changed by cargo-mutants ~ */ 5],\n             idx_bytes[tail_start + 6],\n             idx_bytes[tail_start + 7],\n         ]);\n         out.push(IdxEntry { word, offset, size });\n         pos = tail_start + 8;\n     }\n     Ok(out)\n }\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "load_idx",
+      "return_type": "-> Result<Vec<IdxEntry>>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 113
+        },
+        "start": {
+          "column": 1,
+          "line": 75
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:105:34: replace + with * in load_idx",
+    "package": "reader_core",
+    "replacement": "*",
+    "span": {
+      "end": {
+        "column": 35,
+        "line": 105
+      },
+      "start": {
+        "column": 34,
+        "line": 105
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace + with - in load_idx\n@@ -98,17 +98,17 @@\n             idx_bytes[tail_start],\n             idx_bytes[tail_start + 1],\n             idx_bytes[tail_start + 2],\n             idx_bytes[tail_start + 3],\n         ]);\n         let size = u32::from_be_bytes([\n             idx_bytes[tail_start + 4],\n             idx_bytes[tail_start + 5],\n-            idx_bytes[tail_start + 6],\n+            idx_bytes[tail_start - /* ~ changed by cargo-mutants ~ */ 6],\n             idx_bytes[tail_start + 7],\n         ]);\n         out.push(IdxEntry { word, offset, size });\n         pos = tail_start + 8;\n     }\n     Ok(out)\n }\n \n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "load_idx",
+      "return_type": "-> Result<Vec<IdxEntry>>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 113
+        },
+        "start": {
+          "column": 1,
+          "line": 75
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:106:34: replace + with - in load_idx",
+    "package": "reader_core",
+    "replacement": "-",
+    "span": {
+      "end": {
+        "column": 35,
+        "line": 106
+      },
+      "start": {
+        "column": 34,
+        "line": 106
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace + with * in load_idx\n@@ -98,17 +98,17 @@\n             idx_bytes[tail_start],\n             idx_bytes[tail_start + 1],\n             idx_bytes[tail_start + 2],\n             idx_bytes[tail_start + 3],\n         ]);\n         let size = u32::from_be_bytes([\n             idx_bytes[tail_start + 4],\n             idx_bytes[tail_start + 5],\n-            idx_bytes[tail_start + 6],\n+            idx_bytes[tail_start * /* ~ changed by cargo-mutants ~ */ 6],\n             idx_bytes[tail_start + 7],\n         ]);\n         out.push(IdxEntry { word, offset, size });\n         pos = tail_start + 8;\n     }\n     Ok(out)\n }\n \n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "load_idx",
+      "return_type": "-> Result<Vec<IdxEntry>>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 113
+        },
+        "start": {
+          "column": 1,
+          "line": 75
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:106:34: replace + with * in load_idx",
+    "package": "reader_core",
+    "replacement": "*",
+    "span": {
+      "end": {
+        "column": 35,
+        "line": 106
+      },
+      "start": {
+        "column": 34,
+        "line": 106
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace + with - in load_idx\n@@ -99,17 +99,17 @@\n             idx_bytes[tail_start + 1],\n             idx_bytes[tail_start + 2],\n             idx_bytes[tail_start + 3],\n         ]);\n         let size = u32::from_be_bytes([\n             idx_bytes[tail_start + 4],\n             idx_bytes[tail_start + 5],\n             idx_bytes[tail_start + 6],\n-            idx_bytes[tail_start + 7],\n+            idx_bytes[tail_start - /* ~ changed by cargo-mutants ~ */ 7],\n         ]);\n         out.push(IdxEntry { word, offset, size });\n         pos = tail_start + 8;\n     }\n     Ok(out)\n }\n \n /// 查词：二分精确命中；未中则线性扫描做\"首字母大小写归一 / 全小写 / 忽略大小写\"匹配\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "load_idx",
+      "return_type": "-> Result<Vec<IdxEntry>>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 113
+        },
+        "start": {
+          "column": 1,
+          "line": 75
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:107:34: replace + with - in load_idx",
+    "package": "reader_core",
+    "replacement": "-",
+    "span": {
+      "end": {
+        "column": 35,
+        "line": 107
+      },
+      "start": {
+        "column": 34,
+        "line": 107
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace + with * in load_idx\n@@ -99,17 +99,17 @@\n             idx_bytes[tail_start + 1],\n             idx_bytes[tail_start + 2],\n             idx_bytes[tail_start + 3],\n         ]);\n         let size = u32::from_be_bytes([\n             idx_bytes[tail_start + 4],\n             idx_bytes[tail_start + 5],\n             idx_bytes[tail_start + 6],\n-            idx_bytes[tail_start + 7],\n+            idx_bytes[tail_start * /* ~ changed by cargo-mutants ~ */ 7],\n         ]);\n         out.push(IdxEntry { word, offset, size });\n         pos = tail_start + 8;\n     }\n     Ok(out)\n }\n \n /// 查词：二分精确命中；未中则线性扫描做\"首字母大小写归一 / 全小写 / 忽略大小写\"匹配\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "load_idx",
+      "return_type": "-> Result<Vec<IdxEntry>>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 113
+        },
+        "start": {
+          "column": 1,
+          "line": 75
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:107:34: replace + with * in load_idx",
+    "package": "reader_core",
+    "replacement": "*",
+    "span": {
+      "end": {
+        "column": 35,
+        "line": 107
+      },
+      "start": {
+        "column": 34,
+        "line": 107
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace + with - in load_idx\n@@ -102,17 +102,17 @@\n         ]);\n         let size = u32::from_be_bytes([\n             idx_bytes[tail_start + 4],\n             idx_bytes[tail_start + 5],\n             idx_bytes[tail_start + 6],\n             idx_bytes[tail_start + 7],\n         ]);\n         out.push(IdxEntry { word, offset, size });\n-        pos = tail_start + 8;\n+        pos = tail_start - /* ~ changed by cargo-mutants ~ */ 8;\n     }\n     Ok(out)\n }\n \n /// 查词：二分精确命中；未中则线性扫描做\"首字母大小写归一 / 全小写 / 忽略大小写\"匹配\n /// （US-5；n≤10^5 实测 <1ms）。\n pub(crate) fn lookup_entry<'a>(idx: &'a [IdxEntry], word: &str) -> Option<&'a IdxEntry> {\n     if let Ok(found) = idx.binary_search_by(|e| e.word.as_bytes().cmp(word.as_bytes())) {\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "load_idx",
+      "return_type": "-> Result<Vec<IdxEntry>>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 113
+        },
+        "start": {
+          "column": 1,
+          "line": 75
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:110:26: replace + with - in load_idx",
+    "package": "reader_core",
+    "replacement": "-",
+    "span": {
+      "end": {
+        "column": 27,
+        "line": 110
+      },
+      "start": {
+        "column": 26,
+        "line": 110
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace + with * in load_idx\n@@ -102,17 +102,17 @@\n         ]);\n         let size = u32::from_be_bytes([\n             idx_bytes[tail_start + 4],\n             idx_bytes[tail_start + 5],\n             idx_bytes[tail_start + 6],\n             idx_bytes[tail_start + 7],\n         ]);\n         out.push(IdxEntry { word, offset, size });\n-        pos = tail_start + 8;\n+        pos = tail_start * /* ~ changed by cargo-mutants ~ */ 8;\n     }\n     Ok(out)\n }\n \n /// 查词：二分精确命中；未中则线性扫描做\"首字母大小写归一 / 全小写 / 忽略大小写\"匹配\n /// （US-5；n≤10^5 实测 <1ms）。\n pub(crate) fn lookup_entry<'a>(idx: &'a [IdxEntry], word: &str) -> Option<&'a IdxEntry> {\n     if let Ok(found) = idx.binary_search_by(|e| e.word.as_bytes().cmp(word.as_bytes())) {\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "load_idx",
+      "return_type": "-> Result<Vec<IdxEntry>>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 113
+        },
+        "start": {
+          "column": 1,
+          "line": 75
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:110:26: replace + with * in load_idx",
+    "package": "reader_core",
+    "replacement": "*",
+    "span": {
+      "end": {
+        "column": 27,
+        "line": 110
+      },
+      "start": {
+        "column": 26,
+        "line": 110
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace lookup_entry -> Option<&'a IdxEntry> with None\n@@ -110,44 +110,17 @@\n         pos = tail_start + 8;\n     }\n     Ok(out)\n }\n \n /// 查词：二分精确命中；未中则线性扫描做\"首字母大小写归一 / 全小写 / 忽略大小写\"匹配\n /// （US-5；n≤10^5 实测 <1ms）。\n pub(crate) fn lookup_entry<'a>(idx: &'a [IdxEntry], word: &str) -> Option<&'a IdxEntry> {\n-    if let Ok(found) = idx.binary_search_by(|e| e.word.as_bytes().cmp(word.as_bytes())) {\n-        return Some(&idx[found]);\n-    }\n-    // 线性扫描归一匹配\n-    let lower = word.to_lowercase();\n-    let mut first_flipped = String::new();\n-    if let Some(c) = word.chars().next() {\n-        if c.is_ascii_alphabetic() {\n-            let mut s = word.to_string();\n-            let rep = if c.is_ascii_lowercase() {\n-                c.to_ascii_uppercase()\n-            } else {\n-                c.to_ascii_lowercase()\n-            };\n-            s.replace_range(0..c.len_utf8(), &rep.to_string());\n-            first_flipped = s;\n-        }\n-    }\n-    for e in idx {\n-        if e.word == word\n-            || e.word == lower\n-            || (!first_flipped.is_empty() && e.word == first_flipped)\n-            || e.word.eq_ignore_ascii_case(word)\n-        {\n-            return Some(e);\n-        }\n-    }\n-    None\n+    None /* ~ changed by cargo-mutants ~ */\n }\n \n /// 按 sametypesequence 解析 .dict 区段（offset..offset+size）：\n /// 类型码 t→phonetic、m→definition(纯文本)、g→definition(HTML)、x→example；\n /// 未知类型码读到 \\0 跳过（末字段读到区段尾）；区段越界/截断 → Err(Corrupt)。\n /// sametypesequence 为空（旧格式）时：每个字段为 [类型码][数据]\\0。\n pub(crate) fn parse_entry(seq: &[u8], dict_bytes: &[u8], e: &IdxEntry) -> Result<DictEntry> {\n     let start = e.offset as usize;\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "lookup_entry",
+      "return_type": "-> Option<&'a IdxEntry>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 146
+        },
+        "start": {
+          "column": 1,
+          "line": 115
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/stardict.rs:118:5: replace lookup_entry -> Option<&'a IdxEntry> with None",
+    "package": "reader_core",
+    "replacement": "None",
+    "span": {
+      "end": {
+        "column": 9,
+        "line": 145
+      },
+      "start": {
+        "column": 5,
+        "line": 118
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace lookup_entry -> Option<&'a IdxEntry> with Some(Box::leak(Box::new(Default::default())))\n@@ -110,44 +110,17 @@\n         pos = tail_start + 8;\n     }\n     Ok(out)\n }\n \n /// 查词：二分精确命中；未中则线性扫描做\"首字母大小写归一 / 全小写 / 忽略大小写\"匹配\n /// （US-5；n≤10^5 实测 <1ms）。\n pub(crate) fn lookup_entry<'a>(idx: &'a [IdxEntry], word: &str) -> Option<&'a IdxEntry> {\n-    if let Ok(found) = idx.binary_search_by(|e| e.word.as_bytes().cmp(word.as_bytes())) {\n-        return Some(&idx[found]);\n-    }\n-    // 线性扫描归一匹配\n-    let lower = word.to_lowercase();\n-    let mut first_flipped = String::new();\n-    if let Some(c) = word.chars().next() {\n-        if c.is_ascii_alphabetic() {\n-            let mut s = word.to_string();\n-            let rep = if c.is_ascii_lowercase() {\n-                c.to_ascii_uppercase()\n-            } else {\n-                c.to_ascii_lowercase()\n-            };\n-            s.replace_range(0..c.len_utf8(), &rep.to_string());\n-            first_flipped = s;\n-        }\n-    }\n-    for e in idx {\n-        if e.word == word\n-            || e.word == lower\n-            || (!first_flipped.is_empty() && e.word == first_flipped)\n-            || e.word.eq_ignore_ascii_case(word)\n-        {\n-            return Some(e);\n-        }\n-    }\n-    None\n+    Some(Box::leak(Box::new(Default::default()))) /* ~ changed by cargo-mutants ~ */\n }\n \n /// 按 sametypesequence 解析 .dict 区段（offset..offset+size）：\n /// 类型码 t→phonetic、m→definition(纯文本)、g→definition(HTML)、x→example；\n /// 未知类型码读到 \\0 跳过（末字段读到区段尾）；区段越界/截断 → Err(Corrupt)。\n /// sametypesequence 为空（旧格式）时：每个字段为 [类型码][数据]\\0。\n pub(crate) fn parse_entry(seq: &[u8], dict_bytes: &[u8], e: &IdxEntry) -> Result<DictEntry> {\n     let start = e.offset as usize;\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "lookup_entry",
+      "return_type": "-> Option<&'a IdxEntry>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 146
+        },
+        "start": {
+          "column": 1,
+          "line": 115
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/stardict.rs:118:5: replace lookup_entry -> Option<&'a IdxEntry> with Some(Box::leak(Box::new(Default::default())))",
+    "package": "reader_core",
+    "replacement": "Some(Box::leak(Box::new(Default::default())))",
+    "span": {
+      "end": {
+        "column": 9,
+        "line": 145
+      },
+      "start": {
+        "column": 5,
+        "line": 118
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace || with && in lookup_entry\n@@ -132,17 +132,17 @@\n             s.replace_range(0..c.len_utf8(), &rep.to_string());\n             first_flipped = s;\n         }\n     }\n     for e in idx {\n         if e.word == word\n             || e.word == lower\n             || (!first_flipped.is_empty() && e.word == first_flipped)\n-            || e.word.eq_ignore_ascii_case(word)\n+            && /* ~ changed by cargo-mutants ~ */ e.word.eq_ignore_ascii_case(word)\n         {\n             return Some(e);\n         }\n     }\n     None\n }\n \n /// 按 sametypesequence 解析 .dict 区段（offset..offset+size）：\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "lookup_entry",
+      "return_type": "-> Option<&'a IdxEntry>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 146
+        },
+        "start": {
+          "column": 1,
+          "line": 115
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:140:13: replace || with && in lookup_entry",
+    "package": "reader_core",
+    "replacement": "&&",
+    "span": {
+      "end": {
+        "column": 15,
+        "line": 140
+      },
+      "start": {
+        "column": 13,
+        "line": 140
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace || with && in lookup_entry\n@@ -131,17 +131,17 @@\n             };\n             s.replace_range(0..c.len_utf8(), &rep.to_string());\n             first_flipped = s;\n         }\n     }\n     for e in idx {\n         if e.word == word\n             || e.word == lower\n-            || (!first_flipped.is_empty() && e.word == first_flipped)\n+            && /* ~ changed by cargo-mutants ~ */ (!first_flipped.is_empty() && e.word == first_flipped)\n             || e.word.eq_ignore_ascii_case(word)\n         {\n             return Some(e);\n         }\n     }\n     None\n }\n \n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "lookup_entry",
+      "return_type": "-> Option<&'a IdxEntry>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 146
+        },
+        "start": {
+          "column": 1,
+          "line": 115
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:139:13: replace || with && in lookup_entry",
+    "package": "reader_core",
+    "replacement": "&&",
+    "span": {
+      "end": {
+        "column": 15,
+        "line": 139
+      },
+      "start": {
+        "column": 13,
+        "line": 139
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace || with && in lookup_entry\n@@ -130,17 +130,17 @@\n                 c.to_ascii_lowercase()\n             };\n             s.replace_range(0..c.len_utf8(), &rep.to_string());\n             first_flipped = s;\n         }\n     }\n     for e in idx {\n         if e.word == word\n-            || e.word == lower\n+            && /* ~ changed by cargo-mutants ~ */ e.word == lower\n             || (!first_flipped.is_empty() && e.word == first_flipped)\n             || e.word.eq_ignore_ascii_case(word)\n         {\n             return Some(e);\n         }\n     }\n     None\n }\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "lookup_entry",
+      "return_type": "-> Option<&'a IdxEntry>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 146
+        },
+        "start": {
+          "column": 1,
+          "line": 115
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:138:13: replace || with && in lookup_entry",
+    "package": "reader_core",
+    "replacement": "&&",
+    "span": {
+      "end": {
+        "column": 15,
+        "line": 138
+      },
+      "start": {
+        "column": 13,
+        "line": 138
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace == with != in lookup_entry\n@@ -129,17 +129,17 @@\n             } else {\n                 c.to_ascii_lowercase()\n             };\n             s.replace_range(0..c.len_utf8(), &rep.to_string());\n             first_flipped = s;\n         }\n     }\n     for e in idx {\n-        if e.word == word\n+        if e.word != /* ~ changed by cargo-mutants ~ */ word\n             || e.word == lower\n             || (!first_flipped.is_empty() && e.word == first_flipped)\n             || e.word.eq_ignore_ascii_case(word)\n         {\n             return Some(e);\n         }\n     }\n     None\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "lookup_entry",
+      "return_type": "-> Option<&'a IdxEntry>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 146
+        },
+        "start": {
+          "column": 1,
+          "line": 115
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:137:19: replace == with != in lookup_entry",
+    "package": "reader_core",
+    "replacement": "!=",
+    "span": {
+      "end": {
+        "column": 21,
+        "line": 137
+      },
+      "start": {
+        "column": 19,
+        "line": 137
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace == with != in lookup_entry\n@@ -130,17 +130,17 @@\n                 c.to_ascii_lowercase()\n             };\n             s.replace_range(0..c.len_utf8(), &rep.to_string());\n             first_flipped = s;\n         }\n     }\n     for e in idx {\n         if e.word == word\n-            || e.word == lower\n+            || e.word != /* ~ changed by cargo-mutants ~ */ lower\n             || (!first_flipped.is_empty() && e.word == first_flipped)\n             || e.word.eq_ignore_ascii_case(word)\n         {\n             return Some(e);\n         }\n     }\n     None\n }\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "lookup_entry",
+      "return_type": "-> Option<&'a IdxEntry>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 146
+        },
+        "start": {
+          "column": 1,
+          "line": 115
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:138:23: replace == with != in lookup_entry",
+    "package": "reader_core",
+    "replacement": "!=",
+    "span": {
+      "end": {
+        "column": 25,
+        "line": 138
+      },
+      "start": {
+        "column": 23,
+        "line": 138
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace && with || in lookup_entry\n@@ -131,17 +131,17 @@\n             };\n             s.replace_range(0..c.len_utf8(), &rep.to_string());\n             first_flipped = s;\n         }\n     }\n     for e in idx {\n         if e.word == word\n             || e.word == lower\n-            || (!first_flipped.is_empty() && e.word == first_flipped)\n+            || (!first_flipped.is_empty() || /* ~ changed by cargo-mutants ~ */ e.word == first_flipped)\n             || e.word.eq_ignore_ascii_case(word)\n         {\n             return Some(e);\n         }\n     }\n     None\n }\n \n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "lookup_entry",
+      "return_type": "-> Option<&'a IdxEntry>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 146
+        },
+        "start": {
+          "column": 1,
+          "line": 115
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:139:43: replace && with || in lookup_entry",
+    "package": "reader_core",
+    "replacement": "||",
+    "span": {
+      "end": {
+        "column": 45,
+        "line": 139
+      },
+      "start": {
+        "column": 43,
+        "line": 139
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ delete ! in lookup_entry\n@@ -131,17 +131,17 @@\n             };\n             s.replace_range(0..c.len_utf8(), &rep.to_string());\n             first_flipped = s;\n         }\n     }\n     for e in idx {\n         if e.word == word\n             || e.word == lower\n-            || (!first_flipped.is_empty() && e.word == first_flipped)\n+            || ( /* ~ changed by cargo-mutants ~ */first_flipped.is_empty() && e.word == first_flipped)\n             || e.word.eq_ignore_ascii_case(word)\n         {\n             return Some(e);\n         }\n     }\n     None\n }\n \n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "lookup_entry",
+      "return_type": "-> Option<&'a IdxEntry>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 146
+        },
+        "start": {
+          "column": 1,
+          "line": 115
+        }
+      }
+    },
+    "genre": "UnaryOperator",
+    "name": "src/dict/stardict.rs:139:17: delete ! in lookup_entry",
+    "package": "reader_core",
+    "replacement": "",
+    "span": {
+      "end": {
+        "column": 18,
+        "line": 139
+      },
+      "start": {
+        "column": 17,
+        "line": 139
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace == with != in lookup_entry\n@@ -131,17 +131,17 @@\n             };\n             s.replace_range(0..c.len_utf8(), &rep.to_string());\n             first_flipped = s;\n         }\n     }\n     for e in idx {\n         if e.word == word\n             || e.word == lower\n-            || (!first_flipped.is_empty() && e.word == first_flipped)\n+            || (!first_flipped.is_empty() && e.word != /* ~ changed by cargo-mutants ~ */ first_flipped)\n             || e.word.eq_ignore_ascii_case(word)\n         {\n             return Some(e);\n         }\n     }\n     None\n }\n \n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "lookup_entry",
+      "return_type": "-> Option<&'a IdxEntry>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 146
+        },
+        "start": {
+          "column": 1,
+          "line": 115
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:139:53: replace == with != in lookup_entry",
+    "package": "reader_core",
+    "replacement": "!=",
+    "span": {
+      "end": {
+        "column": 55,
+        "line": 139
+      },
+      "start": {
+        "column": 53,
+        "line": 139
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace parse_entry -> Result<DictEntry> with Ok(Default::default())\n@@ -145,75 +145,17 @@\n     None\n }\n \n /// 按 sametypesequence 解析 .dict 区段（offset..offset+size）：\n /// 类型码 t→phonetic、m→definition(纯文本)、g→definition(HTML)、x→example；\n /// 未知类型码读到 \\0 跳过（末字段读到区段尾）；区段越界/截断 → Err(Corrupt)。\n /// sametypesequence 为空（旧格式）时：每个字段为 [类型码][数据]\\0。\n pub(crate) fn parse_entry(seq: &[u8], dict_bytes: &[u8], e: &IdxEntry) -> Result<DictEntry> {\n-    let start = e.offset as usize;\n-    let end = (e.offset as usize)\n-        .checked_add(e.size as usize)\n-        .ok_or_else(|| Error::Corrupt(format!(\"词条偏移溢出: {}\", e.word)))?;\n-    if end > dict_bytes.len() {\n-        return Err(Error::Corrupt(format!(\n-            \"词条区段越界: {} (offset={} size={} dict_len={})\",\n-            e.word,\n-            e.offset,\n-            e.size,\n-            dict_bytes.len()\n-        )));\n-    }\n-    let region = &dict_bytes[start..end];\n-\n-    let mut phonetic: Option<String> = None;\n-    let mut definitions: Vec<String> = Vec::new();\n-    let mut example: Option<String> = None;\n-\n-    if seq.is_empty() {\n-        // 旧格式：每字段 [类型码][NUL 终止数据]\n-        let mut pos = 0usize;\n-        while pos < region.len() {\n-            let code = region[pos];\n-            pos += 1;\n-            let (field, next) = take_field(region, pos, true);\n-            pos = next;\n-            match code {\n-                b't' => phonetic = non_empty(field),\n-                b'g' | b'm' => definitions.push(String::from_utf8_lossy(field).into_owned()),\n-                b'x' => example = non_empty(field),\n-                _ => {} // 未知类型码跳过不崩溃\n-            }\n-        }\n-    } else {\n-        // sametypesequence 非空：字段按序拼接，非末字段 NUL 终止，末字段止于区段尾\n-        let n = seq.len();\n-        let mut pos = 0usize;\n-        for (i, code) in seq.iter().enumerate() {\n-            let is_last = i == n - 1;\n-            let (field, next) = take_field(region, pos, is_last);\n-            pos = next;\n-            match *code {\n-                b't' => phonetic = non_empty(field),\n-                b'g' | b'm' => definitions.push(String::from_utf8_lossy(field).into_owned()),\n-                b'x' => example = non_empty(field),\n-                _ => {} // 未知类型码跳过不崩溃（US-6 风险2）\n-            }\n-        }\n-    }\n-\n-    let definition = definitions.join(\"\\n\");\n-    Ok(DictEntry {\n-        word: e.word.clone(),\n-        phonetic,\n-        pos: crate::dict::extract_pos(&definition),\n-        definition,\n-        example,\n-    })\n+    Ok(Default::default()) /* ~ changed by cargo-mutants ~ */\n }\n \n /// 从 `from` 起取一个字段：到 \\0 或区段尾（is_last 时容忍尾部无 NUL）。\n /// 返回 (字段文本, 下一位置)。\n fn take_field(region: &[u8], from: usize, is_last: bool) -> (&[u8], usize) {\n     if from >= region.len() {\n         return (b\"\", from);\n     }\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "parse_entry",
+      "return_type": "-> Result<DictEntry>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 212
+        },
+        "start": {
+          "column": 1,
+          "line": 148
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/stardict.rs:153:5: replace parse_entry -> Result<DictEntry> with Ok(Default::default())",
+    "package": "reader_core",
+    "replacement": "Ok(Default::default())",
+    "span": {
+      "end": {
+        "column": 7,
+        "line": 211
+      },
+      "start": {
+        "column": 5,
+        "line": 153
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace > with == in parse_entry\n@@ -149,17 +149,17 @@\n /// 类型码 t→phonetic、m→definition(纯文本)、g→definition(HTML)、x→example；\n /// 未知类型码读到 \\0 跳过（末字段读到区段尾）；区段越界/截断 → Err(Corrupt)。\n /// sametypesequence 为空（旧格式）时：每个字段为 [类型码][数据]\\0。\n pub(crate) fn parse_entry(seq: &[u8], dict_bytes: &[u8], e: &IdxEntry) -> Result<DictEntry> {\n     let start = e.offset as usize;\n     let end = (e.offset as usize)\n         .checked_add(e.size as usize)\n         .ok_or_else(|| Error::Corrupt(format!(\"词条偏移溢出: {}\", e.word)))?;\n-    if end > dict_bytes.len() {\n+    if end == /* ~ changed by cargo-mutants ~ */ dict_bytes.len() {\n         return Err(Error::Corrupt(format!(\n             \"词条区段越界: {} (offset={} size={} dict_len={})\",\n             e.word,\n             e.offset,\n             e.size,\n             dict_bytes.len()\n         )));\n     }\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "parse_entry",
+      "return_type": "-> Result<DictEntry>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 212
+        },
+        "start": {
+          "column": 1,
+          "line": 148
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:157:12: replace > with == in parse_entry",
+    "package": "reader_core",
+    "replacement": "==",
+    "span": {
+      "end": {
+        "column": 13,
+        "line": 157
+      },
+      "start": {
+        "column": 12,
+        "line": 157
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace > with < in parse_entry\n@@ -149,17 +149,17 @@\n /// 类型码 t→phonetic、m→definition(纯文本)、g→definition(HTML)、x→example；\n /// 未知类型码读到 \\0 跳过（末字段读到区段尾）；区段越界/截断 → Err(Corrupt)。\n /// sametypesequence 为空（旧格式）时：每个字段为 [类型码][数据]\\0。\n pub(crate) fn parse_entry(seq: &[u8], dict_bytes: &[u8], e: &IdxEntry) -> Result<DictEntry> {\n     let start = e.offset as usize;\n     let end = (e.offset as usize)\n         .checked_add(e.size as usize)\n         .ok_or_else(|| Error::Corrupt(format!(\"词条偏移溢出: {}\", e.word)))?;\n-    if end > dict_bytes.len() {\n+    if end < /* ~ changed by cargo-mutants ~ */ dict_bytes.len() {\n         return Err(Error::Corrupt(format!(\n             \"词条区段越界: {} (offset={} size={} dict_len={})\",\n             e.word,\n             e.offset,\n             e.size,\n             dict_bytes.len()\n         )));\n     }\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "parse_entry",
+      "return_type": "-> Result<DictEntry>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 212
+        },
+        "start": {
+          "column": 1,
+          "line": 148
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:157:12: replace > with < in parse_entry",
+    "package": "reader_core",
+    "replacement": "<",
+    "span": {
+      "end": {
+        "column": 13,
+        "line": 157
+      },
+      "start": {
+        "column": 12,
+        "line": 157
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace > with >= in parse_entry\n@@ -149,17 +149,17 @@\n /// 类型码 t→phonetic、m→definition(纯文本)、g→definition(HTML)、x→example；\n /// 未知类型码读到 \\0 跳过（末字段读到区段尾）；区段越界/截断 → Err(Corrupt)。\n /// sametypesequence 为空（旧格式）时：每个字段为 [类型码][数据]\\0。\n pub(crate) fn parse_entry(seq: &[u8], dict_bytes: &[u8], e: &IdxEntry) -> Result<DictEntry> {\n     let start = e.offset as usize;\n     let end = (e.offset as usize)\n         .checked_add(e.size as usize)\n         .ok_or_else(|| Error::Corrupt(format!(\"词条偏移溢出: {}\", e.word)))?;\n-    if end > dict_bytes.len() {\n+    if end >= /* ~ changed by cargo-mutants ~ */ dict_bytes.len() {\n         return Err(Error::Corrupt(format!(\n             \"词条区段越界: {} (offset={} size={} dict_len={})\",\n             e.word,\n             e.offset,\n             e.size,\n             dict_bytes.len()\n         )));\n     }\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "parse_entry",
+      "return_type": "-> Result<DictEntry>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 212
+        },
+        "start": {
+          "column": 1,
+          "line": 148
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:157:12: replace > with >= in parse_entry",
+    "package": "reader_core",
+    "replacement": ">=",
+    "span": {
+      "end": {
+        "column": 13,
+        "line": 157
+      },
+      "start": {
+        "column": 12,
+        "line": 157
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace < with == in parse_entry\n@@ -167,17 +167,17 @@\n \n     let mut phonetic: Option<String> = None;\n     let mut definitions: Vec<String> = Vec::new();\n     let mut example: Option<String> = None;\n \n     if seq.is_empty() {\n         // 旧格式：每字段 [类型码][NUL 终止数据]\n         let mut pos = 0usize;\n-        while pos < region.len() {\n+        while pos == /* ~ changed by cargo-mutants ~ */ region.len() {\n             let code = region[pos];\n             pos += 1;\n             let (field, next) = take_field(region, pos, true);\n             pos = next;\n             match code {\n                 b't' => phonetic = non_empty(field),\n                 b'g' | b'm' => definitions.push(String::from_utf8_lossy(field).into_owned()),\n                 b'x' => example = non_empty(field),\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "parse_entry",
+      "return_type": "-> Result<DictEntry>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 212
+        },
+        "start": {
+          "column": 1,
+          "line": 148
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:175:19: replace < with == in parse_entry",
+    "package": "reader_core",
+    "replacement": "==",
+    "span": {
+      "end": {
+        "column": 20,
+        "line": 175
+      },
+      "start": {
+        "column": 19,
+        "line": 175
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace < with > in parse_entry\n@@ -167,17 +167,17 @@\n \n     let mut phonetic: Option<String> = None;\n     let mut definitions: Vec<String> = Vec::new();\n     let mut example: Option<String> = None;\n \n     if seq.is_empty() {\n         // 旧格式：每字段 [类型码][NUL 终止数据]\n         let mut pos = 0usize;\n-        while pos < region.len() {\n+        while pos > /* ~ changed by cargo-mutants ~ */ region.len() {\n             let code = region[pos];\n             pos += 1;\n             let (field, next) = take_field(region, pos, true);\n             pos = next;\n             match code {\n                 b't' => phonetic = non_empty(field),\n                 b'g' | b'm' => definitions.push(String::from_utf8_lossy(field).into_owned()),\n                 b'x' => example = non_empty(field),\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "parse_entry",
+      "return_type": "-> Result<DictEntry>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 212
+        },
+        "start": {
+          "column": 1,
+          "line": 148
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:175:19: replace < with > in parse_entry",
+    "package": "reader_core",
+    "replacement": ">",
+    "span": {
+      "end": {
+        "column": 20,
+        "line": 175
+      },
+      "start": {
+        "column": 19,
+        "line": 175
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace < with <= in parse_entry\n@@ -167,17 +167,17 @@\n \n     let mut phonetic: Option<String> = None;\n     let mut definitions: Vec<String> = Vec::new();\n     let mut example: Option<String> = None;\n \n     if seq.is_empty() {\n         // 旧格式：每字段 [类型码][NUL 终止数据]\n         let mut pos = 0usize;\n-        while pos < region.len() {\n+        while pos <= /* ~ changed by cargo-mutants ~ */ region.len() {\n             let code = region[pos];\n             pos += 1;\n             let (field, next) = take_field(region, pos, true);\n             pos = next;\n             match code {\n                 b't' => phonetic = non_empty(field),\n                 b'g' | b'm' => definitions.push(String::from_utf8_lossy(field).into_owned()),\n                 b'x' => example = non_empty(field),\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "parse_entry",
+      "return_type": "-> Result<DictEntry>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 212
+        },
+        "start": {
+          "column": 1,
+          "line": 148
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:175:19: replace < with <= in parse_entry",
+    "package": "reader_core",
+    "replacement": "<=",
+    "span": {
+      "end": {
+        "column": 20,
+        "line": 175
+      },
+      "start": {
+        "column": 19,
+        "line": 175
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace += with -= in parse_entry\n@@ -169,17 +169,17 @@\n     let mut definitions: Vec<String> = Vec::new();\n     let mut example: Option<String> = None;\n \n     if seq.is_empty() {\n         // 旧格式：每字段 [类型码][NUL 终止数据]\n         let mut pos = 0usize;\n         while pos < region.len() {\n             let code = region[pos];\n-            pos += 1;\n+            pos -= /* ~ changed by cargo-mutants ~ */ 1;\n             let (field, next) = take_field(region, pos, true);\n             pos = next;\n             match code {\n                 b't' => phonetic = non_empty(field),\n                 b'g' | b'm' => definitions.push(String::from_utf8_lossy(field).into_owned()),\n                 b'x' => example = non_empty(field),\n                 _ => {} // 未知类型码跳过不崩溃\n             }\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "parse_entry",
+      "return_type": "-> Result<DictEntry>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 212
+        },
+        "start": {
+          "column": 1,
+          "line": 148
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:177:17: replace += with -= in parse_entry",
+    "package": "reader_core",
+    "replacement": "-=",
+    "span": {
+      "end": {
+        "column": 19,
+        "line": 177
+      },
+      "start": {
+        "column": 17,
+        "line": 177
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace += with *= in parse_entry\n@@ -169,17 +169,17 @@\n     let mut definitions: Vec<String> = Vec::new();\n     let mut example: Option<String> = None;\n \n     if seq.is_empty() {\n         // 旧格式：每字段 [类型码][NUL 终止数据]\n         let mut pos = 0usize;\n         while pos < region.len() {\n             let code = region[pos];\n-            pos += 1;\n+            pos *= /* ~ changed by cargo-mutants ~ */ 1;\n             let (field, next) = take_field(region, pos, true);\n             pos = next;\n             match code {\n                 b't' => phonetic = non_empty(field),\n                 b'g' | b'm' => definitions.push(String::from_utf8_lossy(field).into_owned()),\n                 b'x' => example = non_empty(field),\n                 _ => {} // 未知类型码跳过不崩溃\n             }\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "parse_entry",
+      "return_type": "-> Result<DictEntry>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 212
+        },
+        "start": {
+          "column": 1,
+          "line": 148
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:177:17: replace += with *= in parse_entry",
+    "package": "reader_core",
+    "replacement": "*=",
+    "span": {
+      "end": {
+        "column": 19,
+        "line": 177
+      },
+      "start": {
+        "column": 17,
+        "line": 177
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ delete match arm b't' in parse_entry\n@@ -173,17 +173,17 @@\n         // 旧格式：每字段 [类型码][NUL 终止数据]\n         let mut pos = 0usize;\n         while pos < region.len() {\n             let code = region[pos];\n             pos += 1;\n             let (field, next) = take_field(region, pos, true);\n             pos = next;\n             match code {\n-                b't' => phonetic = non_empty(field),\n+                 /* ~ changed by cargo-mutants ~ */\n                 b'g' | b'm' => definitions.push(String::from_utf8_lossy(field).into_owned()),\n                 b'x' => example = non_empty(field),\n                 _ => {} // 未知类型码跳过不崩溃\n             }\n         }\n     } else {\n         // sametypesequence 非空：字段按序拼接，非末字段 NUL 终止，末字段止于区段尾\n         let n = seq.len();\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "parse_entry",
+      "return_type": "-> Result<DictEntry>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 212
+        },
+        "start": {
+          "column": 1,
+          "line": 148
+        }
+      }
+    },
+    "genre": "MatchArm",
+    "name": "src/dict/stardict.rs:181:17: delete match arm b't' in parse_entry",
+    "package": "reader_core",
+    "replacement": "",
+    "span": {
+      "end": {
+        "column": 53,
+        "line": 181
+      },
+      "start": {
+        "column": 17,
+        "line": 181
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ delete match arm b'g' | b'm' in parse_entry\n@@ -174,17 +174,17 @@\n         let mut pos = 0usize;\n         while pos < region.len() {\n             let code = region[pos];\n             pos += 1;\n             let (field, next) = take_field(region, pos, true);\n             pos = next;\n             match code {\n                 b't' => phonetic = non_empty(field),\n-                b'g' | b'm' => definitions.push(String::from_utf8_lossy(field).into_owned()),\n+                 /* ~ changed by cargo-mutants ~ */\n                 b'x' => example = non_empty(field),\n                 _ => {} // 未知类型码跳过不崩溃\n             }\n         }\n     } else {\n         // sametypesequence 非空：字段按序拼接，非末字段 NUL 终止，末字段止于区段尾\n         let n = seq.len();\n         let mut pos = 0usize;\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "parse_entry",
+      "return_type": "-> Result<DictEntry>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 212
+        },
+        "start": {
+          "column": 1,
+          "line": 148
+        }
+      }
+    },
+    "genre": "MatchArm",
+    "name": "src/dict/stardict.rs:182:17: delete match arm b'g' | b'm' in parse_entry",
+    "package": "reader_core",
+    "replacement": "",
+    "span": {
+      "end": {
+        "column": 94,
+        "line": 182
+      },
+      "start": {
+        "column": 17,
+        "line": 182
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ delete match arm b'x' in parse_entry\n@@ -175,17 +175,17 @@\n         while pos < region.len() {\n             let code = region[pos];\n             pos += 1;\n             let (field, next) = take_field(region, pos, true);\n             pos = next;\n             match code {\n                 b't' => phonetic = non_empty(field),\n                 b'g' | b'm' => definitions.push(String::from_utf8_lossy(field).into_owned()),\n-                b'x' => example = non_empty(field),\n+                 /* ~ changed by cargo-mutants ~ */\n                 _ => {} // 未知类型码跳过不崩溃\n             }\n         }\n     } else {\n         // sametypesequence 非空：字段按序拼接，非末字段 NUL 终止，末字段止于区段尾\n         let n = seq.len();\n         let mut pos = 0usize;\n         for (i, code) in seq.iter().enumerate() {\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "parse_entry",
+      "return_type": "-> Result<DictEntry>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 212
+        },
+        "start": {
+          "column": 1,
+          "line": 148
+        }
+      }
+    },
+    "genre": "MatchArm",
+    "name": "src/dict/stardict.rs:183:17: delete match arm b'x' in parse_entry",
+    "package": "reader_core",
+    "replacement": "",
+    "span": {
+      "end": {
+        "column": 52,
+        "line": 183
+      },
+      "start": {
+        "column": 17,
+        "line": 183
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace == with != in parse_entry\n@@ -184,17 +184,17 @@\n                 _ => {} // 未知类型码跳过不崩溃\n             }\n         }\n     } else {\n         // sametypesequence 非空：字段按序拼接，非末字段 NUL 终止，末字段止于区段尾\n         let n = seq.len();\n         let mut pos = 0usize;\n         for (i, code) in seq.iter().enumerate() {\n-            let is_last = i == n - 1;\n+            let is_last = i != /* ~ changed by cargo-mutants ~ */ n - 1;\n             let (field, next) = take_field(region, pos, is_last);\n             pos = next;\n             match *code {\n                 b't' => phonetic = non_empty(field),\n                 b'g' | b'm' => definitions.push(String::from_utf8_lossy(field).into_owned()),\n                 b'x' => example = non_empty(field),\n                 _ => {} // 未知类型码跳过不崩溃（US-6 风险2）\n             }\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "parse_entry",
+      "return_type": "-> Result<DictEntry>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 212
+        },
+        "start": {
+          "column": 1,
+          "line": 148
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:192:29: replace == with != in parse_entry",
+    "package": "reader_core",
+    "replacement": "!=",
+    "span": {
+      "end": {
+        "column": 31,
+        "line": 192
+      },
+      "start": {
+        "column": 29,
+        "line": 192
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace - with + in parse_entry\n@@ -184,17 +184,17 @@\n                 _ => {} // 未知类型码跳过不崩溃\n             }\n         }\n     } else {\n         // sametypesequence 非空：字段按序拼接，非末字段 NUL 终止，末字段止于区段尾\n         let n = seq.len();\n         let mut pos = 0usize;\n         for (i, code) in seq.iter().enumerate() {\n-            let is_last = i == n - 1;\n+            let is_last = i == n + /* ~ changed by cargo-mutants ~ */ 1;\n             let (field, next) = take_field(region, pos, is_last);\n             pos = next;\n             match *code {\n                 b't' => phonetic = non_empty(field),\n                 b'g' | b'm' => definitions.push(String::from_utf8_lossy(field).into_owned()),\n                 b'x' => example = non_empty(field),\n                 _ => {} // 未知类型码跳过不崩溃（US-6 风险2）\n             }\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "parse_entry",
+      "return_type": "-> Result<DictEntry>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 212
+        },
+        "start": {
+          "column": 1,
+          "line": 148
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:192:34: replace - with + in parse_entry",
+    "package": "reader_core",
+    "replacement": "+",
+    "span": {
+      "end": {
+        "column": 35,
+        "line": 192
+      },
+      "start": {
+        "column": 34,
+        "line": 192
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace - with / in parse_entry\n@@ -184,17 +184,17 @@\n                 _ => {} // 未知类型码跳过不崩溃\n             }\n         }\n     } else {\n         // sametypesequence 非空：字段按序拼接，非末字段 NUL 终止，末字段止于区段尾\n         let n = seq.len();\n         let mut pos = 0usize;\n         for (i, code) in seq.iter().enumerate() {\n-            let is_last = i == n - 1;\n+            let is_last = i == n / /* ~ changed by cargo-mutants ~ */ 1;\n             let (field, next) = take_field(region, pos, is_last);\n             pos = next;\n             match *code {\n                 b't' => phonetic = non_empty(field),\n                 b'g' | b'm' => definitions.push(String::from_utf8_lossy(field).into_owned()),\n                 b'x' => example = non_empty(field),\n                 _ => {} // 未知类型码跳过不崩溃（US-6 风险2）\n             }\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "parse_entry",
+      "return_type": "-> Result<DictEntry>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 212
+        },
+        "start": {
+          "column": 1,
+          "line": 148
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:192:34: replace - with / in parse_entry",
+    "package": "reader_core",
+    "replacement": "/",
+    "span": {
+      "end": {
+        "column": 35,
+        "line": 192
+      },
+      "start": {
+        "column": 34,
+        "line": 192
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ delete match arm b't' in parse_entry\n@@ -188,17 +188,17 @@\n         // sametypesequence 非空：字段按序拼接，非末字段 NUL 终止，末字段止于区段尾\n         let n = seq.len();\n         let mut pos = 0usize;\n         for (i, code) in seq.iter().enumerate() {\n             let is_last = i == n - 1;\n             let (field, next) = take_field(region, pos, is_last);\n             pos = next;\n             match *code {\n-                b't' => phonetic = non_empty(field),\n+                 /* ~ changed by cargo-mutants ~ */\n                 b'g' | b'm' => definitions.push(String::from_utf8_lossy(field).into_owned()),\n                 b'x' => example = non_empty(field),\n                 _ => {} // 未知类型码跳过不崩溃（US-6 风险2）\n             }\n         }\n     }\n \n     let definition = definitions.join(\"\\n\");\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "parse_entry",
+      "return_type": "-> Result<DictEntry>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 212
+        },
+        "start": {
+          "column": 1,
+          "line": 148
+        }
+      }
+    },
+    "genre": "MatchArm",
+    "name": "src/dict/stardict.rs:196:17: delete match arm b't' in parse_entry",
+    "package": "reader_core",
+    "replacement": "",
+    "span": {
+      "end": {
+        "column": 53,
+        "line": 196
+      },
+      "start": {
+        "column": 17,
+        "line": 196
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ delete match arm b'g' | b'm' in parse_entry\n@@ -189,17 +189,17 @@\n         let n = seq.len();\n         let mut pos = 0usize;\n         for (i, code) in seq.iter().enumerate() {\n             let is_last = i == n - 1;\n             let (field, next) = take_field(region, pos, is_last);\n             pos = next;\n             match *code {\n                 b't' => phonetic = non_empty(field),\n-                b'g' | b'm' => definitions.push(String::from_utf8_lossy(field).into_owned()),\n+                 /* ~ changed by cargo-mutants ~ */\n                 b'x' => example = non_empty(field),\n                 _ => {} // 未知类型码跳过不崩溃（US-6 风险2）\n             }\n         }\n     }\n \n     let definition = definitions.join(\"\\n\");\n     Ok(DictEntry {\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "parse_entry",
+      "return_type": "-> Result<DictEntry>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 212
+        },
+        "start": {
+          "column": 1,
+          "line": 148
+        }
+      }
+    },
+    "genre": "MatchArm",
+    "name": "src/dict/stardict.rs:197:17: delete match arm b'g' | b'm' in parse_entry",
+    "package": "reader_core",
+    "replacement": "",
+    "span": {
+      "end": {
+        "column": 94,
+        "line": 197
+      },
+      "start": {
+        "column": 17,
+        "line": 197
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ delete match arm b'x' in parse_entry\n@@ -190,17 +190,17 @@\n         let mut pos = 0usize;\n         for (i, code) in seq.iter().enumerate() {\n             let is_last = i == n - 1;\n             let (field, next) = take_field(region, pos, is_last);\n             pos = next;\n             match *code {\n                 b't' => phonetic = non_empty(field),\n                 b'g' | b'm' => definitions.push(String::from_utf8_lossy(field).into_owned()),\n-                b'x' => example = non_empty(field),\n+                 /* ~ changed by cargo-mutants ~ */\n                 _ => {} // 未知类型码跳过不崩溃（US-6 风险2）\n             }\n         }\n     }\n \n     let definition = definitions.join(\"\\n\");\n     Ok(DictEntry {\n         word: e.word.clone(),\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "parse_entry",
+      "return_type": "-> Result<DictEntry>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 212
+        },
+        "start": {
+          "column": 1,
+          "line": 148
+        }
+      }
+    },
+    "genre": "MatchArm",
+    "name": "src/dict/stardict.rs:198:17: delete match arm b'x' in parse_entry",
+    "package": "reader_core",
+    "replacement": "",
+    "span": {
+      "end": {
+        "column": 52,
+        "line": 198
+      },
+      "start": {
+        "column": 17,
+        "line": 198
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace take_field -> (&[u8], usize) with (Vec::leak(Vec::new()), 0)\n@@ -209,34 +209,17 @@\n         definition,\n         example,\n     })\n }\n \n /// 从 `from` 起取一个字段：到 \\0 或区段尾（is_last 时容忍尾部无 NUL）。\n /// 返回 (字段文本, 下一位置)。\n fn take_field(region: &[u8], from: usize, is_last: bool) -> (&[u8], usize) {\n-    if from >= region.len() {\n-        return (b\"\", from);\n-    }\n-    let rel = region[from..].iter().position(|&b| b == 0);\n-    match rel {\n-        Some(n) if !is_last => (&region[from..from + n], from + n + 1),\n-        Some(n) => {\n-            // 末字段：到 NUL 或区段尾，取较短者（兼容末尾带/不带 NUL）\n-            let end = from + n;\n-            let (field, next) = (&region[from..end], end);\n-            if next >= region.len() {\n-                (field, next)\n-            } else {\n-                (field, next + 1)\n-            }\n-        }\n-        None => (&region[from..], region.len()),\n-    }\n+    (Vec::leak(Vec::new()), 0) /* ~ changed by cargo-mutants ~ */\n }\n \n fn non_empty(s: &[u8]) -> Option<String> {\n     let t = String::from_utf8_lossy(s).into_owned();\n     if t.is_empty() {\n         None\n     } else {\n         Some(t)\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "take_field",
+      "return_type": "-> (&[u8], usize)",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 235
+        },
+        "start": {
+          "column": 1,
+          "line": 214
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/stardict.rs:217:5: replace take_field -> (&[u8], usize) with (Vec::leak(Vec::new()), 0)",
+    "package": "reader_core",
+    "replacement": "(Vec::leak(Vec::new()), 0)",
+    "span": {
+      "end": {
+        "column": 6,
+        "line": 234
+      },
+      "start": {
+        "column": 5,
+        "line": 217
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace take_field -> (&[u8], usize) with (Vec::leak(Vec::new()), 1)\n@@ -209,34 +209,17 @@\n         definition,\n         example,\n     })\n }\n \n /// 从 `from` 起取一个字段：到 \\0 或区段尾（is_last 时容忍尾部无 NUL）。\n /// 返回 (字段文本, 下一位置)。\n fn take_field(region: &[u8], from: usize, is_last: bool) -> (&[u8], usize) {\n-    if from >= region.len() {\n-        return (b\"\", from);\n-    }\n-    let rel = region[from..].iter().position(|&b| b == 0);\n-    match rel {\n-        Some(n) if !is_last => (&region[from..from + n], from + n + 1),\n-        Some(n) => {\n-            // 末字段：到 NUL 或区段尾，取较短者（兼容末尾带/不带 NUL）\n-            let end = from + n;\n-            let (field, next) = (&region[from..end], end);\n-            if next >= region.len() {\n-                (field, next)\n-            } else {\n-                (field, next + 1)\n-            }\n-        }\n-        None => (&region[from..], region.len()),\n-    }\n+    (Vec::leak(Vec::new()), 1) /* ~ changed by cargo-mutants ~ */\n }\n \n fn non_empty(s: &[u8]) -> Option<String> {\n     let t = String::from_utf8_lossy(s).into_owned();\n     if t.is_empty() {\n         None\n     } else {\n         Some(t)\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "take_field",
+      "return_type": "-> (&[u8], usize)",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 235
+        },
+        "start": {
+          "column": 1,
+          "line": 214
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/stardict.rs:217:5: replace take_field -> (&[u8], usize) with (Vec::leak(Vec::new()), 1)",
+    "package": "reader_core",
+    "replacement": "(Vec::leak(Vec::new()), 1)",
+    "span": {
+      "end": {
+        "column": 6,
+        "line": 234
+      },
+      "start": {
+        "column": 5,
+        "line": 217
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace take_field -> (&[u8], usize) with (Vec::leak(vec![0]), 0)\n@@ -209,34 +209,17 @@\n         definition,\n         example,\n     })\n }\n \n /// 从 `from` 起取一个字段：到 \\0 或区段尾（is_last 时容忍尾部无 NUL）。\n /// 返回 (字段文本, 下一位置)。\n fn take_field(region: &[u8], from: usize, is_last: bool) -> (&[u8], usize) {\n-    if from >= region.len() {\n-        return (b\"\", from);\n-    }\n-    let rel = region[from..].iter().position(|&b| b == 0);\n-    match rel {\n-        Some(n) if !is_last => (&region[from..from + n], from + n + 1),\n-        Some(n) => {\n-            // 末字段：到 NUL 或区段尾，取较短者（兼容末尾带/不带 NUL）\n-            let end = from + n;\n-            let (field, next) = (&region[from..end], end);\n-            if next >= region.len() {\n-                (field, next)\n-            } else {\n-                (field, next + 1)\n-            }\n-        }\n-        None => (&region[from..], region.len()),\n-    }\n+    (Vec::leak(vec![0]), 0) /* ~ changed by cargo-mutants ~ */\n }\n \n fn non_empty(s: &[u8]) -> Option<String> {\n     let t = String::from_utf8_lossy(s).into_owned();\n     if t.is_empty() {\n         None\n     } else {\n         Some(t)\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "take_field",
+      "return_type": "-> (&[u8], usize)",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 235
+        },
+        "start": {
+          "column": 1,
+          "line": 214
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/stardict.rs:217:5: replace take_field -> (&[u8], usize) with (Vec::leak(vec![0]), 0)",
+    "package": "reader_core",
+    "replacement": "(Vec::leak(vec![0]), 0)",
+    "span": {
+      "end": {
+        "column": 6,
+        "line": 234
+      },
+      "start": {
+        "column": 5,
+        "line": 217
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace take_field -> (&[u8], usize) with (Vec::leak(vec![0]), 1)\n@@ -209,34 +209,17 @@\n         definition,\n         example,\n     })\n }\n \n /// 从 `from` 起取一个字段：到 \\0 或区段尾（is_last 时容忍尾部无 NUL）。\n /// 返回 (字段文本, 下一位置)。\n fn take_field(region: &[u8], from: usize, is_last: bool) -> (&[u8], usize) {\n-    if from >= region.len() {\n-        return (b\"\", from);\n-    }\n-    let rel = region[from..].iter().position(|&b| b == 0);\n-    match rel {\n-        Some(n) if !is_last => (&region[from..from + n], from + n + 1),\n-        Some(n) => {\n-            // 末字段：到 NUL 或区段尾，取较短者（兼容末尾带/不带 NUL）\n-            let end = from + n;\n-            let (field, next) = (&region[from..end], end);\n-            if next >= region.len() {\n-                (field, next)\n-            } else {\n-                (field, next + 1)\n-            }\n-        }\n-        None => (&region[from..], region.len()),\n-    }\n+    (Vec::leak(vec![0]), 1) /* ~ changed by cargo-mutants ~ */\n }\n \n fn non_empty(s: &[u8]) -> Option<String> {\n     let t = String::from_utf8_lossy(s).into_owned();\n     if t.is_empty() {\n         None\n     } else {\n         Some(t)\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "take_field",
+      "return_type": "-> (&[u8], usize)",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 235
+        },
+        "start": {
+          "column": 1,
+          "line": 214
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/stardict.rs:217:5: replace take_field -> (&[u8], usize) with (Vec::leak(vec![0]), 1)",
+    "package": "reader_core",
+    "replacement": "(Vec::leak(vec![0]), 1)",
+    "span": {
+      "end": {
+        "column": 6,
+        "line": 234
+      },
+      "start": {
+        "column": 5,
+        "line": 217
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace take_field -> (&[u8], usize) with (Vec::leak(vec![1]), 0)\n@@ -209,34 +209,17 @@\n         definition,\n         example,\n     })\n }\n \n /// 从 `from` 起取一个字段：到 \\0 或区段尾（is_last 时容忍尾部无 NUL）。\n /// 返回 (字段文本, 下一位置)。\n fn take_field(region: &[u8], from: usize, is_last: bool) -> (&[u8], usize) {\n-    if from >= region.len() {\n-        return (b\"\", from);\n-    }\n-    let rel = region[from..].iter().position(|&b| b == 0);\n-    match rel {\n-        Some(n) if !is_last => (&region[from..from + n], from + n + 1),\n-        Some(n) => {\n-            // 末字段：到 NUL 或区段尾，取较短者（兼容末尾带/不带 NUL）\n-            let end = from + n;\n-            let (field, next) = (&region[from..end], end);\n-            if next >= region.len() {\n-                (field, next)\n-            } else {\n-                (field, next + 1)\n-            }\n-        }\n-        None => (&region[from..], region.len()),\n-    }\n+    (Vec::leak(vec![1]), 0) /* ~ changed by cargo-mutants ~ */\n }\n \n fn non_empty(s: &[u8]) -> Option<String> {\n     let t = String::from_utf8_lossy(s).into_owned();\n     if t.is_empty() {\n         None\n     } else {\n         Some(t)\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "take_field",
+      "return_type": "-> (&[u8], usize)",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 235
+        },
+        "start": {
+          "column": 1,
+          "line": 214
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/stardict.rs:217:5: replace take_field -> (&[u8], usize) with (Vec::leak(vec![1]), 0)",
+    "package": "reader_core",
+    "replacement": "(Vec::leak(vec![1]), 0)",
+    "span": {
+      "end": {
+        "column": 6,
+        "line": 234
+      },
+      "start": {
+        "column": 5,
+        "line": 217
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace take_field -> (&[u8], usize) with (Vec::leak(vec![1]), 1)\n@@ -209,34 +209,17 @@\n         definition,\n         example,\n     })\n }\n \n /// 从 `from` 起取一个字段：到 \\0 或区段尾（is_last 时容忍尾部无 NUL）。\n /// 返回 (字段文本, 下一位置)。\n fn take_field(region: &[u8], from: usize, is_last: bool) -> (&[u8], usize) {\n-    if from >= region.len() {\n-        return (b\"\", from);\n-    }\n-    let rel = region[from..].iter().position(|&b| b == 0);\n-    match rel {\n-        Some(n) if !is_last => (&region[from..from + n], from + n + 1),\n-        Some(n) => {\n-            // 末字段：到 NUL 或区段尾，取较短者（兼容末尾带/不带 NUL）\n-            let end = from + n;\n-            let (field, next) = (&region[from..end], end);\n-            if next >= region.len() {\n-                (field, next)\n-            } else {\n-                (field, next + 1)\n-            }\n-        }\n-        None => (&region[from..], region.len()),\n-    }\n+    (Vec::leak(vec![1]), 1) /* ~ changed by cargo-mutants ~ */\n }\n \n fn non_empty(s: &[u8]) -> Option<String> {\n     let t = String::from_utf8_lossy(s).into_owned();\n     if t.is_empty() {\n         None\n     } else {\n         Some(t)\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "take_field",
+      "return_type": "-> (&[u8], usize)",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 235
+        },
+        "start": {
+          "column": 1,
+          "line": 214
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/stardict.rs:217:5: replace take_field -> (&[u8], usize) with (Vec::leak(vec![1]), 1)",
+    "package": "reader_core",
+    "replacement": "(Vec::leak(vec![1]), 1)",
+    "span": {
+      "end": {
+        "column": 6,
+        "line": 234
+      },
+      "start": {
+        "column": 5,
+        "line": 217
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace >= with < in take_field\n@@ -209,17 +209,17 @@\n         definition,\n         example,\n     })\n }\n \n /// 从 `from` 起取一个字段：到 \\0 或区段尾（is_last 时容忍尾部无 NUL）。\n /// 返回 (字段文本, 下一位置)。\n fn take_field(region: &[u8], from: usize, is_last: bool) -> (&[u8], usize) {\n-    if from >= region.len() {\n+    if from < /* ~ changed by cargo-mutants ~ */ region.len() {\n         return (b\"\", from);\n     }\n     let rel = region[from..].iter().position(|&b| b == 0);\n     match rel {\n         Some(n) if !is_last => (&region[from..from + n], from + n + 1),\n         Some(n) => {\n             // 末字段：到 NUL 或区段尾，取较短者（兼容末尾带/不带 NUL）\n             let end = from + n;\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "take_field",
+      "return_type": "-> (&[u8], usize)",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 235
+        },
+        "start": {
+          "column": 1,
+          "line": 214
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:217:13: replace >= with < in take_field",
+    "package": "reader_core",
+    "replacement": "<",
+    "span": {
+      "end": {
+        "column": 15,
+        "line": 217
+      },
+      "start": {
+        "column": 13,
+        "line": 217
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace == with != in take_field\n@@ -212,17 +212,17 @@\n }\n \n /// 从 `from` 起取一个字段：到 \\0 或区段尾（is_last 时容忍尾部无 NUL）。\n /// 返回 (字段文本, 下一位置)。\n fn take_field(region: &[u8], from: usize, is_last: bool) -> (&[u8], usize) {\n     if from >= region.len() {\n         return (b\"\", from);\n     }\n-    let rel = region[from..].iter().position(|&b| b == 0);\n+    let rel = region[from..].iter().position(|&b| b != /* ~ changed by cargo-mutants ~ */ 0);\n     match rel {\n         Some(n) if !is_last => (&region[from..from + n], from + n + 1),\n         Some(n) => {\n             // 末字段：到 NUL 或区段尾，取较短者（兼容末尾带/不带 NUL）\n             let end = from + n;\n             let (field, next) = (&region[from..end], end);\n             if next >= region.len() {\n                 (field, next)\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "take_field",
+      "return_type": "-> (&[u8], usize)",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 235
+        },
+        "start": {
+          "column": 1,
+          "line": 214
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:220:53: replace == with != in take_field",
+    "package": "reader_core",
+    "replacement": "!=",
+    "span": {
+      "end": {
+        "column": 55,
+        "line": 220
+      },
+      "start": {
+        "column": 53,
+        "line": 220
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace match guard !is_last with true in take_field\n@@ -214,17 +214,17 @@\n /// 从 `from` 起取一个字段：到 \\0 或区段尾（is_last 时容忍尾部无 NUL）。\n /// 返回 (字段文本, 下一位置)。\n fn take_field(region: &[u8], from: usize, is_last: bool) -> (&[u8], usize) {\n     if from >= region.len() {\n         return (b\"\", from);\n     }\n     let rel = region[from..].iter().position(|&b| b == 0);\n     match rel {\n-        Some(n) if !is_last => (&region[from..from + n], from + n + 1),\n+        Some(n) if true /* ~ changed by cargo-mutants ~ */ => (&region[from..from + n], from + n + 1),\n         Some(n) => {\n             // 末字段：到 NUL 或区段尾，取较短者（兼容末尾带/不带 NUL）\n             let end = from + n;\n             let (field, next) = (&region[from..end], end);\n             if next >= region.len() {\n                 (field, next)\n             } else {\n                 (field, next + 1)\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "take_field",
+      "return_type": "-> (&[u8], usize)",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 235
+        },
+        "start": {
+          "column": 1,
+          "line": 214
+        }
+      }
+    },
+    "genre": "MatchArmGuard",
+    "name": "src/dict/stardict.rs:222:20: replace match guard !is_last with true in take_field",
+    "package": "reader_core",
+    "replacement": "true",
+    "span": {
+      "end": {
+        "column": 28,
+        "line": 222
+      },
+      "start": {
+        "column": 20,
+        "line": 222
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace match guard !is_last with false in take_field\n@@ -214,17 +214,17 @@\n /// 从 `from` 起取一个字段：到 \\0 或区段尾（is_last 时容忍尾部无 NUL）。\n /// 返回 (字段文本, 下一位置)。\n fn take_field(region: &[u8], from: usize, is_last: bool) -> (&[u8], usize) {\n     if from >= region.len() {\n         return (b\"\", from);\n     }\n     let rel = region[from..].iter().position(|&b| b == 0);\n     match rel {\n-        Some(n) if !is_last => (&region[from..from + n], from + n + 1),\n+        Some(n) if false /* ~ changed by cargo-mutants ~ */ => (&region[from..from + n], from + n + 1),\n         Some(n) => {\n             // 末字段：到 NUL 或区段尾，取较短者（兼容末尾带/不带 NUL）\n             let end = from + n;\n             let (field, next) = (&region[from..end], end);\n             if next >= region.len() {\n                 (field, next)\n             } else {\n                 (field, next + 1)\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "take_field",
+      "return_type": "-> (&[u8], usize)",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 235
+        },
+        "start": {
+          "column": 1,
+          "line": 214
+        }
+      }
+    },
+    "genre": "MatchArmGuard",
+    "name": "src/dict/stardict.rs:222:20: replace match guard !is_last with false in take_field",
+    "package": "reader_core",
+    "replacement": "false",
+    "span": {
+      "end": {
+        "column": 28,
+        "line": 222
+      },
+      "start": {
+        "column": 20,
+        "line": 222
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ delete ! in take_field\n@@ -214,17 +214,17 @@\n /// 从 `from` 起取一个字段：到 \\0 或区段尾（is_last 时容忍尾部无 NUL）。\n /// 返回 (字段文本, 下一位置)。\n fn take_field(region: &[u8], from: usize, is_last: bool) -> (&[u8], usize) {\n     if from >= region.len() {\n         return (b\"\", from);\n     }\n     let rel = region[from..].iter().position(|&b| b == 0);\n     match rel {\n-        Some(n) if !is_last => (&region[from..from + n], from + n + 1),\n+        Some(n) if  /* ~ changed by cargo-mutants ~ */is_last => (&region[from..from + n], from + n + 1),\n         Some(n) => {\n             // 末字段：到 NUL 或区段尾，取较短者（兼容末尾带/不带 NUL）\n             let end = from + n;\n             let (field, next) = (&region[from..end], end);\n             if next >= region.len() {\n                 (field, next)\n             } else {\n                 (field, next + 1)\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "take_field",
+      "return_type": "-> (&[u8], usize)",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 235
+        },
+        "start": {
+          "column": 1,
+          "line": 214
+        }
+      }
+    },
+    "genre": "UnaryOperator",
+    "name": "src/dict/stardict.rs:222:20: delete ! in take_field",
+    "package": "reader_core",
+    "replacement": "",
+    "span": {
+      "end": {
+        "column": 21,
+        "line": 222
+      },
+      "start": {
+        "column": 20,
+        "line": 222
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace + with - in take_field\n@@ -214,17 +214,17 @@\n /// 从 `from` 起取一个字段：到 \\0 或区段尾（is_last 时容忍尾部无 NUL）。\n /// 返回 (字段文本, 下一位置)。\n fn take_field(region: &[u8], from: usize, is_last: bool) -> (&[u8], usize) {\n     if from >= region.len() {\n         return (b\"\", from);\n     }\n     let rel = region[from..].iter().position(|&b| b == 0);\n     match rel {\n-        Some(n) if !is_last => (&region[from..from + n], from + n + 1),\n+        Some(n) if !is_last => (&region[from..from - /* ~ changed by cargo-mutants ~ */ n], from + n + 1),\n         Some(n) => {\n             // 末字段：到 NUL 或区段尾，取较短者（兼容末尾带/不带 NUL）\n             let end = from + n;\n             let (field, next) = (&region[from..end], end);\n             if next >= region.len() {\n                 (field, next)\n             } else {\n                 (field, next + 1)\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "take_field",
+      "return_type": "-> (&[u8], usize)",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 235
+        },
+        "start": {
+          "column": 1,
+          "line": 214
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:222:52: replace + with - in take_field",
+    "package": "reader_core",
+    "replacement": "-",
+    "span": {
+      "end": {
+        "column": 53,
+        "line": 222
+      },
+      "start": {
+        "column": 52,
+        "line": 222
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace + with * in take_field\n@@ -214,17 +214,17 @@\n /// 从 `from` 起取一个字段：到 \\0 或区段尾（is_last 时容忍尾部无 NUL）。\n /// 返回 (字段文本, 下一位置)。\n fn take_field(region: &[u8], from: usize, is_last: bool) -> (&[u8], usize) {\n     if from >= region.len() {\n         return (b\"\", from);\n     }\n     let rel = region[from..].iter().position(|&b| b == 0);\n     match rel {\n-        Some(n) if !is_last => (&region[from..from + n], from + n + 1),\n+        Some(n) if !is_last => (&region[from..from * /* ~ changed by cargo-mutants ~ */ n], from + n + 1),\n         Some(n) => {\n             // 末字段：到 NUL 或区段尾，取较短者（兼容末尾带/不带 NUL）\n             let end = from + n;\n             let (field, next) = (&region[from..end], end);\n             if next >= region.len() {\n                 (field, next)\n             } else {\n                 (field, next + 1)\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "take_field",
+      "return_type": "-> (&[u8], usize)",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 235
+        },
+        "start": {
+          "column": 1,
+          "line": 214
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:222:52: replace + with * in take_field",
+    "package": "reader_core",
+    "replacement": "*",
+    "span": {
+      "end": {
+        "column": 53,
+        "line": 222
+      },
+      "start": {
+        "column": 52,
+        "line": 222
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace + with - in take_field\n@@ -214,17 +214,17 @@\n /// 从 `from` 起取一个字段：到 \\0 或区段尾（is_last 时容忍尾部无 NUL）。\n /// 返回 (字段文本, 下一位置)。\n fn take_field(region: &[u8], from: usize, is_last: bool) -> (&[u8], usize) {\n     if from >= region.len() {\n         return (b\"\", from);\n     }\n     let rel = region[from..].iter().position(|&b| b == 0);\n     match rel {\n-        Some(n) if !is_last => (&region[from..from + n], from + n + 1),\n+        Some(n) if !is_last => (&region[from..from + n], from + n - /* ~ changed by cargo-mutants ~ */ 1),\n         Some(n) => {\n             // 末字段：到 NUL 或区段尾，取较短者（兼容末尾带/不带 NUL）\n             let end = from + n;\n             let (field, next) = (&region[from..end], end);\n             if next >= region.len() {\n                 (field, next)\n             } else {\n                 (field, next + 1)\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "take_field",
+      "return_type": "-> (&[u8], usize)",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 235
+        },
+        "start": {
+          "column": 1,
+          "line": 214
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:222:67: replace + with - in take_field",
+    "package": "reader_core",
+    "replacement": "-",
+    "span": {
+      "end": {
+        "column": 68,
+        "line": 222
+      },
+      "start": {
+        "column": 67,
+        "line": 222
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace + with * in take_field\n@@ -214,17 +214,17 @@\n /// 从 `from` 起取一个字段：到 \\0 或区段尾（is_last 时容忍尾部无 NUL）。\n /// 返回 (字段文本, 下一位置)。\n fn take_field(region: &[u8], from: usize, is_last: bool) -> (&[u8], usize) {\n     if from >= region.len() {\n         return (b\"\", from);\n     }\n     let rel = region[from..].iter().position(|&b| b == 0);\n     match rel {\n-        Some(n) if !is_last => (&region[from..from + n], from + n + 1),\n+        Some(n) if !is_last => (&region[from..from + n], from + n * /* ~ changed by cargo-mutants ~ */ 1),\n         Some(n) => {\n             // 末字段：到 NUL 或区段尾，取较短者（兼容末尾带/不带 NUL）\n             let end = from + n;\n             let (field, next) = (&region[from..end], end);\n             if next >= region.len() {\n                 (field, next)\n             } else {\n                 (field, next + 1)\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "take_field",
+      "return_type": "-> (&[u8], usize)",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 235
+        },
+        "start": {
+          "column": 1,
+          "line": 214
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:222:67: replace + with * in take_field",
+    "package": "reader_core",
+    "replacement": "*",
+    "span": {
+      "end": {
+        "column": 68,
+        "line": 222
+      },
+      "start": {
+        "column": 67,
+        "line": 222
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace + with - in take_field\n@@ -214,17 +214,17 @@\n /// 从 `from` 起取一个字段：到 \\0 或区段尾（is_last 时容忍尾部无 NUL）。\n /// 返回 (字段文本, 下一位置)。\n fn take_field(region: &[u8], from: usize, is_last: bool) -> (&[u8], usize) {\n     if from >= region.len() {\n         return (b\"\", from);\n     }\n     let rel = region[from..].iter().position(|&b| b == 0);\n     match rel {\n-        Some(n) if !is_last => (&region[from..from + n], from + n + 1),\n+        Some(n) if !is_last => (&region[from..from + n], from - /* ~ changed by cargo-mutants ~ */ n + 1),\n         Some(n) => {\n             // 末字段：到 NUL 或区段尾，取较短者（兼容末尾带/不带 NUL）\n             let end = from + n;\n             let (field, next) = (&region[from..end], end);\n             if next >= region.len() {\n                 (field, next)\n             } else {\n                 (field, next + 1)\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "take_field",
+      "return_type": "-> (&[u8], usize)",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 235
+        },
+        "start": {
+          "column": 1,
+          "line": 214
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:222:63: replace + with - in take_field",
+    "package": "reader_core",
+    "replacement": "-",
+    "span": {
+      "end": {
+        "column": 64,
+        "line": 222
+      },
+      "start": {
+        "column": 63,
+        "line": 222
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace + with * in take_field\n@@ -214,17 +214,17 @@\n /// 从 `from` 起取一个字段：到 \\0 或区段尾（is_last 时容忍尾部无 NUL）。\n /// 返回 (字段文本, 下一位置)。\n fn take_field(region: &[u8], from: usize, is_last: bool) -> (&[u8], usize) {\n     if from >= region.len() {\n         return (b\"\", from);\n     }\n     let rel = region[from..].iter().position(|&b| b == 0);\n     match rel {\n-        Some(n) if !is_last => (&region[from..from + n], from + n + 1),\n+        Some(n) if !is_last => (&region[from..from + n], from * /* ~ changed by cargo-mutants ~ */ n + 1),\n         Some(n) => {\n             // 末字段：到 NUL 或区段尾，取较短者（兼容末尾带/不带 NUL）\n             let end = from + n;\n             let (field, next) = (&region[from..end], end);\n             if next >= region.len() {\n                 (field, next)\n             } else {\n                 (field, next + 1)\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "take_field",
+      "return_type": "-> (&[u8], usize)",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 235
+        },
+        "start": {
+          "column": 1,
+          "line": 214
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:222:63: replace + with * in take_field",
+    "package": "reader_core",
+    "replacement": "*",
+    "span": {
+      "end": {
+        "column": 64,
+        "line": 222
+      },
+      "start": {
+        "column": 63,
+        "line": 222
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace + with - in take_field\n@@ -217,17 +217,17 @@\n     if from >= region.len() {\n         return (b\"\", from);\n     }\n     let rel = region[from..].iter().position(|&b| b == 0);\n     match rel {\n         Some(n) if !is_last => (&region[from..from + n], from + n + 1),\n         Some(n) => {\n             // 末字段：到 NUL 或区段尾，取较短者（兼容末尾带/不带 NUL）\n-            let end = from + n;\n+            let end = from - /* ~ changed by cargo-mutants ~ */ n;\n             let (field, next) = (&region[from..end], end);\n             if next >= region.len() {\n                 (field, next)\n             } else {\n                 (field, next + 1)\n             }\n         }\n         None => (&region[from..], region.len()),\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "take_field",
+      "return_type": "-> (&[u8], usize)",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 235
+        },
+        "start": {
+          "column": 1,
+          "line": 214
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:225:28: replace + with - in take_field",
+    "package": "reader_core",
+    "replacement": "-",
+    "span": {
+      "end": {
+        "column": 29,
+        "line": 225
+      },
+      "start": {
+        "column": 28,
+        "line": 225
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace + with * in take_field\n@@ -217,17 +217,17 @@\n     if from >= region.len() {\n         return (b\"\", from);\n     }\n     let rel = region[from..].iter().position(|&b| b == 0);\n     match rel {\n         Some(n) if !is_last => (&region[from..from + n], from + n + 1),\n         Some(n) => {\n             // 末字段：到 NUL 或区段尾，取较短者（兼容末尾带/不带 NUL）\n-            let end = from + n;\n+            let end = from * /* ~ changed by cargo-mutants ~ */ n;\n             let (field, next) = (&region[from..end], end);\n             if next >= region.len() {\n                 (field, next)\n             } else {\n                 (field, next + 1)\n             }\n         }\n         None => (&region[from..], region.len()),\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "take_field",
+      "return_type": "-> (&[u8], usize)",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 235
+        },
+        "start": {
+          "column": 1,
+          "line": 214
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:225:28: replace + with * in take_field",
+    "package": "reader_core",
+    "replacement": "*",
+    "span": {
+      "end": {
+        "column": 29,
+        "line": 225
+      },
+      "start": {
+        "column": 28,
+        "line": 225
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace >= with < in take_field\n@@ -219,17 +219,17 @@\n     }\n     let rel = region[from..].iter().position(|&b| b == 0);\n     match rel {\n         Some(n) if !is_last => (&region[from..from + n], from + n + 1),\n         Some(n) => {\n             // 末字段：到 NUL 或区段尾，取较短者（兼容末尾带/不带 NUL）\n             let end = from + n;\n             let (field, next) = (&region[from..end], end);\n-            if next >= region.len() {\n+            if next < /* ~ changed by cargo-mutants ~ */ region.len() {\n                 (field, next)\n             } else {\n                 (field, next + 1)\n             }\n         }\n         None => (&region[from..], region.len()),\n     }\n }\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "take_field",
+      "return_type": "-> (&[u8], usize)",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 235
+        },
+        "start": {
+          "column": 1,
+          "line": 214
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:227:21: replace >= with < in take_field",
+    "package": "reader_core",
+    "replacement": "<",
+    "span": {
+      "end": {
+        "column": 23,
+        "line": 227
+      },
+      "start": {
+        "column": 21,
+        "line": 227
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace + with - in take_field\n@@ -222,17 +222,17 @@\n         Some(n) if !is_last => (&region[from..from + n], from + n + 1),\n         Some(n) => {\n             // 末字段：到 NUL 或区段尾，取较短者（兼容末尾带/不带 NUL）\n             let end = from + n;\n             let (field, next) = (&region[from..end], end);\n             if next >= region.len() {\n                 (field, next)\n             } else {\n-                (field, next + 1)\n+                (field, next - /* ~ changed by cargo-mutants ~ */ 1)\n             }\n         }\n         None => (&region[from..], region.len()),\n     }\n }\n \n fn non_empty(s: &[u8]) -> Option<String> {\n     let t = String::from_utf8_lossy(s).into_owned();\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "take_field",
+      "return_type": "-> (&[u8], usize)",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 235
+        },
+        "start": {
+          "column": 1,
+          "line": 214
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:230:30: replace + with - in take_field",
+    "package": "reader_core",
+    "replacement": "-",
+    "span": {
+      "end": {
+        "column": 31,
+        "line": 230
+      },
+      "start": {
+        "column": 30,
+        "line": 230
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace + with * in take_field\n@@ -222,17 +222,17 @@\n         Some(n) if !is_last => (&region[from..from + n], from + n + 1),\n         Some(n) => {\n             // 末字段：到 NUL 或区段尾，取较短者（兼容末尾带/不带 NUL）\n             let end = from + n;\n             let (field, next) = (&region[from..end], end);\n             if next >= region.len() {\n                 (field, next)\n             } else {\n-                (field, next + 1)\n+                (field, next * /* ~ changed by cargo-mutants ~ */ 1)\n             }\n         }\n         None => (&region[from..], region.len()),\n     }\n }\n \n fn non_empty(s: &[u8]) -> Option<String> {\n     let t = String::from_utf8_lossy(s).into_owned();\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "take_field",
+      "return_type": "-> (&[u8], usize)",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 235
+        },
+        "start": {
+          "column": 1,
+          "line": 214
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:230:30: replace + with * in take_field",
+    "package": "reader_core",
+    "replacement": "*",
+    "span": {
+      "end": {
+        "column": 31,
+        "line": 230
+      },
+      "start": {
+        "column": 30,
+        "line": 230
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace non_empty -> Option<String> with None\n@@ -230,22 +230,17 @@\n                 (field, next + 1)\n             }\n         }\n         None => (&region[from..], region.len()),\n     }\n }\n \n fn non_empty(s: &[u8]) -> Option<String> {\n-    let t = String::from_utf8_lossy(s).into_owned();\n-    if t.is_empty() {\n-        None\n-    } else {\n-        Some(t)\n-    }\n+    None /* ~ changed by cargo-mutants ~ */\n }\n \n /// .dict.dz（整文件 gzip）流式解压为 .dict 落盘（安装期一次性；无内存峰值，ADR 关联裁定5）。\n pub(crate) fn decompress_dz(src: &Path, dst: &Path) -> Result<()> {\n     let file = File::open(src).map_err(Error::Io)?;\n     let mut decoder = GzDecoder::new(BufReader::new(file));\n     let mut out = File::create(dst).map_err(Error::Io)?;\n     let mut buf = [0u8; 64 * 1024];\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "non_empty",
+      "return_type": "-> Option<String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 244
+        },
+        "start": {
+          "column": 1,
+          "line": 237
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/stardict.rs:238:5: replace non_empty -> Option<String> with None",
+    "package": "reader_core",
+    "replacement": "None",
+    "span": {
+      "end": {
+        "column": 6,
+        "line": 243
+      },
+      "start": {
+        "column": 5,
+        "line": 238
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace non_empty -> Option<String> with Some(String::new())\n@@ -230,22 +230,17 @@\n                 (field, next + 1)\n             }\n         }\n         None => (&region[from..], region.len()),\n     }\n }\n \n fn non_empty(s: &[u8]) -> Option<String> {\n-    let t = String::from_utf8_lossy(s).into_owned();\n-    if t.is_empty() {\n-        None\n-    } else {\n-        Some(t)\n-    }\n+    Some(String::new()) /* ~ changed by cargo-mutants ~ */\n }\n \n /// .dict.dz（整文件 gzip）流式解压为 .dict 落盘（安装期一次性；无内存峰值，ADR 关联裁定5）。\n pub(crate) fn decompress_dz(src: &Path, dst: &Path) -> Result<()> {\n     let file = File::open(src).map_err(Error::Io)?;\n     let mut decoder = GzDecoder::new(BufReader::new(file));\n     let mut out = File::create(dst).map_err(Error::Io)?;\n     let mut buf = [0u8; 64 * 1024];\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "non_empty",
+      "return_type": "-> Option<String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 244
+        },
+        "start": {
+          "column": 1,
+          "line": 237
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/stardict.rs:238:5: replace non_empty -> Option<String> with Some(String::new())",
+    "package": "reader_core",
+    "replacement": "Some(String::new())",
+    "span": {
+      "end": {
+        "column": 6,
+        "line": 243
+      },
+      "start": {
+        "column": 5,
+        "line": 238
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace non_empty -> Option<String> with Some(\"xyzzy\".into())\n@@ -230,22 +230,17 @@\n                 (field, next + 1)\n             }\n         }\n         None => (&region[from..], region.len()),\n     }\n }\n \n fn non_empty(s: &[u8]) -> Option<String> {\n-    let t = String::from_utf8_lossy(s).into_owned();\n-    if t.is_empty() {\n-        None\n-    } else {\n-        Some(t)\n-    }\n+    Some(\"xyzzy\".into()) /* ~ changed by cargo-mutants ~ */\n }\n \n /// .dict.dz（整文件 gzip）流式解压为 .dict 落盘（安装期一次性；无内存峰值，ADR 关联裁定5）。\n pub(crate) fn decompress_dz(src: &Path, dst: &Path) -> Result<()> {\n     let file = File::open(src).map_err(Error::Io)?;\n     let mut decoder = GzDecoder::new(BufReader::new(file));\n     let mut out = File::create(dst).map_err(Error::Io)?;\n     let mut buf = [0u8; 64 * 1024];\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "non_empty",
+      "return_type": "-> Option<String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 244
+        },
+        "start": {
+          "column": 1,
+          "line": 237
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/stardict.rs:238:5: replace non_empty -> Option<String> with Some(\"xyzzy\".into())",
+    "package": "reader_core",
+    "replacement": "Some(\"xyzzy\".into())",
+    "span": {
+      "end": {
+        "column": 6,
+        "line": 243
+      },
+      "start": {
+        "column": 5,
+        "line": 238
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace decompress_dz -> Result<()> with Ok(())\n@@ -240,30 +240,17 @@\n         None\n     } else {\n         Some(t)\n     }\n }\n \n /// .dict.dz（整文件 gzip）流式解压为 .dict 落盘（安装期一次性；无内存峰值，ADR 关联裁定5）。\n pub(crate) fn decompress_dz(src: &Path, dst: &Path) -> Result<()> {\n-    let file = File::open(src).map_err(Error::Io)?;\n-    let mut decoder = GzDecoder::new(BufReader::new(file));\n-    let mut out = File::create(dst).map_err(Error::Io)?;\n-    let mut buf = [0u8; 64 * 1024];\n-    loop {\n-        let n = decoder.read(&mut buf).map_err(|_| {\n-            Error::Corrupt(format!(\"词库 .dz gzip 流损坏: {}\", src.display()))\n-        })?;\n-        if n == 0 {\n-            break;\n-        }\n-        out.write_all(&buf[..n]).map_err(Error::Io)?;\n-    }\n-    Ok(())\n+    Ok(()) /* ~ changed by cargo-mutants ~ */\n }\n \n #[cfg(test)]\n mod tests {\n     use super::*;\n \n     fn sample_idx_bytes(entries: &[(&str, u32, u32)]) -> Vec<u8> {\n         let mut b = Vec::new();\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "decompress_dz",
+      "return_type": "-> Result<()>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 262
+        },
+        "start": {
+          "column": 1,
+          "line": 246
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/stardict.rs:248:5: replace decompress_dz -> Result<()> with Ok(())",
+    "package": "reader_core",
+    "replacement": "Ok(())",
+    "span": {
+      "end": {
+        "column": 11,
+        "line": 261
+      },
+      "start": {
+        "column": 5,
+        "line": 248
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace * with + in decompress_dz\n@@ -243,17 +243,17 @@\n     }\n }\n \n /// .dict.dz（整文件 gzip）流式解压为 .dict 落盘（安装期一次性；无内存峰值，ADR 关联裁定5）。\n pub(crate) fn decompress_dz(src: &Path, dst: &Path) -> Result<()> {\n     let file = File::open(src).map_err(Error::Io)?;\n     let mut decoder = GzDecoder::new(BufReader::new(file));\n     let mut out = File::create(dst).map_err(Error::Io)?;\n-    let mut buf = [0u8; 64 * 1024];\n+    let mut buf = [0u8; 64 + /* ~ changed by cargo-mutants ~ */ 1024];\n     loop {\n         let n = decoder.read(&mut buf).map_err(|_| {\n             Error::Corrupt(format!(\"词库 .dz gzip 流损坏: {}\", src.display()))\n         })?;\n         if n == 0 {\n             break;\n         }\n         out.write_all(&buf[..n]).map_err(Error::Io)?;\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "decompress_dz",
+      "return_type": "-> Result<()>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 262
+        },
+        "start": {
+          "column": 1,
+          "line": 246
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:251:28: replace * with + in decompress_dz",
+    "package": "reader_core",
+    "replacement": "+",
+    "span": {
+      "end": {
+        "column": 29,
+        "line": 251
+      },
+      "start": {
+        "column": 28,
+        "line": 251
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace * with / in decompress_dz\n@@ -243,17 +243,17 @@\n     }\n }\n \n /// .dict.dz（整文件 gzip）流式解压为 .dict 落盘（安装期一次性；无内存峰值，ADR 关联裁定5）。\n pub(crate) fn decompress_dz(src: &Path, dst: &Path) -> Result<()> {\n     let file = File::open(src).map_err(Error::Io)?;\n     let mut decoder = GzDecoder::new(BufReader::new(file));\n     let mut out = File::create(dst).map_err(Error::Io)?;\n-    let mut buf = [0u8; 64 * 1024];\n+    let mut buf = [0u8; 64 / /* ~ changed by cargo-mutants ~ */ 1024];\n     loop {\n         let n = decoder.read(&mut buf).map_err(|_| {\n             Error::Corrupt(format!(\"词库 .dz gzip 流损坏: {}\", src.display()))\n         })?;\n         if n == 0 {\n             break;\n         }\n         out.write_all(&buf[..n]).map_err(Error::Io)?;\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "decompress_dz",
+      "return_type": "-> Result<()>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 262
+        },
+        "start": {
+          "column": 1,
+          "line": 246
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:251:28: replace * with / in decompress_dz",
+    "package": "reader_core",
+    "replacement": "/",
+    "span": {
+      "end": {
+        "column": 29,
+        "line": 251
+      },
+      "start": {
+        "column": 28,
+        "line": 251
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/stardict.rs\n+++ replace == with != in decompress_dz\n@@ -248,17 +248,17 @@\n     let file = File::open(src).map_err(Error::Io)?;\n     let mut decoder = GzDecoder::new(BufReader::new(file));\n     let mut out = File::create(dst).map_err(Error::Io)?;\n     let mut buf = [0u8; 64 * 1024];\n     loop {\n         let n = decoder.read(&mut buf).map_err(|_| {\n             Error::Corrupt(format!(\"词库 .dz gzip 流损坏: {}\", src.display()))\n         })?;\n-        if n == 0 {\n+        if n != /* ~ changed by cargo-mutants ~ */ 0 {\n             break;\n         }\n         out.write_all(&buf[..n]).map_err(Error::Io)?;\n     }\n     Ok(())\n }\n \n #[cfg(test)]\n",
+    "file": "src/dict/stardict.rs",
+    "function": {
+      "function_name": "decompress_dz",
+      "return_type": "-> Result<()>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 262
+        },
+        "start": {
+          "column": 1,
+          "line": 246
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/stardict.rs:256:14: replace == with != in decompress_dz",
+    "package": "reader_core",
+    "replacement": "!=",
+    "span": {
+      "end": {
+        "column": 16,
+        "line": 256
+      },
+      "start": {
+        "column": 14,
+        "line": 256
+      }
+    }
+  }
+]

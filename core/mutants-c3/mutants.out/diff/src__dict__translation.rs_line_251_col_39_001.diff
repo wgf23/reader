@@ -1,0 +1,21 @@
+--- src/dict/translation.rs
++++ replace + with * in DictService::read_region
+@@ -243,17 +243,17 @@
+ 
+     /// 随机读 .dict 区段（只读命中条目，大词库无整包读取峰值）；偏移越界 → Corrupt（US-6）
+     fn read_region(&self, ld: &LoadedDict, entry: &IdxEntry) -> Result<Vec<u8>> {
+         let file = ld
+             .dict_file
+             .as_ref()
+             .ok_or_else(|| Error::Corrupt(format!("词库 {} 缺少 .dict 文件", ld.info.name)))?;
+         let file_len = file.metadata().map_err(Error::Io)?.len();
+-        let end = entry.offset as u64 + entry.size as u64;
++        let end = entry.offset as u64 * /* ~ changed by cargo-mutants ~ */ entry.size as u64;
+         if end > file_len {
+             return Err(Error::Corrupt(format!(
+                 "词条区段越界: {} (offset={} size={} file_len={})",
+                 entry.word, entry.offset, entry.size, file_len
+             )));
+         }
+         let mut buf = vec![0u8; entry.size as usize];
+         (&*file).seek(SeekFrom::Start(entry.offset as u64)).map_err(Error::Io)?;

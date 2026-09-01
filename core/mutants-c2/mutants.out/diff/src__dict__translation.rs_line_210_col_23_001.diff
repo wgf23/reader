@@ -1,0 +1,21 @@
+--- src/dict/translation.rs
++++ replace += with *= in DictService::lookup
+@@ -202,17 +202,17 @@
+         }
+         let mut attempted = 0usize;
+         for ld in &self.registry {
+             if let Some(id) = dict_id {
+                 if ld.info.id != id {
+                     continue;
+                 }
+             }
+-            attempted += 1;
++            attempted *= /* ~ changed by cargo-mutants ~ */ 1;
+             let idx = match ld.idx.get_or_init(|| stardict::load_idx(&ld.idx_bytes)) {
+                 Ok(v) => v,
+                 Err(e) => {
+                     log::warn!("词库 {} 索引加载失败，跳过: {e}", ld.info.name);
+                     continue;
+                 }
+             };
+             let Some(entry) = stardict::lookup_entry(idx, word) else {

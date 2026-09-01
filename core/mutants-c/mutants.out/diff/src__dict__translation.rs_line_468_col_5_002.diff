@@ -1,0 +1,24 @@
+--- src/dict/translation.rs
++++ replace now_unix -> i64 with -1
+@@ -460,20 +460,17 @@
+             out.push(c);
+             last_ws = false;
+         }
+     }
+     out.trim().to_string()
+ }
+ 
+ fn now_unix() -> i64 {
+-    std::time::SystemTime::now()
+-        .duration_since(std::time::UNIX_EPOCH)
+-        .map(|d| d.as_secs() as i64)
+-        .unwrap_or(0)
++    -1 /* ~ changed by cargo-mutants ~ */
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+     use super::*;
+     use crate::dict::provider::{CountingProvider, EchoProvider, FailingProvider};
+     use std::collections::HashMap;
+     use std::io::Write;

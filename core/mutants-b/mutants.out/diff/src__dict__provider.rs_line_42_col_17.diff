@@ -1,0 +1,21 @@
+--- src/dict/provider.rs
++++ replace != with == in <impl TranslationProvider for DeepLProvider>::translate
+@@ -34,17 +34,17 @@
+     fn translate(&self, text: &str, from: Lang, to: Lang) -> Result<Translation> {
+         let key = self.key.clone().ok_or_else(|| {
+             Error::NotConfigured("DeepL 未配置 API Key，请先在设置中配置".to_string())
+         })?;
+         let mut body = serde_json::json!({
+             "text": [text],
+             "target_lang": deepl_code(to),
+         });
+-        if from != Lang::Auto {
++        if from == /* ~ changed by cargo-mutants ~ */ Lang::Auto {
+             // Auto（自动检测）不传 source_lang（DeepL 语义）
+             body["source_lang"] = serde_json::json!(deepl_code(from));
+         }
+         let resp = ureq::post("https://api-free.deepl.com/v2/translate")
+             .set("Authorization", &format!("DeepL-Auth-Key {key}"))
+             .send_json(body)
+             .map_err(|e| Error::Network {
+                 detail: format!("DeepL 请求失败: {e}"),

@@ -6,9 +6,10 @@
 import 'frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These functions are ignored because they are not marked as `pub`: `_unused_result_type`, `err_msg`, `service`, `to_summary`
+// These functions are ignored because they are not marked as `pub`: `_unused_result_type`, `dict_service`, `err_msg`, `service`, `to_summary`, `translation_service`
 
 /// 打开（或创建）书库，指定数据目录。应用启动时调用一次。
+/// 装配：SERVICE（既有）+ DICT/TRANSLATION 双单例（REQ-003 02-design §4.1）。
 Future<void> libraryOpen({required String dataDir}) =>
     RustLib.instance.api.crateApiLibraryOpen(dataDir: dataDir);
 
@@ -47,6 +48,38 @@ Future<void> progressSave(
 /// 读取阅读进度（无记录返回 None）
 Future<ProgressView?> progressGet({required String id}) =>
     RustLib.instance.api.crateApiProgressGet(id: id);
+
+/// 安装词库（入参为 .ifo 路径或含 .ifo 的目录）；返回 DictInfoView（US-7）
+Future<DictInfoView> dictInstall({required String path}) =>
+    RustLib.instance.api.crateApiDictInstall(path: path);
+
+/// 移除词库
+Future<void> dictRemove({required String dictId}) =>
+    RustLib.instance.api.crateApiDictRemove(dictId: dictId);
+
+/// 已装词库列表（安装顺序）
+Future<List<DictInfoView>> dictList() =>
+    RustLib.instance.api.crateApiDictList();
+
+/// 查词：Ok(Some(DictEntryView)) 命中 / Ok(None) 未收录（US-2）/ Err（无词库 US-3、损坏 US-6）
+Future<DictEntryView?> dictLookup({required String word, String? dictId}) =>
+    RustLib.instance.api.crateApiDictLookup(word: word, dictId: dictId);
+
+/// 翻译：缓存优先；命中 from_cache=true（US-10/13）；未配置/网络失败给明确错误（US-12）
+Future<TranslationView> translate(
+        {required String text, required String from, required String to}) =>
+    RustLib.instance.api.crateApiTranslate(text: text, from: from, to: to);
+
+/// 一键清空翻译缓存（US-13 / docs/04 领域规则4）
+Future<void> translateCacheClear() =>
+    RustLib.instance.api.crateApiTranslateCacheClear();
+
+/// Provider 最小配置通道：写 settings + 对注册 Provider 调 configure
+/// （`translate_set_config("echo", "")` 即无 key 演示，ADR 关联裁定2）
+Future<void> translateSetConfig(
+        {required String provider, required String key}) =>
+    RustLib.instance.api
+        .crateApiTranslateSetConfig(provider: provider, key: key);
 
 /// 书架条目
 class BookSummary {
@@ -131,6 +164,71 @@ class ChapterView {
           text == other.text;
 }
 
+/// 词条视图（US-1/16）
+class DictEntryView {
+  final String word;
+  final String? phonetic;
+  final String? pos;
+  final String definition;
+  final String? example;
+
+  const DictEntryView({
+    required this.word,
+    this.phonetic,
+    this.pos,
+    required this.definition,
+    this.example,
+  });
+
+  @override
+  int get hashCode =>
+      word.hashCode ^
+      phonetic.hashCode ^
+      pos.hashCode ^
+      definition.hashCode ^
+      example.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is DictEntryView &&
+          runtimeType == other.runtimeType &&
+          word == other.word &&
+          phonetic == other.phonetic &&
+          pos == other.pos &&
+          definition == other.definition &&
+          example == other.example;
+}
+
+/// 已安装词库信息（US-7；docs/03 §4 原 Result<()>，ADR 关联裁定4 修正）
+class DictInfoView {
+  final String id;
+  final String name;
+  final BigInt wordCount;
+  final String path;
+
+  const DictInfoView({
+    required this.id,
+    required this.name,
+    required this.wordCount,
+    required this.path,
+  });
+
+  @override
+  int get hashCode =>
+      id.hashCode ^ name.hashCode ^ wordCount.hashCode ^ path.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is DictInfoView &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          name == other.name &&
+          wordCount == other.wordCount &&
+          path == other.path;
+}
+
 /// 阅读进度视图（桥接）
 class ProgressView {
   final String href;
@@ -151,4 +249,40 @@ class ProgressView {
           runtimeType == other.runtimeType &&
           href == other.href &&
           progression == other.progression;
+}
+
+/// 译文视图（from_cache 标注缓存命中，US-10/13）
+class TranslationView {
+  final String text;
+  final String from;
+  final String to;
+  final String provider;
+  final bool fromCache;
+
+  const TranslationView({
+    required this.text,
+    required this.from,
+    required this.to,
+    required this.provider,
+    required this.fromCache,
+  });
+
+  @override
+  int get hashCode =>
+      text.hashCode ^
+      from.hashCode ^
+      to.hashCode ^
+      provider.hashCode ^
+      fromCache.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TranslationView &&
+          runtimeType == other.runtimeType &&
+          text == other.text &&
+          from == other.from &&
+          to == other.to &&
+          provider == other.provider &&
+          fromCache == other.fromCache;
 }

@@ -1,0 +1,21 @@
+--- src/dict/stardict.rs
++++ replace + with * in load_idx
+@@ -99,17 +99,17 @@
+             idx_bytes[tail_start + 1],
+             idx_bytes[tail_start + 2],
+             idx_bytes[tail_start + 3],
+         ]);
+         let size = u32::from_be_bytes([
+             idx_bytes[tail_start + 4],
+             idx_bytes[tail_start + 5],
+             idx_bytes[tail_start + 6],
+-            idx_bytes[tail_start + 7],
++            idx_bytes[tail_start * /* ~ changed by cargo-mutants ~ */ 7],
+         ]);
+         out.push(IdxEntry { word, offset, size });
+         pos = tail_start + 8;
+     }
+     Ok(out)
+ }
+ 
+ /// 查词：二分精确命中；未中则线性扫描做"首字母大小写归一 / 全小写 / 忽略大小写"匹配

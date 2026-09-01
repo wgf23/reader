@@ -1,0 +1,21 @@
+--- src/dict/translation.rs
++++ replace ^= with &= in fnv32
+@@ -342,17 +342,17 @@
+     }
+     s
+ }
+ 
+ /// FNV-1a 32 位稳定哈希（仅用于 id 消歧，无密码学用途）
+ fn fnv32(s: &str) -> u32 {
+     let mut h: u32 = 0x811c_9dc5;
+     for b in s.as_bytes() {
+-        h ^= *b as u32;
++        h &= /* ~ changed by cargo-mutants ~ */ *b as u32;
+         h = h.wrapping_mul(0x0100_0193);
+     }
+     h
+ }
+ 
+ // ===================== TranslationService（缓存优先编排） =====================
+ 
+ /// 翻译服务（缓存优先；US-9~14）

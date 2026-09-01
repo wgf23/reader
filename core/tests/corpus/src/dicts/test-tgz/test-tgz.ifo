@@ -1,0 +1,9 @@
+StarDict's dict ifo file
+version=2.4.2
+bookname=Test TGZ Dictionary
+wordcount=26
+idxfilesize=348
+sametypesequence=tgz
+author=reader-dev
+description=REQ-003 自造受控语料（无版权争议）
+date=2026.08.31

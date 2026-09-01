@@ -1,0 +1,21 @@
+--- src/dict/translation.rs
++++ replace == with != in TranslationService::translate_cached
+@@ -385,17 +385,17 @@
+         let norm = normalize_text(text);
+         if norm.is_empty() {
+             return Err(Error::Other("待翻译文本为空".to_string()));
+         }
+         let provider_name = self.config.default_provider()?;
+         let provider = self
+             .providers
+             .iter()
+-            .find(|p| p.name() == provider_name)
++            .find(|p| p.name() != /* ~ changed by cargo-mutants ~ */ provider_name)
+             .ok_or_else(|| Error::NotConfigured(format!("未知翻译 Provider: {provider_name}")))?
+             .as_ref();
+ 
+         // US-12：未配置 key → NotConfigured（含"API Key"语义），不 panic
+         if self.config.provider_key(&provider_name)?.is_none() {
+             return Err(Error::NotConfigured(format!(
+                 "翻译服务未配置：{provider_name} 未配置 API Key，请先在设置中配置"
+             )));
