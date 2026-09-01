@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 640" width="100%" font-family="system-ui,'PingFang SC','Microsoft YaHei',sans-serif">
+  <rect x="0" y="0" width="900" height="640" fill="#FAFAFA"/>
+  <text x="24" y="26" font-size="11" fill="#5F6368">阅读器 · 交互原型 v2</text>
+  <text x="450" y="26" font-size="16" font-weight="bold" fill="#202124" text-anchor="middle">沉浸阅读态</text>
+
+  <!-- 正文区：全屏（无 AppBar），灰色文字行 -->
+  <text x="120" y="90" font-size="13" fill="#202124">第三章 · 起风了</text>
+  <g stroke="#C4C9CF" stroke-width="3" stroke-linecap="round">
+    <line x1="120" y1="130" x2="780" y2="130"/>
+    <line x1="120" y1="158" x2="700" y2="158"/>
+    <line x1="120" y1="186" x2="640" y2="186"/>
+    <line x1="120" y1="214" x2="760" y2="214"/>
+    <line x1="120" y1="242" x2="720" y2="242"/>
+    <line x1="120" y1="270" x2="680" y2="270"/>
+    <line x1="120" y1="298" x2="750" y2="298"/>
+    <line x1="120" y1="326" x2="710" y2="326"/>
+    <line x1="120" y1="354" x2="660" y2="354"/>
+    <line x1="120" y1="382" x2="740" y2="382"/>
+    <line x1="120" y1="410" x2="690" y2="410"/>
+    <line x1="120" y1="438" x2="730" y2="438"/>
+    <line x1="120" y1="466" x2="650" y2="466"/>
+    <line x1="120" y1="494" x2="770" y2="494"/>
+  </g>
+
+  <!-- 左右边缘翻页热区（15%） -->
+  <rect x="0" y="60" width="135" height="540" fill="#1A73E8" fill-opacity="0.06" stroke="#1A73E8" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <text transform="rotate(-90 60 330)" x="60" y="330" font-size="12" fill="#1A73E8" text-anchor="middle">← 上一页 左边缘15%</text>
+  <rect x="765" y="60" width="135" height="540" fill="#1A73E8" fill-opacity="0.06" stroke="#1A73E8" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <text transform="rotate(-90 840 330)" x="840" y="330" font-size="12" fill="#1A73E8" text-anchor="middle">下一页 → 右边缘15%</text>
+
+  <!-- 中央点击呼出热区（中部 1/3） -->
+  <rect x="300" y="200" width="300" height="240" fill="#D93025" fill-opacity="0.05" stroke="#D93025" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <text x="450" y="315" font-size="13" fill="#D93025" text-anchor="middle">点击中部 → 呼出工具栏</text>
+  <text x="450" y="360" font-size="12" fill="#D93025" text-anchor="middle">（再点击隐藏，回到沉浸）</text>
+
+  <!-- 说明 -->
+  <text x="60" y="590" font-size="11" fill="#5F6368">交互：无任何常驻 Chrome；左/右边缘点击翻页；中部点击呼出/隐藏顶栏与底栏；长按/选中文本出浮动工具条</text>
+</svg>
