@@ -124,6 +124,15 @@ class PagedWebViewState extends State<PagedWebView> {
   Future<bool> nextPage() => _runBool('readerPager.next()');
   Future<bool> prevPage() => _runBool('readerPager.prev()');
   Future<bool> gotoPage(int index) => _runBool('readerPager.goto($index)');
+
+  /// 当前章总页数（REQ-004：进度条拖动 → 分页按 progression 精确跳页）。
+  Future<int> pageCount() async {
+    final c = _controller;
+    if (c == null) return 1;
+    final v = await c.evaluateJavascript(source: 'readerPager.pageCount()');
+    final n = int.tryParse('$v');
+    return (n == null || n <= 0) ? 1 : n;
+  }
   Future<void> relayout() async {
     final c = _controller;
     if (c == null) return;

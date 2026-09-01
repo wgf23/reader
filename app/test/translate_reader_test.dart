@@ -35,15 +35,17 @@ void main() {
     selectionArea.onSelectionChanged!(const SelectedContent(plainText: '很久以前'));
     await tester.pumpAndSettle();
 
-    // 工具条含"翻译/查词/取消"
+    // 工具条含 划重点/笔记/翻译/查词/复制（无"取消"——取消改为点正文空白处）
+    expect(find.text('划重点'), findsOneWidget);
+    expect(find.text('笔记'), findsOneWidget);
     expect(find.text('翻译'), findsOneWidget);
     expect(find.text('查词'), findsOneWidget);
-    expect(find.text('取消'), findsOneWidget);
+    expect(find.text('复制'), findsOneWidget);
 
     // 点击翻译 → loading → 结果
     await tester.tap(find.text('翻译'));
     await tester.pump(); // loading 帧
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.text('翻译中…'), findsOneWidget);
     await tester.pumpAndSettle();
     expect(find.byType(TranslationResultCard), findsOneWidget);
     expect(find.textContaining('译文:Hello world'), findsOneWidget);
@@ -176,10 +178,8 @@ void main() {
       backend: FakeBackend(),
       translateBackend: translate,
       pagedViewBuilder: fakeBuilder,
+      initialPagedMode: true,
     )));
-    await tester.pumpAndSettle();
-    // 切分页模式
-    await tester.tap(find.byIcon(Icons.auto_stories));
     await tester.pumpAndSettle();
     expect(find.text('分页模式（fake WebView）'), findsOneWidget);
 
@@ -192,7 +192,8 @@ void main() {
     expect(find.byType(TranslationResultCard), findsOneWidget);
   });
 
-  testWidgets('translateBackend 为 null 时无翻译/查词入口（既有行为零回归）', (tester) async {
+  testWidgets('translateBackend 为 null 时隐藏翻译/查词，划重点/笔记/复制仍在（REQ-003 零注入行为）',
+      (tester) async {
     await tester.pumpWidget(wrap(ReaderPage(
       bookId: 'b1',
       bookTitle: '测试书',
@@ -205,5 +206,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('翻译'), findsNothing);
     expect(find.text('查词'), findsNothing);
+    expect(find.text('划重点'), findsOneWidget);
+    expect(find.text('复制'), findsOneWidget);
   });
 }

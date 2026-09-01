@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 640" width="100%" font-family="system-ui,'PingFang SC','Microsoft YaHei',sans-serif">
+  <rect x="0" y="0" width="900" height="640" fill="#FAFAFA"/>
+  <text x="24" y="26" font-size="11" fill="#5F6368">阅读器 · 交互原型 v2</text>
+  <text x="450" y="26" font-size="16" font-weight="bold" fill="#202124" text-anchor="middle">长按选词 · 浮动工具条</text>
+
+  <!-- 正文 + 选中文本（蓝色半透明覆盖 2 行） -->
+  <g stroke="#C4C9CF" stroke-width="3" stroke-linecap="round">
+    <line x1="120" y1="140" x2="780" y2="140"/>
+    <line x1="120" y1="168" x2="700" y2="168"/>
+    <line x1="120" y1="196" x2="640" y2="196"/>
+    <line x1="120" y1="224" x2="760" y2="224"/>
+    <line x1="120" y1="252" x2="720" y2="252"/>
+    <line x1="120" y1="280" x2="680" y2="280"/>
+    <line x1="120" y1="308" x2="750" y2="308"/>
+    <line x1="120" y1="336" x2="710" y2="336"/>
+    <line x1="120" y1="364" x2="660" y2="364"/>
+  </g>
+  <!-- 选中文本块 -->
+  <rect x="120" y="168" width="430" height="56" fill="#1A73E8" fill-opacity="0.22" stroke="#1A73E8" stroke-width="1"/>
+  <circle cx="120" cy="196" r="7" fill="#1A73E8"/>
+  <circle cx="550" cy="196" r="7" fill="#1A73E8"/>
+
+  <!-- 浮动工具条（选中文本上方） -->
+  <rect x="260" y="96" width="380" height="44" rx="12" fill="#FFFFFF" stroke="#9AA0A6" stroke-width="1.4"/>
+  <path d="M420 140 L448 140 L434 158 Z" fill="#FFFFFF" stroke="#9AA0A6" stroke-width="1.4"/>
+  <text x="288" y="124" font-size="14" fill="#202124">划重点</text>
+  <text x="376" y="124" font-size="14" fill="#202124">笔记</text>
+  <circle cx="456" cy="118" r="5" fill="#FBC02D"/><circle cx="474" cy="118" r="5" fill="#1A73E8"/><circle cx="492" cy="118" r="5" fill="#43A047"/><circle cx="510" cy="118" r="5" fill="#E91E63"/>
+  <text x="546" y="124" font-size="14" fill="#202124">翻译</text>
+  <text x="610" y="124" font-size="14" fill="#202124">查词</text>
+
+  <!-- 词典卡片（查词结果示例） -->
+  <rect x="120" y="420" width="360" height="120" rx="8" fill="#FFFFFF" stroke="#9AA0A6" stroke-width="1.2"/>
+  <text x="140" y="452" font-size="16" font-weight="bold" fill="#202124">ephemeral</text>
+  <text x="140" y="474" font-size="12" fill="#5F6368">/ɪˈfɛm.ər.əl/ adj.</text>
+  <text x="140" y="496" font-size="13" fill="#202124">短暂的；朝生暮死的</text>
+  <text x="140" y="518" font-size="12" fill="#9AA0A6" font-style="italic">"fame is ephemeral" — 名声转瞬即逝</text>
+
+  <!-- 说明 -->
+  <text x="24" y="600" font-size="11" fill="#5F6368">交互：长按/选中 → 浮动工具条 + 两端选柄；点"查词"出词典卡片（离线），点"翻译"出译文（REQ-003 已打通）</text>
+</svg>
