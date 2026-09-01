@@ -84,6 +84,9 @@ class _ReaderPageState extends State<ReaderPage> {
   String? _lookupError;
   bool _lookupAttempted = false;
 
+  /// 最近一次正文手势位置（选中时用于把工具条放到选词附近，而非固定顶部）。
+  Offset? _lastDataPointer;
+
   @override
   void initState() {
     super.initState();
@@ -407,21 +410,26 @@ class _ReaderPageState extends State<ReaderPage> {
         builder: (context, constraints) {
           return Stack(
             children: [
-              // 手势层 + 正文（相骨）
+              // 手势层 + 正文（相骨）；Listener 记录最近长按/触摸位置供工具条定位
               Positioned.fill(
-                child: GestureDetector(
-                  behavior: HitTestBehavior.translucent,
-                  onTapUp: (d) => _onBodyTapUp(d, constraints.biggest),
-                  child: Container(
-                    color: bg,
-                    child: _buildArticleBody(view, chapter, fg),
+                child: Listener(
+                  onPointerDown: (e) => _lastDataPointer = e.localPosition,
+                  onPointerUp: (e) => _lastDataPointer = e.localPosition,
+                  onPointerMove: (e) => _lastDataPointer = e.localPosition,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onTapUp: (d) => _onBodyTapUp(d, constraints.biggest),
+                    child: Container(
+                      color: bg,
+                      child: _buildArticleBody(view, chapter, fg),
+                    ),
                   ),
                 ),
               ),
-              // 选中浮动工具条（原型 04-selection.svg）
+              // 选中浮动工具条（原型 04-selection.svg），放在选词附近
               if (_selectedText != null)
                 Positioned(
-                  top: 8,
+                  top: _toolbarTop(constraints.biggest.height),
                   left: 0,
                   right: 0,
                   child: Center(child: ReaderSelectionToolbar(
@@ -430,7 +438,7 @@ class _ReaderPageState extends State<ReaderPage> {
                 ),
               if (_selectedText != null)
                 Positioned(
-                  top: 64,
+                  top: _toolbarTop(constraints.biggest.height) + 56,
                   left: 0,
                   right: 0,
                   child: _buildSelectionResultCards(),
@@ -542,6 +550,19 @@ class _ReaderPageState extends State<ReaderPage> {
         ),
       ),
     );
+  }
+
+  // ---------- 选中工具条定位（贴近所选文字） ----------
+  double _toolbarTop(double screenH) {
+    final p = _lastDataPointer;
+    if (p == null) return 8;
+    const toolH = 56.0;
+    const margin = 12.0;
+    // 优先放所选文字上方；若上方空间不足则放其下方
+    final above = p.dy - toolH - margin;
+    if (above >= 8) return above;
+    final below = p.dy + margin;
+    return below.clamp(8.0, screenH - toolH - 8);
   }
 
   // ---------- 显示设置 → 渲染样式映射（Aa 面板 03-settings.svg） ----------
