@@ -1,7 +1,7 @@
 name: reader_app
 description: 跨平台电子书阅读器（Flutter 壳）
 publish_to: 'none'
-version: 0.1.0
+version: 0.6.0+6
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
