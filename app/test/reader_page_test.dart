@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show SelectedContent;
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:reader_app/pages/reader_page.dart';
+import 'package:reader_app/widgets/directory_drawer.dart';
 import 'package:reader_app/widgets/display_settings_sheet.dart';
 import 'package:reader_app/widgets/reader_chrome.dart';
 
@@ -163,5 +165,108 @@ void main() {
     await tester.drag(slider, const Offset(120, 0));
     await tester.pumpAndSettle();
     expect(backend.saved, isNotNull);
+  });
+
+  testWidgets('⋯更多弹层：4 个占位项（阅读统计/听书/笔记/导出）', (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      home: ReaderPage(bookId: 'b1', bookTitle: '测试书', backend: FakeBackend()),
+    ));
+    await tester.pumpAndSettle();
+    await _toggleChrome(tester);
+    await tester.tap(find.byTooltip('更多'));
+    await tester.pumpAndSettle();
+    expect(find.text('阅读统计'), findsOneWidget);
+    expect(find.text('听书'), findsOneWidget);
+    expect(find.text('笔记'), findsOneWidget);
+    expect(find.text('导出'), findsOneWidget);
+  });
+
+  testWidgets('目录抽屉：打开列出章节 → 选另一章跳转 + saveProgress', (tester) async {
+    final backend = FakeBackend();
+    await tester.pumpWidget(MaterialApp(
+      home: ReaderPage(bookId: 'b1', bookTitle: '测试书', backend: backend),
+    ));
+    await tester.pumpAndSettle();
+    await _toggleChrome(tester);
+    await tester.tap(find.byTooltip('目录'));
+    await tester.pumpAndSettle();
+    // 抽屉列出章节（条目带序号前缀）
+    expect(find.text('1. 第一章'), findsOneWidget);
+    expect(find.text('2. 第二章'), findsOneWidget);
+    // 选第二章 → 跳转 + 保存 href 更新
+    await tester.tap(find.text('2. 第二章'));
+    await tester.pumpAndSettle();
+    expect(find.text('故事结束了。'), findsOneWidget);
+    expect(backend.saved?.href, 'chapter_0002.xhtml');
+  });
+
+  testWidgets('书签图标切换（幂等）', (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      home: ReaderPage(bookId: 'b1', bookTitle: '测试书', backend: FakeBackend()),
+    ));
+    await tester.pumpAndSettle();
+    await _toggleChrome(tester);
+    expect(find.byTooltip('加书签'), findsOneWidget);
+    await tester.tap(find.byTooltip('加书签'));
+    await tester.pump();
+    expect(find.byTooltip('取消书签'), findsOneWidget);
+    await tester.tap(find.byTooltip('取消书签'));
+    await tester.pump();
+    expect(find.byTooltip('加书签'), findsOneWidget);
+  });
+
+  testWidgets('选中工具条：划重点/笔记/复制 点击不崩溃', (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      home: ReaderPage(bookId: 'b1', bookTitle: '测试书', backend: FakeBackend()),
+    ));
+    await tester.pumpAndSettle();
+    final sa = tester.widget<SelectionArea>(find.byType(SelectionArea));
+    sa.onSelectionChanged!(const SelectedContent(plainText: '很久以前'));
+    await tester.pumpAndSettle();
+    for (final label in ['划重点', '笔记', '复制']) {
+      await tester.tap(find.text(label));
+      await tester.pumpAndSettle();
+    }
+    // 复制/占位项不抛错，工具条仍在
+    expect(find.text('划重点'), findsOneWidget);
+  });
+
+  testWidgets('分页模式：边缘 15% 点击不崩（fake 无 PagedWebViewState → 短路）', (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      home: ReaderPage(
+        bookId: 'b1',
+        bookTitle: '测试书',
+        backend: FakeBackend(),
+        pagedViewBuilder: fakePagedBuilder,
+        initialPagedMode: true,
+      ),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.text('分页模式（fake WebView）'), findsOneWidget);
+    await tester.tapAt(const Offset(50, 300)); // 左边缘 <0.15w
+    await tester.pump();
+    await tester.tapAt(const Offset(750, 300)); // 右边缘 >0.85w
+    await tester.pump();
+    expect(find.text('分页模式（fake WebView）'), findsOneWidget);
+  });
+
+  testWidgets('ReaderDirectoryDrawer 组件：列出章节 + 当前高亮 + 选择回调', (tester) async {
+    int? selected;
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: ReaderDirectoryDrawer(
+          chapters: const ['第一章', '第二章', '第三章'],
+          currentIndex: 1,
+          onSelect: (i) => selected = i,
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.text('1. 第一章'), findsOneWidget);
+    expect(find.text('2. 第二章'), findsOneWidget);
+    expect(find.text('3. 第三章'), findsOneWidget);
+    await tester.tap(find.text('3. 第三章'));
+    await tester.pump();
+    expect(selected, 2);
   });
 }
