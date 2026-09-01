@@ -1,0 +1,28 @@
+--- src/dict/provider.rs
++++ replace deepl_body -> serde_json::Value with Default::default()
+@@ -85,24 +85,17 @@
+     }
+ }
+ 
+ /// 构造 DeepL 请求体（纯函数：把"只含 text/from/to"的隐私约束与 Auto 分支抽成
+ /// 可无网络单测的结构单元；行为与内联版完全一致，rework-D 仅做提取不改语义）。
+ /// 隐私（US-9/US-13）：请求体只含 text/target_lang[/source_lang]，无书路径/元数据。
+ /// Auto（自动检测）不传 source_lang（DeepL 语义）。
+ fn deepl_body(text: &str, from: Lang, to: Lang) -> serde_json::Value {
+-    let mut body = serde_json::json!({
+-        "text": [text],
+-        "target_lang": deepl_code(to),
+-    });
+-    if from != Lang::Auto {
+-        body["source_lang"] = serde_json::json!(deepl_code(from));
+-    }
+-    body
++    Default::default() /* ~ changed by cargo-mutants ~ */
+ }
+ 
+ /// DeepL 语言代码（大写）："en"→"EN"、"zh"→"ZH"…
+ fn deepl_code(l: Lang) -> &'static str {
+     match l {
+         Lang::Auto => "EN", // 不会被使用（Auto 分支不传 source_lang）
+         Lang::En => "EN",
+         Lang::Zh => "ZH",

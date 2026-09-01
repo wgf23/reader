@@ -1,0 +1,21 @@
+--- src/dict/translation.rs
++++ replace TranslationService::translate -> Result<Translation> with Ok(Default::default())
+@@ -420,17 +420,17 @@
+             created_at: now_unix(),
+             hit_count: 1,
+         })?;
+         Ok((t, false))
+     }
+ 
+     /// 翻译（薄包装，保持 02-design §2.4 签名）
+     pub fn translate(&mut self, text: &str, from: Lang, to: Lang) -> Result<Translation> {
+-        self.translate_cached(text, from, to).map(|(t, _)| t)
++        Ok(Default::default()) /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     pub fn clear_cache(&mut self) -> Result<()> {
+         self.cache.cache_clear()
+     }
+ 
+     /// 写 settings（set_provider_key + set_default_provider）并对注册 Provider 调 configure
+     /// （ADR 关联裁定2：`translate_set_config("echo","")` 切 echo 即无 key 演示）

@@ -1,0 +1,21 @@
+--- src/store/translation.rs
++++ replace <impl ProviderConfig for TranslationRepo>::set_default_provider -> Result<()> with Ok(())
+@@ -149,17 +149,17 @@
+             .map_err(Error::from)
+     }
+ 
+     fn set_provider_key(&mut self, provider: &str, key: &str) -> Result<()> {
+         upsert_setting(&self.conn, &Self::provider_key_setting(provider), key)
+     }
+ 
+     fn set_default_provider(&mut self, provider: &str) -> Result<()> {
+-        upsert_setting(&self.conn, KEY_DEFAULT_PROVIDER, provider)
++        Ok(()) /* ~ changed by cargo-mutants ~ */
+     }
+ }
+ 
+ fn upsert_setting(conn: &Connection, key: &str, value: &str) -> Result<()> {
+     conn.execute(
+         "INSERT INTO settings(key,value) VALUES(?1,?2)
+          ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+         params![key, value],

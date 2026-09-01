@@ -1,0 +1,706 @@
+[
+  {
+    "diff": "--- src/dict/mod.rs\n+++ replace extract_pos -> Option<String> with None\n@@ -45,34 +45,17 @@\n     fn translate(&self, text: &str, from: Lang, to: Lang) -> Result<Translation>;\n     /// 运行时更新凭据（设置页改 key 后无需重建 Provider）；默认 no-op（Echo 忽略）\n     fn configure(&mut self, _key: Option<&str>) {}\n }\n \n /// 释义首词性标记启发式：剥 HTML 后扫描前几行的行首 \"n.\"/\"vt.\"/\"adj.\"…；无则 None。\n /// langdao 等真实词库的 m 字段形如 \"*['æpl]\\nn. 苹果, 家伙\"（标记在次行行首）。\n pub(crate) fn extract_pos(definition: &str) -> Option<String> {\n-    let stripped = strip_html_tags(definition);\n-    // 长标记优先（vt./vi./prep. 等避免被 v./n. 前缀误吞）\n-    const MARKERS: [&str; 15] = [\n-        \"interj.\", \"prep.\", \"conj.\", \"pron.\", \"num.\", \"art.\", \"aux.\",\n-        \"abbr.\", \"adj.\", \"adv.\", \"vt.\", \"vi.\", \"n.\", \"v.\", \"int.\",\n-    ];\n-    for line in stripped.lines().take(4) {\n-        let t = line.trim_start();\n-        if t.is_empty() {\n-            continue;\n-        }\n-        for m in MARKERS {\n-            if t.starts_with(m) {\n-                return Some(m.to_string());\n-            }\n-        }\n-    }\n-    None\n+    None /* ~ changed by cargo-mutants ~ */\n }\n \n /// 极简 HTML 标签剥离（仅用于词性启发式与 UI 展示兜底；g 字段释义仍原样保留于\n /// `DictEntry.definition`，02-design §8 已知取舍6）。\n pub(crate) fn strip_html_tags(s: &str) -> String {\n     let mut out = String::with_capacity(s.len());\n     let mut in_tag = false;\n     for c in s.chars() {\n",
+    "file": "src/dict/mod.rs",
+    "function": {
+      "function_name": "extract_pos",
+      "return_type": "-> Option<String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 71
+        },
+        "start": {
+          "column": 1,
+          "line": 50
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/mod.rs:53:5: replace extract_pos -> Option<String> with None",
+    "package": "reader_core",
+    "replacement": "None",
+    "span": {
+      "end": {
+        "column": 9,
+        "line": 70
+      },
+      "start": {
+        "column": 5,
+        "line": 53
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/mod.rs\n+++ replace extract_pos -> Option<String> with Some(String::new())\n@@ -45,34 +45,17 @@\n     fn translate(&self, text: &str, from: Lang, to: Lang) -> Result<Translation>;\n     /// 运行时更新凭据（设置页改 key 后无需重建 Provider）；默认 no-op（Echo 忽略）\n     fn configure(&mut self, _key: Option<&str>) {}\n }\n \n /// 释义首词性标记启发式：剥 HTML 后扫描前几行的行首 \"n.\"/\"vt.\"/\"adj.\"…；无则 None。\n /// langdao 等真实词库的 m 字段形如 \"*['æpl]\\nn. 苹果, 家伙\"（标记在次行行首）。\n pub(crate) fn extract_pos(definition: &str) -> Option<String> {\n-    let stripped = strip_html_tags(definition);\n-    // 长标记优先（vt./vi./prep. 等避免被 v./n. 前缀误吞）\n-    const MARKERS: [&str; 15] = [\n-        \"interj.\", \"prep.\", \"conj.\", \"pron.\", \"num.\", \"art.\", \"aux.\",\n-        \"abbr.\", \"adj.\", \"adv.\", \"vt.\", \"vi.\", \"n.\", \"v.\", \"int.\",\n-    ];\n-    for line in stripped.lines().take(4) {\n-        let t = line.trim_start();\n-        if t.is_empty() {\n-            continue;\n-        }\n-        for m in MARKERS {\n-            if t.starts_with(m) {\n-                return Some(m.to_string());\n-            }\n-        }\n-    }\n-    None\n+    Some(String::new()) /* ~ changed by cargo-mutants ~ */\n }\n \n /// 极简 HTML 标签剥离（仅用于词性启发式与 UI 展示兜底；g 字段释义仍原样保留于\n /// `DictEntry.definition`，02-design §8 已知取舍6）。\n pub(crate) fn strip_html_tags(s: &str) -> String {\n     let mut out = String::with_capacity(s.len());\n     let mut in_tag = false;\n     for c in s.chars() {\n",
+    "file": "src/dict/mod.rs",
+    "function": {
+      "function_name": "extract_pos",
+      "return_type": "-> Option<String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 71
+        },
+        "start": {
+          "column": 1,
+          "line": 50
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/mod.rs:53:5: replace extract_pos -> Option<String> with Some(String::new())",
+    "package": "reader_core",
+    "replacement": "Some(String::new())",
+    "span": {
+      "end": {
+        "column": 9,
+        "line": 70
+      },
+      "start": {
+        "column": 5,
+        "line": 53
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/mod.rs\n+++ replace extract_pos -> Option<String> with Some(\"xyzzy\".into())\n@@ -45,34 +45,17 @@\n     fn translate(&self, text: &str, from: Lang, to: Lang) -> Result<Translation>;\n     /// 运行时更新凭据（设置页改 key 后无需重建 Provider）；默认 no-op（Echo 忽略）\n     fn configure(&mut self, _key: Option<&str>) {}\n }\n \n /// 释义首词性标记启发式：剥 HTML 后扫描前几行的行首 \"n.\"/\"vt.\"/\"adj.\"…；无则 None。\n /// langdao 等真实词库的 m 字段形如 \"*['æpl]\\nn. 苹果, 家伙\"（标记在次行行首）。\n pub(crate) fn extract_pos(definition: &str) -> Option<String> {\n-    let stripped = strip_html_tags(definition);\n-    // 长标记优先（vt./vi./prep. 等避免被 v./n. 前缀误吞）\n-    const MARKERS: [&str; 15] = [\n-        \"interj.\", \"prep.\", \"conj.\", \"pron.\", \"num.\", \"art.\", \"aux.\",\n-        \"abbr.\", \"adj.\", \"adv.\", \"vt.\", \"vi.\", \"n.\", \"v.\", \"int.\",\n-    ];\n-    for line in stripped.lines().take(4) {\n-        let t = line.trim_start();\n-        if t.is_empty() {\n-            continue;\n-        }\n-        for m in MARKERS {\n-            if t.starts_with(m) {\n-                return Some(m.to_string());\n-            }\n-        }\n-    }\n-    None\n+    Some(\"xyzzy\".into()) /* ~ changed by cargo-mutants ~ */\n }\n \n /// 极简 HTML 标签剥离（仅用于词性启发式与 UI 展示兜底；g 字段释义仍原样保留于\n /// `DictEntry.definition`，02-design §8 已知取舍6）。\n pub(crate) fn strip_html_tags(s: &str) -> String {\n     let mut out = String::with_capacity(s.len());\n     let mut in_tag = false;\n     for c in s.chars() {\n",
+    "file": "src/dict/mod.rs",
+    "function": {
+      "function_name": "extract_pos",
+      "return_type": "-> Option<String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 71
+        },
+        "start": {
+          "column": 1,
+          "line": 50
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/mod.rs:53:5: replace extract_pos -> Option<String> with Some(\"xyzzy\".into())",
+    "package": "reader_core",
+    "replacement": "Some(\"xyzzy\".into())",
+    "span": {
+      "end": {
+        "column": 9,
+        "line": 70
+      },
+      "start": {
+        "column": 5,
+        "line": 53
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/mod.rs\n+++ replace strip_html_tags -> String with String::new()\n@@ -68,27 +68,17 @@\n         }\n     }\n     None\n }\n \n /// 极简 HTML 标签剥离（仅用于词性启发式与 UI 展示兜底；g 字段释义仍原样保留于\n /// `DictEntry.definition`，02-design §8 已知取舍6）。\n pub(crate) fn strip_html_tags(s: &str) -> String {\n-    let mut out = String::with_capacity(s.len());\n-    let mut in_tag = false;\n-    for c in s.chars() {\n-        match c {\n-            '<' => in_tag = true,\n-            '>' if in_tag => in_tag = false,\n-            _ if !in_tag => out.push(c),\n-            _ => {}\n-        }\n-    }\n-    out\n+    String::new() /* ~ changed by cargo-mutants ~ */\n }\n \n #[cfg(test)]\n mod tests {\n     use super::*;\n \n     #[test]\n     fn strip_html_tags_removes_tags_keeps_text() {\n",
+    "file": "src/dict/mod.rs",
+    "function": {
+      "function_name": "strip_html_tags",
+      "return_type": "-> String",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 87
+        },
+        "start": {
+          "column": 1,
+          "line": 73
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/mod.rs:76:5: replace strip_html_tags -> String with String::new()",
+    "package": "reader_core",
+    "replacement": "String::new()",
+    "span": {
+      "end": {
+        "column": 8,
+        "line": 86
+      },
+      "start": {
+        "column": 5,
+        "line": 76
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/mod.rs\n+++ replace strip_html_tags -> String with \"xyzzy\".into()\n@@ -68,27 +68,17 @@\n         }\n     }\n     None\n }\n \n /// 极简 HTML 标签剥离（仅用于词性启发式与 UI 展示兜底；g 字段释义仍原样保留于\n /// `DictEntry.definition`，02-design §8 已知取舍6）。\n pub(crate) fn strip_html_tags(s: &str) -> String {\n-    let mut out = String::with_capacity(s.len());\n-    let mut in_tag = false;\n-    for c in s.chars() {\n-        match c {\n-            '<' => in_tag = true,\n-            '>' if in_tag => in_tag = false,\n-            _ if !in_tag => out.push(c),\n-            _ => {}\n-        }\n-    }\n-    out\n+    \"xyzzy\".into() /* ~ changed by cargo-mutants ~ */\n }\n \n #[cfg(test)]\n mod tests {\n     use super::*;\n \n     #[test]\n     fn strip_html_tags_removes_tags_keeps_text() {\n",
+    "file": "src/dict/mod.rs",
+    "function": {
+      "function_name": "strip_html_tags",
+      "return_type": "-> String",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 87
+        },
+        "start": {
+          "column": 1,
+          "line": 73
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/mod.rs:76:5: replace strip_html_tags -> String with \"xyzzy\".into()",
+    "package": "reader_core",
+    "replacement": "\"xyzzy\".into()",
+    "span": {
+      "end": {
+        "column": 8,
+        "line": 86
+      },
+      "start": {
+        "column": 5,
+        "line": 76
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/mod.rs\n+++ delete match arm '<' in strip_html_tags\n@@ -72,17 +72,17 @@\n \n /// 极简 HTML 标签剥离（仅用于词性启发式与 UI 展示兜底；g 字段释义仍原样保留于\n /// `DictEntry.definition`，02-design §8 已知取舍6）。\n pub(crate) fn strip_html_tags(s: &str) -> String {\n     let mut out = String::with_capacity(s.len());\n     let mut in_tag = false;\n     for c in s.chars() {\n         match c {\n-            '<' => in_tag = true,\n+             /* ~ changed by cargo-mutants ~ */\n             '>' if in_tag => in_tag = false,\n             _ if !in_tag => out.push(c),\n             _ => {}\n         }\n     }\n     out\n }\n \n",
+    "file": "src/dict/mod.rs",
+    "function": {
+      "function_name": "strip_html_tags",
+      "return_type": "-> String",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 87
+        },
+        "start": {
+          "column": 1,
+          "line": 73
+        }
+      }
+    },
+    "genre": "MatchArm",
+    "name": "src/dict/mod.rs:80:13: delete match arm '<' in strip_html_tags",
+    "package": "reader_core",
+    "replacement": "",
+    "span": {
+      "end": {
+        "column": 34,
+        "line": 80
+      },
+      "start": {
+        "column": 13,
+        "line": 80
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/mod.rs\n+++ replace match guard in_tag with true in strip_html_tags\n@@ -73,17 +73,17 @@\n /// 极简 HTML 标签剥离（仅用于词性启发式与 UI 展示兜底；g 字段释义仍原样保留于\n /// `DictEntry.definition`，02-design §8 已知取舍6）。\n pub(crate) fn strip_html_tags(s: &str) -> String {\n     let mut out = String::with_capacity(s.len());\n     let mut in_tag = false;\n     for c in s.chars() {\n         match c {\n             '<' => in_tag = true,\n-            '>' if in_tag => in_tag = false,\n+            '>' if true /* ~ changed by cargo-mutants ~ */ => in_tag = false,\n             _ if !in_tag => out.push(c),\n             _ => {}\n         }\n     }\n     out\n }\n \n #[cfg(test)]\n",
+    "file": "src/dict/mod.rs",
+    "function": {
+      "function_name": "strip_html_tags",
+      "return_type": "-> String",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 87
+        },
+        "start": {
+          "column": 1,
+          "line": 73
+        }
+      }
+    },
+    "genre": "MatchArmGuard",
+    "name": "src/dict/mod.rs:81:20: replace match guard in_tag with true in strip_html_tags",
+    "package": "reader_core",
+    "replacement": "true",
+    "span": {
+      "end": {
+        "column": 26,
+        "line": 81
+      },
+      "start": {
+        "column": 20,
+        "line": 81
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/mod.rs\n+++ replace match guard in_tag with false in strip_html_tags\n@@ -73,17 +73,17 @@\n /// 极简 HTML 标签剥离（仅用于词性启发式与 UI 展示兜底；g 字段释义仍原样保留于\n /// `DictEntry.definition`，02-design §8 已知取舍6）。\n pub(crate) fn strip_html_tags(s: &str) -> String {\n     let mut out = String::with_capacity(s.len());\n     let mut in_tag = false;\n     for c in s.chars() {\n         match c {\n             '<' => in_tag = true,\n-            '>' if in_tag => in_tag = false,\n+            '>' if false /* ~ changed by cargo-mutants ~ */ => in_tag = false,\n             _ if !in_tag => out.push(c),\n             _ => {}\n         }\n     }\n     out\n }\n \n #[cfg(test)]\n",
+    "file": "src/dict/mod.rs",
+    "function": {
+      "function_name": "strip_html_tags",
+      "return_type": "-> String",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 87
+        },
+        "start": {
+          "column": 1,
+          "line": 73
+        }
+      }
+    },
+    "genre": "MatchArmGuard",
+    "name": "src/dict/mod.rs:81:20: replace match guard in_tag with false in strip_html_tags",
+    "package": "reader_core",
+    "replacement": "false",
+    "span": {
+      "end": {
+        "column": 26,
+        "line": 81
+      },
+      "start": {
+        "column": 20,
+        "line": 81
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/mod.rs\n+++ replace match guard !in_tag with true in strip_html_tags\n@@ -74,17 +74,17 @@\n /// `DictEntry.definition`，02-design §8 已知取舍6）。\n pub(crate) fn strip_html_tags(s: &str) -> String {\n     let mut out = String::with_capacity(s.len());\n     let mut in_tag = false;\n     for c in s.chars() {\n         match c {\n             '<' => in_tag = true,\n             '>' if in_tag => in_tag = false,\n-            _ if !in_tag => out.push(c),\n+            _ if true /* ~ changed by cargo-mutants ~ */ => out.push(c),\n             _ => {}\n         }\n     }\n     out\n }\n \n #[cfg(test)]\n mod tests {\n",
+    "file": "src/dict/mod.rs",
+    "function": {
+      "function_name": "strip_html_tags",
+      "return_type": "-> String",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 87
+        },
+        "start": {
+          "column": 1,
+          "line": 73
+        }
+      }
+    },
+    "genre": "MatchArmGuard",
+    "name": "src/dict/mod.rs:82:18: replace match guard !in_tag with true in strip_html_tags",
+    "package": "reader_core",
+    "replacement": "true",
+    "span": {
+      "end": {
+        "column": 25,
+        "line": 82
+      },
+      "start": {
+        "column": 18,
+        "line": 82
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/mod.rs\n+++ replace match guard !in_tag with false in strip_html_tags\n@@ -74,17 +74,17 @@\n /// `DictEntry.definition`，02-design §8 已知取舍6）。\n pub(crate) fn strip_html_tags(s: &str) -> String {\n     let mut out = String::with_capacity(s.len());\n     let mut in_tag = false;\n     for c in s.chars() {\n         match c {\n             '<' => in_tag = true,\n             '>' if in_tag => in_tag = false,\n-            _ if !in_tag => out.push(c),\n+            _ if false /* ~ changed by cargo-mutants ~ */ => out.push(c),\n             _ => {}\n         }\n     }\n     out\n }\n \n #[cfg(test)]\n mod tests {\n",
+    "file": "src/dict/mod.rs",
+    "function": {
+      "function_name": "strip_html_tags",
+      "return_type": "-> String",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 87
+        },
+        "start": {
+          "column": 1,
+          "line": 73
+        }
+      }
+    },
+    "genre": "MatchArmGuard",
+    "name": "src/dict/mod.rs:82:18: replace match guard !in_tag with false in strip_html_tags",
+    "package": "reader_core",
+    "replacement": "false",
+    "span": {
+      "end": {
+        "column": 25,
+        "line": 82
+      },
+      "start": {
+        "column": 18,
+        "line": 82
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/mod.rs\n+++ delete ! in strip_html_tags\n@@ -74,17 +74,17 @@\n /// `DictEntry.definition`，02-design §8 已知取舍6）。\n pub(crate) fn strip_html_tags(s: &str) -> String {\n     let mut out = String::with_capacity(s.len());\n     let mut in_tag = false;\n     for c in s.chars() {\n         match c {\n             '<' => in_tag = true,\n             '>' if in_tag => in_tag = false,\n-            _ if !in_tag => out.push(c),\n+            _ if  /* ~ changed by cargo-mutants ~ */in_tag => out.push(c),\n             _ => {}\n         }\n     }\n     out\n }\n \n #[cfg(test)]\n mod tests {\n",
+    "file": "src/dict/mod.rs",
+    "function": {
+      "function_name": "strip_html_tags",
+      "return_type": "-> String",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 87
+        },
+        "start": {
+          "column": 1,
+          "line": 73
+        }
+      }
+    },
+    "genre": "UnaryOperator",
+    "name": "src/dict/mod.rs:82:18: delete ! in strip_html_tags",
+    "package": "reader_core",
+    "replacement": "",
+    "span": {
+      "end": {
+        "column": 19,
+        "line": 82
+      },
+      "start": {
+        "column": 18,
+        "line": 82
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/provider.rs\n+++ replace <impl TranslationProvider for DeepLProvider>::name -> &str with \"\"\n@@ -23,17 +23,17 @@\n impl Default for DeepLProvider {\n     fn default() -> Self {\n         Self::new()\n     }\n }\n \n impl TranslationProvider for DeepLProvider {\n     fn name(&self) -> &str {\n-        \"deepl\"\n+        \"\" /* ~ changed by cargo-mutants ~ */\n     }\n \n     fn translate(&self, text: &str, from: Lang, to: Lang) -> Result<Translation> {\n         let key = self.key.clone().ok_or_else(|| {\n             Error::NotConfigured(\"DeepL 未配置 API Key，请先在设置中配置\".to_string())\n         })?;\n         let body = deepl_body(text, from, to);\n         let resp = ureq::post(\"https://api-free.deepl.com/v2/translate\")\n",
+    "file": "src/dict/provider.rs",
+    "function": {
+      "function_name": "<impl TranslationProvider for DeepLProvider>::name",
+      "return_type": "-> &str",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 32
+        },
+        "start": {
+          "column": 5,
+          "line": 30
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/provider.rs:31:9: replace <impl TranslationProvider for DeepLProvider>::name -> &str with \"\"",
+    "package": "reader_core",
+    "replacement": "\"\"",
+    "span": {
+      "end": {
+        "column": 16,
+        "line": 31
+      },
+      "start": {
+        "column": 9,
+        "line": 31
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/provider.rs\n+++ replace <impl TranslationProvider for DeepLProvider>::name -> &str with \"xyzzy\"\n@@ -23,17 +23,17 @@\n impl Default for DeepLProvider {\n     fn default() -> Self {\n         Self::new()\n     }\n }\n \n impl TranslationProvider for DeepLProvider {\n     fn name(&self) -> &str {\n-        \"deepl\"\n+        \"xyzzy\" /* ~ changed by cargo-mutants ~ */\n     }\n \n     fn translate(&self, text: &str, from: Lang, to: Lang) -> Result<Translation> {\n         let key = self.key.clone().ok_or_else(|| {\n             Error::NotConfigured(\"DeepL 未配置 API Key，请先在设置中配置\".to_string())\n         })?;\n         let body = deepl_body(text, from, to);\n         let resp = ureq::post(\"https://api-free.deepl.com/v2/translate\")\n",
+    "file": "src/dict/provider.rs",
+    "function": {
+      "function_name": "<impl TranslationProvider for DeepLProvider>::name",
+      "return_type": "-> &str",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 32
+        },
+        "start": {
+          "column": 5,
+          "line": 30
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/provider.rs:31:9: replace <impl TranslationProvider for DeepLProvider>::name -> &str with \"xyzzy\"",
+    "package": "reader_core",
+    "replacement": "\"xyzzy\"",
+    "span": {
+      "end": {
+        "column": 16,
+        "line": 31
+      },
+      "start": {
+        "column": 9,
+        "line": 31
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/provider.rs\n+++ replace <impl TranslationProvider for DeepLProvider>::translate -> Result<Translation> with Ok(Default::default())\n@@ -27,43 +27,17 @@\n }\n \n impl TranslationProvider for DeepLProvider {\n     fn name(&self) -> &str {\n         \"deepl\"\n     }\n \n     fn translate(&self, text: &str, from: Lang, to: Lang) -> Result<Translation> {\n-        let key = self.key.clone().ok_or_else(|| {\n-            Error::NotConfigured(\"DeepL 未配置 API Key，请先在设置中配置\".to_string())\n-        })?;\n-        let body = deepl_body(text, from, to);\n-        let resp = ureq::post(\"https://api-free.deepl.com/v2/translate\")\n-            .set(\"Authorization\", &format!(\"DeepL-Auth-Key {key}\"))\n-            .send_json(body)\n-            .map_err(|e| Error::Network {\n-                detail: format!(\"DeepL 请求失败: {e}\"),\n-                source_text: text.to_string(),\n-            })?;\n-        let json: serde_json::Value = resp.into_json().map_err(|e| Error::Network {\n-            detail: format!(\"DeepL 响应解析失败: {e}\"),\n-            source_text: text.to_string(),\n-        })?;\n-        let translated = json[\"translations\"][0][\"text\"].as_str().ok_or_else(|| {\n-            Error::Network {\n-                detail: \"DeepL 响应缺少 translations[0].text\".to_string(),\n-                source_text: text.to_string(),\n-            }\n-        })?;\n-        Ok(Translation {\n-            text: translated.to_string(),\n-            from,\n-            to,\n-            provider: self.name().to_string(),\n-        })\n+        Ok(Default::default()) /* ~ changed by cargo-mutants ~ */\n     }\n \n     fn configure(&mut self, key: Option<&str>) {\n         self.key = key.map(|s| s.to_string());\n     }\n }\n \n /// Echo Provider（mock/演示）：无 key 可用，返回 \"译文:\" + 原文。\n",
+    "file": "src/dict/provider.rs",
+    "function": {
+      "function_name": "<impl TranslationProvider for DeepLProvider>::translate",
+      "return_type": "-> Result<Translation>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 62
+        },
+        "start": {
+          "column": 5,
+          "line": 34
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/provider.rs:35:9: replace <impl TranslationProvider for DeepLProvider>::translate -> Result<Translation> with Ok(Default::default())",
+    "package": "reader_core",
+    "replacement": "Ok(Default::default())",
+    "span": {
+      "end": {
+        "column": 11,
+        "line": 61
+      },
+      "start": {
+        "column": 9,
+        "line": 35
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/provider.rs\n+++ replace <impl TranslationProvider for DeepLProvider>::configure with ()\n@@ -57,17 +57,17 @@\n             text: translated.to_string(),\n             from,\n             to,\n             provider: self.name().to_string(),\n         })\n     }\n \n     fn configure(&mut self, key: Option<&str>) {\n-        self.key = key.map(|s| s.to_string());\n+        () /* ~ changed by cargo-mutants ~ */\n     }\n }\n \n /// Echo Provider（mock/演示）：无 key 可用，返回 \"译文:\" + 原文。\n /// 经 `translate_set_config(\"echo\", \"\")` 切换默认 Provider 后即无 key 演示（ADR 关联裁定2）。\n pub struct EchoProvider;\n \n impl TranslationProvider for EchoProvider {\n",
+    "file": "src/dict/provider.rs",
+    "function": {
+      "function_name": "<impl TranslationProvider for DeepLProvider>::configure",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 66
+        },
+        "start": {
+          "column": 5,
+          "line": 64
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/provider.rs:65:9: replace <impl TranslationProvider for DeepLProvider>::configure with ()",
+    "package": "reader_core",
+    "replacement": "()",
+    "span": {
+      "end": {
+        "column": 47,
+        "line": 65
+      },
+      "start": {
+        "column": 9,
+        "line": 65
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/provider.rs\n+++ replace <impl TranslationProvider for EchoProvider>::name -> &str with \"\"\n@@ -67,17 +67,17 @@\n }\n \n /// Echo Provider（mock/演示）：无 key 可用，返回 \"译文:\" + 原文。\n /// 经 `translate_set_config(\"echo\", \"\")` 切换默认 Provider 后即无 key 演示（ADR 关联裁定2）。\n pub struct EchoProvider;\n \n impl TranslationProvider for EchoProvider {\n     fn name(&self) -> &str {\n-        \"echo\"\n+        \"\" /* ~ changed by cargo-mutants ~ */\n     }\n \n     fn translate(&self, text: &str, from: Lang, to: Lang) -> Result<Translation> {\n         Ok(Translation {\n             text: format!(\"译文:{text}\"),\n             from,\n             to,\n             provider: self.name().to_string(),\n",
+    "file": "src/dict/provider.rs",
+    "function": {
+      "function_name": "<impl TranslationProvider for EchoProvider>::name",
+      "return_type": "-> &str",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 76
+        },
+        "start": {
+          "column": 5,
+          "line": 74
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/provider.rs:75:9: replace <impl TranslationProvider for EchoProvider>::name -> &str with \"\"",
+    "package": "reader_core",
+    "replacement": "\"\"",
+    "span": {
+      "end": {
+        "column": 15,
+        "line": 75
+      },
+      "start": {
+        "column": 9,
+        "line": 75
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/provider.rs\n+++ replace <impl TranslationProvider for EchoProvider>::name -> &str with \"xyzzy\"\n@@ -67,17 +67,17 @@\n }\n \n /// Echo Provider（mock/演示）：无 key 可用，返回 \"译文:\" + 原文。\n /// 经 `translate_set_config(\"echo\", \"\")` 切换默认 Provider 后即无 key 演示（ADR 关联裁定2）。\n pub struct EchoProvider;\n \n impl TranslationProvider for EchoProvider {\n     fn name(&self) -> &str {\n-        \"echo\"\n+        \"xyzzy\" /* ~ changed by cargo-mutants ~ */\n     }\n \n     fn translate(&self, text: &str, from: Lang, to: Lang) -> Result<Translation> {\n         Ok(Translation {\n             text: format!(\"译文:{text}\"),\n             from,\n             to,\n             provider: self.name().to_string(),\n",
+    "file": "src/dict/provider.rs",
+    "function": {
+      "function_name": "<impl TranslationProvider for EchoProvider>::name",
+      "return_type": "-> &str",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 76
+        },
+        "start": {
+          "column": 5,
+          "line": 74
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/provider.rs:75:9: replace <impl TranslationProvider for EchoProvider>::name -> &str with \"xyzzy\"",
+    "package": "reader_core",
+    "replacement": "\"xyzzy\"",
+    "span": {
+      "end": {
+        "column": 15,
+        "line": 75
+      },
+      "start": {
+        "column": 9,
+        "line": 75
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/provider.rs\n+++ replace <impl TranslationProvider for EchoProvider>::translate -> Result<Translation> with Ok(Default::default())\n@@ -71,22 +71,17 @@\n pub struct EchoProvider;\n \n impl TranslationProvider for EchoProvider {\n     fn name(&self) -> &str {\n         \"echo\"\n     }\n \n     fn translate(&self, text: &str, from: Lang, to: Lang) -> Result<Translation> {\n-        Ok(Translation {\n-            text: format!(\"译文:{text}\"),\n-            from,\n-            to,\n-            provider: self.name().to_string(),\n-        })\n+        Ok(Default::default()) /* ~ changed by cargo-mutants ~ */\n     }\n }\n \n /// 构造 DeepL 请求体（纯函数：把\"只含 text/from/to\"的隐私约束与 Auto 分支抽成\n /// 可无网络单测的结构单元；行为与内联版完全一致，rework-D 仅做提取不改语义）。\n /// 隐私（US-9/US-13）：请求体只含 text/target_lang[/source_lang]，无书路径/元数据。\n /// Auto（自动检测）不传 source_lang（DeepL 语义）。\n fn deepl_body(text: &str, from: Lang, to: Lang) -> serde_json::Value {\n",
+    "file": "src/dict/provider.rs",
+    "function": {
+      "function_name": "<impl TranslationProvider for EchoProvider>::translate",
+      "return_type": "-> Result<Translation>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 85
+        },
+        "start": {
+          "column": 5,
+          "line": 78
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/provider.rs:79:9: replace <impl TranslationProvider for EchoProvider>::translate -> Result<Translation> with Ok(Default::default())",
+    "package": "reader_core",
+    "replacement": "Ok(Default::default())",
+    "span": {
+      "end": {
+        "column": 11,
+        "line": 84
+      },
+      "start": {
+        "column": 9,
+        "line": 79
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/provider.rs\n+++ replace deepl_body -> serde_json::Value with Default::default()\n@@ -85,24 +85,17 @@\n     }\n }\n \n /// 构造 DeepL 请求体（纯函数：把\"只含 text/from/to\"的隐私约束与 Auto 分支抽成\n /// 可无网络单测的结构单元；行为与内联版完全一致，rework-D 仅做提取不改语义）。\n /// 隐私（US-9/US-13）：请求体只含 text/target_lang[/source_lang]，无书路径/元数据。\n /// Auto（自动检测）不传 source_lang（DeepL 语义）。\n fn deepl_body(text: &str, from: Lang, to: Lang) -> serde_json::Value {\n-    let mut body = serde_json::json!({\n-        \"text\": [text],\n-        \"target_lang\": deepl_code(to),\n-    });\n-    if from != Lang::Auto {\n-        body[\"source_lang\"] = serde_json::json!(deepl_code(from));\n-    }\n-    body\n+    Default::default() /* ~ changed by cargo-mutants ~ */\n }\n \n /// DeepL 语言代码（大写）：\"en\"→\"EN\"、\"zh\"→\"ZH\"…\n fn deepl_code(l: Lang) -> &'static str {\n     match l {\n         Lang::Auto => \"EN\", // 不会被使用（Auto 分支不传 source_lang）\n         Lang::En => \"EN\",\n         Lang::Zh => \"ZH\",\n",
+    "file": "src/dict/provider.rs",
+    "function": {
+      "function_name": "deepl_body",
+      "return_type": "-> serde_json::Value",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 101
+        },
+        "start": {
+          "column": 1,
+          "line": 88
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/provider.rs:93:5: replace deepl_body -> serde_json::Value with Default::default()",
+    "package": "reader_core",
+    "replacement": "Default::default()",
+    "span": {
+      "end": {
+        "column": 9,
+        "line": 100
+      },
+      "start": {
+        "column": 5,
+        "line": 93
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/provider.rs\n+++ replace != with == in deepl_body\n@@ -89,17 +89,17 @@\n /// 可无网络单测的结构单元；行为与内联版完全一致，rework-D 仅做提取不改语义）。\n /// 隐私（US-9/US-13）：请求体只含 text/target_lang[/source_lang]，无书路径/元数据。\n /// Auto（自动检测）不传 source_lang（DeepL 语义）。\n fn deepl_body(text: &str, from: Lang, to: Lang) -> serde_json::Value {\n     let mut body = serde_json::json!({\n         \"text\": [text],\n         \"target_lang\": deepl_code(to),\n     });\n-    if from != Lang::Auto {\n+    if from == /* ~ changed by cargo-mutants ~ */ Lang::Auto {\n         body[\"source_lang\"] = serde_json::json!(deepl_code(from));\n     }\n     body\n }\n \n /// DeepL 语言代码（大写）：\"en\"→\"EN\"、\"zh\"→\"ZH\"…\n fn deepl_code(l: Lang) -> &'static str {\n     match l {\n",
+    "file": "src/dict/provider.rs",
+    "function": {
+      "function_name": "deepl_body",
+      "return_type": "-> serde_json::Value",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 101
+        },
+        "start": {
+          "column": 1,
+          "line": 88
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/dict/provider.rs:97:13: replace != with == in deepl_body",
+    "package": "reader_core",
+    "replacement": "==",
+    "span": {
+      "end": {
+        "column": 15,
+        "line": 97
+      },
+      "start": {
+        "column": 13,
+        "line": 97
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/provider.rs\n+++ replace deepl_code -> &'static str with \"\"\n@@ -97,28 +97,17 @@\n     if from != Lang::Auto {\n         body[\"source_lang\"] = serde_json::json!(deepl_code(from));\n     }\n     body\n }\n \n /// DeepL 语言代码（大写）：\"en\"→\"EN\"、\"zh\"→\"ZH\"…\n fn deepl_code(l: Lang) -> &'static str {\n-    match l {\n-        Lang::Auto => \"EN\", // 不会被使用（Auto 分支不传 source_lang）\n-        Lang::En => \"EN\",\n-        Lang::Zh => \"ZH\",\n-        Lang::Ja => \"JA\",\n-        Lang::Ko => \"KO\",\n-        Lang::Fr => \"FR\",\n-        Lang::De => \"DE\",\n-        Lang::Es => \"ES\",\n-        Lang::Ru => \"RU\",\n-        Lang::Other(s) => s,\n-    }\n+    \"\" /* ~ changed by cargo-mutants ~ */\n }\n \n // ---------- 测试用 Provider（cfg(test)，服务层单测注入用） ----------\n \n /// 计数 + 参数记录 Provider（US-9/10/11 的 mock 计数与参数断言锚点）\n #[cfg(test)]\n pub(crate) struct CountingProvider {\n     pub calls: std::cell::Cell<u32>,\n",
+    "file": "src/dict/provider.rs",
+    "function": {
+      "function_name": "deepl_code",
+      "return_type": "-> &'static str",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 117
+        },
+        "start": {
+          "column": 1,
+          "line": 103
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/provider.rs:105:5: replace deepl_code -> &'static str with \"\"",
+    "package": "reader_core",
+    "replacement": "\"\"",
+    "span": {
+      "end": {
+        "column": 6,
+        "line": 116
+      },
+      "start": {
+        "column": 5,
+        "line": 105
+      }
+    }
+  },
+  {
+    "diff": "--- src/dict/provider.rs\n+++ replace deepl_code -> &'static str with \"xyzzy\"\n@@ -97,28 +97,17 @@\n     if from != Lang::Auto {\n         body[\"source_lang\"] = serde_json::json!(deepl_code(from));\n     }\n     body\n }\n \n /// DeepL 语言代码（大写）：\"en\"→\"EN\"、\"zh\"→\"ZH\"…\n fn deepl_code(l: Lang) -> &'static str {\n-    match l {\n-        Lang::Auto => \"EN\", // 不会被使用（Auto 分支不传 source_lang）\n-        Lang::En => \"EN\",\n-        Lang::Zh => \"ZH\",\n-        Lang::Ja => \"JA\",\n-        Lang::Ko => \"KO\",\n-        Lang::Fr => \"FR\",\n-        Lang::De => \"DE\",\n-        Lang::Es => \"ES\",\n-        Lang::Ru => \"RU\",\n-        Lang::Other(s) => s,\n-    }\n+    \"xyzzy\" /* ~ changed by cargo-mutants ~ */\n }\n \n // ---------- 测试用 Provider（cfg(test)，服务层单测注入用） ----------\n \n /// 计数 + 参数记录 Provider（US-9/10/11 的 mock 计数与参数断言锚点）\n #[cfg(test)]\n pub(crate) struct CountingProvider {\n     pub calls: std::cell::Cell<u32>,\n",
+    "file": "src/dict/provider.rs",
+    "function": {
+      "function_name": "deepl_code",
+      "return_type": "-> &'static str",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 117
+        },
+        "start": {
+          "column": 1,
+          "line": 103
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/dict/provider.rs:105:5: replace deepl_code -> &'static str with \"xyzzy\"",
+    "package": "reader_core",
+    "replacement": "\"xyzzy\"",
+    "span": {
+      "end": {
+        "column": 6,
+        "line": 116
+      },
+      "start": {
+        "column": 5,
+        "line": 105
+      }
+    }
+  }
+]

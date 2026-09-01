@@ -272,6 +272,32 @@ mod tests {
     }
 
     #[test]
+    fn provider_key_setting_uses_namespaced_key() {
+        // 杀死 store/translation.rs:38 provider_key_setting 恒 "xyzzy"/"" 两个变异：
+        // set/get 走同一函数会自洽逃逸（写错键名仍能读回），必须直查 settings 表
+        // 断言键落在 `translate.key.<provider>` 命名空间（docs/04 §5 键约定）
+        let dir = tempfile::tempdir().unwrap();
+        let mut repo = TranslationRepo::open(dir.path()).unwrap();
+        repo.set_provider_key("deepl", "secret").unwrap();
+        let v: Option<String> = repo
+            .conn
+            .query_row(
+                "SELECT value FROM settings WHERE key='translate.key.deepl'",
+                [],
+                |r| r.get(0),
+            )
+            .optional()
+            .unwrap();
+        assert_eq!(v.as_deref(), Some("secret"), "键必须为 translate.key.deepl");
+        // 变异会把值写到 "xyzzy"/"" 键下 → 表中出现多余行，数量断言兜底
+        let total: i64 = repo
+            .conn
+            .query_row("SELECT COUNT(*) FROM settings", [], |r| r.get(0))
+            .unwrap();
+        assert_eq!(total, 1, "settings 表应只有 translate.key.deepl 一行");
+    }
+
+    #[test]
     fn v2_to_v3_migration_preserves_existing_data() {
         // 构造 user_version=2 的存量库（含书与进度）→ 重开 → 数据完整 + 新表存在 + v3
         let dir = tempfile::tempdir().unwrap();

@@ -329,6 +329,20 @@ mod tests {
         assert!(lookup_entry(&idx, "zzzqqq").is_none());
     }
 
+    #[test]
+    fn lookup_unicode_mixed_case_normalizes_via_lowercase() {
+        // 非 ASCII 大小写混合词（"Éclair"）：binary 命中失败（字节序不同）→ 线性扫描
+        // 经 `e.word == lower` 路径命中（US-5 大小写归一对 Unicode 同样成立）。
+        // 该测试杀死 lookup_entry 中两个 `||`→`&&` 变异（mutants 138/139）：
+        // 变异后 lower 命中路径被破坏且 eq_ignore_ascii_case 不折叠非 ASCII → 返回 None。
+        let bytes = sample_idx_bytes(&[("éclair", 0, 4), ("zebra", 8, 4)]);
+        let idx = load_idx(&bytes).unwrap();
+        let e = lookup_entry(&idx, "Éclair").expect("大小写不敏感应命中 éclair");
+        assert_eq!(e.word, "éclair");
+        // 对照：非 ASCII 但已全小写 → 精确命中
+        assert_eq!(lookup_entry(&idx, "éclair").unwrap().word, "éclair");
+    }
+
     fn dict_with_seq(seq: &[u8], data: &[u8]) -> DictEntry {
         let e = IdxEntry {
             word: "w".into(),

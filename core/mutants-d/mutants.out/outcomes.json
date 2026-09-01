@@ -1,0 +1,1188 @@
+{
+  "outcomes": [
+    {
+      "scenario": "Baseline",
+      "summary": "Success",
+      "log_path": "log/baseline.log",
+      "diff_path": null,
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 15.537742012,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 2.661921654,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/store/translation.rs:29:9: replace TranslationRepo::open -> Result<TranslationRepo> with Ok(Default::default())",
+          "package": "reader_core",
+          "file": "src/store/translation.rs",
+          "function": {
+            "function_name": "TranslationRepo::open",
+            "return_type": "-> Result<TranslationRepo>",
+            "span": {
+              "start": {
+                "line": 28,
+                "column": 5
+              },
+              "end": {
+                "line": 35,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 29,
+              "column": 9
+            },
+            "end": {
+              "line": 34,
+              "column": 37
+            }
+          },
+          "replacement": "Ok(Default::default())",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__store__translation.rs_line_29_col_9.log",
+      "diff_path": "diff/src__store__translation.rs_line_29_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 0.353147745,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/store/translation.rs:38:9: replace TranslationRepo::provider_key_setting -> String with \"xyzzy\".into()",
+          "package": "reader_core",
+          "file": "src/store/translation.rs",
+          "function": {
+            "function_name": "TranslationRepo::provider_key_setting",
+            "return_type": "-> String",
+            "span": {
+              "start": {
+                "line": 37,
+                "column": 5
+              },
+              "end": {
+                "line": 39,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 38,
+              "column": 9
+            },
+            "end": {
+              "line": 38,
+              "column": 44
+            }
+          },
+          "replacement": "\"xyzzy\".into()",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "MissedMutant",
+      "log_path": "log/src__store__translation.rs_line_38_col_9_001.log",
+      "diff_path": "diff/src__store__translation.rs_line_38_col_9_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.476452106,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 3.958942869,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/store/translation.rs:44:9: replace <impl TranslationCacheRepository for TranslationRepo>::cache_get -> Result<Option<CacheEntry>> with Ok(None)",
+          "package": "reader_core",
+          "file": "src/store/translation.rs",
+          "function": {
+            "function_name": "<impl TranslationCacheRepository for TranslationRepo>::cache_get",
+            "return_type": "-> Result<Option<CacheEntry>>",
+            "span": {
+              "start": {
+                "line": 43,
+                "column": 5
+              },
+              "end": {
+                "line": 70,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 44,
+              "column": 9
+            },
+            "end": {
+              "line": 69,
+              "column": 12
+            }
+          },
+          "replacement": "Ok(None)",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__store__translation.rs_line_44_col_9.log",
+      "diff_path": "diff/src__store__translation.rs_line_44_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 5.856237954,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.9642231479999999,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/store/translation.rs:44:9: replace <impl TranslationCacheRepository for TranslationRepo>::cache_get -> Result<Option<CacheEntry>> with Ok(Some(Default::default()))",
+          "package": "reader_core",
+          "file": "src/store/translation.rs",
+          "function": {
+            "function_name": "<impl TranslationCacheRepository for TranslationRepo>::cache_get",
+            "return_type": "-> Result<Option<CacheEntry>>",
+            "span": {
+              "start": {
+                "line": 43,
+                "column": 5
+              },
+              "end": {
+                "line": 70,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 44,
+              "column": 9
+            },
+            "end": {
+              "line": 69,
+              "column": 12
+            }
+          },
+          "replacement": "Ok(Some(Default::default()))",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__store__translation.rs_line_44_col_9_001.log",
+      "diff_path": "diff/src__store__translation.rs_line_44_col_9_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 0.301134091,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/store/translation.rs:73:9: replace <impl TranslationCacheRepository for TranslationRepo>::cache_put -> Result<()> with Ok(())",
+          "package": "reader_core",
+          "file": "src/store/translation.rs",
+          "function": {
+            "function_name": "<impl TranslationCacheRepository for TranslationRepo>::cache_put",
+            "return_type": "-> Result<()>",
+            "span": {
+              "start": {
+                "line": 72,
+                "column": 5
+              },
+              "end": {
+                "line": 93,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 73,
+              "column": 9
+            },
+            "end": {
+              "line": 92,
+              "column": 15
+            }
+          },
+          "replacement": "Ok(())",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__store__translation.rs_line_73_col_9.log",
+      "diff_path": "diff/src__store__translation.rs_line_73_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 1.9700037830000001,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.106877643,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/store/translation.rs:96:9: replace <impl TranslationCacheRepository for TranslationRepo>::cache_incr_hit -> Result<()> with Ok(())",
+          "package": "reader_core",
+          "file": "src/store/translation.rs",
+          "function": {
+            "function_name": "<impl TranslationCacheRepository for TranslationRepo>::cache_incr_hit",
+            "return_type": "-> Result<()>",
+            "span": {
+              "start": {
+                "line": 95,
+                "column": 5
+              },
+              "end": {
+                "line": 109,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 96,
+              "column": 9
+            },
+            "end": {
+              "line": 108,
+              "column": 15
+            }
+          },
+          "replacement": "Ok(())",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__store__translation.rs_line_96_col_9.log",
+      "diff_path": "diff/src__store__translation.rs_line_96_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 1.518358023,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 0.954683937,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/store/translation.rs:38:9: replace TranslationRepo::provider_key_setting -> String with String::new()",
+          "package": "reader_core",
+          "file": "src/store/translation.rs",
+          "function": {
+            "function_name": "TranslationRepo::provider_key_setting",
+            "return_type": "-> String",
+            "span": {
+              "start": {
+                "line": 37,
+                "column": 5
+              },
+              "end": {
+                "line": 39,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 38,
+              "column": 9
+            },
+            "end": {
+              "line": 38,
+              "column": 44
+            }
+          },
+          "replacement": "String::new()",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "MissedMutant",
+      "log_path": "log/src__store__translation.rs_line_38_col_9.log",
+      "diff_path": "diff/src__store__translation.rs_line_38_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 18.61015058,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 3.022062492,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/store/translation.rs:112:9: replace <impl TranslationCacheRepository for TranslationRepo>::cache_clear -> Result<()> with Ok(())",
+          "package": "reader_core",
+          "file": "src/store/translation.rs",
+          "function": {
+            "function_name": "<impl TranslationCacheRepository for TranslationRepo>::cache_clear",
+            "return_type": "-> Result<()>",
+            "span": {
+              "start": {
+                "line": 111,
+                "column": 5
+              },
+              "end": {
+                "line": 116,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 112,
+              "column": 9
+            },
+            "end": {
+              "line": 115,
+              "column": 15
+            }
+          },
+          "replacement": "Ok(())",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__store__translation.rs_line_112_col_9.log",
+      "diff_path": "diff/src__store__translation.rs_line_112_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 1.4153432559999999,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 0.906636183,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/store/translation.rs:119:9: replace <impl TranslationCacheRepository for TranslationRepo>::cache_count -> Result<u64> with Ok(0)",
+          "package": "reader_core",
+          "file": "src/store/translation.rs",
+          "function": {
+            "function_name": "<impl TranslationCacheRepository for TranslationRepo>::cache_count",
+            "return_type": "-> Result<u64>",
+            "span": {
+              "start": {
+                "line": 118,
+                "column": 5
+              },
+              "end": {
+                "line": 124,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 119,
+              "column": 9
+            },
+            "end": {
+              "line": 123,
+              "column": 21
+            }
+          },
+          "replacement": "Ok(0)",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__store__translation.rs_line_119_col_9.log",
+      "diff_path": "diff/src__store__translation.rs_line_119_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 1.56627715,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 0.954137393,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/store/translation.rs:119:9: replace <impl TranslationCacheRepository for TranslationRepo>::cache_count -> Result<u64> with Ok(1)",
+          "package": "reader_core",
+          "file": "src/store/translation.rs",
+          "function": {
+            "function_name": "<impl TranslationCacheRepository for TranslationRepo>::cache_count",
+            "return_type": "-> Result<u64>",
+            "span": {
+              "start": {
+                "line": 118,
+                "column": 5
+              },
+              "end": {
+                "line": 124,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 119,
+              "column": 9
+            },
+            "end": {
+              "line": 123,
+              "column": 21
+            }
+          },
+          "replacement": "Ok(1)",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__store__translation.rs_line_119_col_9_001.log",
+      "diff_path": "diff/src__store__translation.rs_line_119_col_9_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 1.162469498,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 0.955188111,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/store/translation.rs:129:9: replace <impl ProviderConfig for TranslationRepo>::default_provider -> Result<String> with Ok(String::new())",
+          "package": "reader_core",
+          "file": "src/store/translation.rs",
+          "function": {
+            "function_name": "<impl ProviderConfig for TranslationRepo>::default_provider",
+            "return_type": "-> Result<String>",
+            "span": {
+              "start": {
+                "line": 128,
+                "column": 5
+              },
+              "end": {
+                "line": 139,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 129,
+              "column": 9
+            },
+            "end": {
+              "line": 138,
+              "column": 62
+            }
+          },
+          "replacement": "Ok(String::new())",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__store__translation.rs_line_129_col_9.log",
+      "diff_path": "diff/src__store__translation.rs_line_129_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 1.372962061,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 0.855661403,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/store/translation.rs:129:9: replace <impl ProviderConfig for TranslationRepo>::default_provider -> Result<String> with Ok(\"xyzzy\".into())",
+          "package": "reader_core",
+          "file": "src/store/translation.rs",
+          "function": {
+            "function_name": "<impl ProviderConfig for TranslationRepo>::default_provider",
+            "return_type": "-> Result<String>",
+            "span": {
+              "start": {
+                "line": 128,
+                "column": 5
+              },
+              "end": {
+                "line": 139,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 129,
+              "column": 9
+            },
+            "end": {
+              "line": 138,
+              "column": 62
+            }
+          },
+          "replacement": "Ok(\"xyzzy\".into())",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__store__translation.rs_line_129_col_9_001.log",
+      "diff_path": "diff/src__store__translation.rs_line_129_col_9_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 1.311140459,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.058207839,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/store/translation.rs:142:9: replace <impl ProviderConfig for TranslationRepo>::provider_key -> Result<Option<String>> with Ok(None)",
+          "package": "reader_core",
+          "file": "src/store/translation.rs",
+          "function": {
+            "function_name": "<impl ProviderConfig for TranslationRepo>::provider_key",
+            "return_type": "-> Result<Option<String>>",
+            "span": {
+              "start": {
+                "line": 141,
+                "column": 5
+              },
+              "end": {
+                "line": 150,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 142,
+              "column": 9
+            },
+            "end": {
+              "line": 149,
+              "column": 34
+            }
+          },
+          "replacement": "Ok(None)",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__store__translation.rs_line_142_col_9.log",
+      "diff_path": "diff/src__store__translation.rs_line_142_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 1.465974007,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.003586841,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/store/translation.rs:142:9: replace <impl ProviderConfig for TranslationRepo>::provider_key -> Result<Option<String>> with Ok(Some(String::new()))",
+          "package": "reader_core",
+          "file": "src/store/translation.rs",
+          "function": {
+            "function_name": "<impl ProviderConfig for TranslationRepo>::provider_key",
+            "return_type": "-> Result<Option<String>>",
+            "span": {
+              "start": {
+                "line": 141,
+                "column": 5
+              },
+              "end": {
+                "line": 150,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 142,
+              "column": 9
+            },
+            "end": {
+              "line": 149,
+              "column": 34
+            }
+          },
+          "replacement": "Ok(Some(String::new()))",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__store__translation.rs_line_142_col_9_001.log",
+      "diff_path": "diff/src__store__translation.rs_line_142_col_9_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 1.109110188,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 0.90832697,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/store/translation.rs:142:9: replace <impl ProviderConfig for TranslationRepo>::provider_key -> Result<Option<String>> with Ok(Some(\"xyzzy\".into()))",
+          "package": "reader_core",
+          "file": "src/store/translation.rs",
+          "function": {
+            "function_name": "<impl ProviderConfig for TranslationRepo>::provider_key",
+            "return_type": "-> Result<Option<String>>",
+            "span": {
+              "start": {
+                "line": 141,
+                "column": 5
+              },
+              "end": {
+                "line": 150,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 142,
+              "column": 9
+            },
+            "end": {
+              "line": 149,
+              "column": 34
+            }
+          },
+          "replacement": "Ok(Some(\"xyzzy\".into()))",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__store__translation.rs_line_142_col_9_002.log",
+      "diff_path": "diff/src__store__translation.rs_line_142_col_9_002.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 1.160514367,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 0.97063146,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/store/translation.rs:153:9: replace <impl ProviderConfig for TranslationRepo>::set_provider_key -> Result<()> with Ok(())",
+          "package": "reader_core",
+          "file": "src/store/translation.rs",
+          "function": {
+            "function_name": "<impl ProviderConfig for TranslationRepo>::set_provider_key",
+            "return_type": "-> Result<()>",
+            "span": {
+              "start": {
+                "line": 152,
+                "column": 5
+              },
+              "end": {
+                "line": 154,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 153,
+              "column": 9
+            },
+            "end": {
+              "line": 153,
+              "column": 79
+            }
+          },
+          "replacement": "Ok(())",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__store__translation.rs_line_153_col_9.log",
+      "diff_path": "diff/src__store__translation.rs_line_153_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 1.059742658,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.066983504,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/store/translation.rs:157:9: replace <impl ProviderConfig for TranslationRepo>::set_default_provider -> Result<()> with Ok(())",
+          "package": "reader_core",
+          "file": "src/store/translation.rs",
+          "function": {
+            "function_name": "<impl ProviderConfig for TranslationRepo>::set_default_provider",
+            "return_type": "-> Result<()>",
+            "span": {
+              "start": {
+                "line": 156,
+                "column": 5
+              },
+              "end": {
+                "line": 158,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 157,
+              "column": 9
+            },
+            "end": {
+              "line": 157,
+              "column": 67
+            }
+          },
+          "replacement": "Ok(())",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__store__translation.rs_line_157_col_9.log",
+      "diff_path": "diff/src__store__translation.rs_line_157_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 1.177144972,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 0.971367336,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/store/translation.rs:162:5: replace upsert_setting -> Result<()> with Ok(())",
+          "package": "reader_core",
+          "file": "src/store/translation.rs",
+          "function": {
+            "function_name": "upsert_setting",
+            "return_type": "-> Result<()>",
+            "span": {
+              "start": {
+                "line": 161,
+                "column": 1
+              },
+              "end": {
+                "line": 169,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 162,
+              "column": 5
+            },
+            "end": {
+              "line": 168,
+              "column": 11
+            }
+          },
+          "replacement": "Ok(())",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__store__translation.rs_line_162_col_5.log",
+      "diff_path": "diff/src__store__translation.rs_line_162_col_5.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 0.959576279,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.554423339,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    }
+  ],
+  "total_mutants": 18,
+  "missed": 2,
+  "caught": 14,
+  "timeout": 0,
+  "unviable": 2,
+  "success": 0,
+  "start_time": "2026-09-01T13:04:03.003506356Z",
+  "end_time": "2026-09-01T13:04:56.240288956Z",
+  "cargo_mutants_version": "27.1.0"
+}

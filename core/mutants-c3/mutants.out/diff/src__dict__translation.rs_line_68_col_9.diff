@@ -1,0 +1,38 @@
+--- src/dict/translation.rs
++++ replace DictService::load_from_installed_dir -> Result<LoadedDict> with Ok(Default::default())
+@@ -60,34 +60,17 @@
+             match self.load_from_installed_dir(&dir, &ifo) {
+                 Ok(ld) => self.registry.push(ld),
+                 Err(e) => log::warn!("跳过损坏词库 {}: {e}", dir.display()),
+             }
+         }
+     }
+ 
+     fn load_from_installed_dir(&self, dir: &Path, ifo: &Path) -> Result<LoadedDict> {
+-        let meta = stardict::parse_ifo(ifo)?;
+-        let stem = dict_stem(ifo);
+-        let idx_path = dir.join(format!("{stem}.idx"));
+-        let idx_bytes = std::fs::read(&idx_path).map_err(Error::Io)?;
+-        let dict_file = dict_path_of(&dir.join(&stem)).and_then(|p| File::open(p).ok());
+-        let id = sanitize_id(&meta.bookname);
+-        Ok(LoadedDict {
+-            info: DictInfo {
+-                id,
+-                name: meta.bookname.clone(),
+-                word_count: meta.wordcount,
+-                path: dir.display().to_string(),
+-            },
+-            ifo: meta,
+-            idx: OnceCell::new(),
+-            idx_bytes,
+-            dict_file,
+-        })
++        Ok(Default::default()) /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     /// 安装词库：校验三件套 → 拷贝 → .dz 流式解压落盘 → 注册（幂等）。
+     /// 入参为 `.ifo` 文件路径（或含 .ifo 的目录）；坏词库 → Err(Corrupt)，已装列表不受影响。
+     pub fn install(&mut self, path: &Path) -> Result<DictInfo> {
+         let ifo_path = if path.is_dir() {
+             find_ifo_in(path)
+                 .ok_or_else(|| Error::Corrupt(format!("目录内未找到 .ifo: {}", path.display())))?

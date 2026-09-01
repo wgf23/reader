@@ -1,0 +1,13 @@
+src/dict/mod.rs:53:5: replace extract_pos -> Option<String> with None
+src/dict/mod.rs:53:5: replace extract_pos -> Option<String> with Some("xyzzy".into())
+src/dict/mod.rs:76:5: replace strip_html_tags -> String with String::new()
+src/dict/mod.rs:76:5: replace strip_html_tags -> String with "xyzzy".into()
+src/dict/mod.rs:53:5: replace extract_pos -> Option<String> with Some(String::new())
+src/dict/mod.rs:81:20: replace match guard in_tag with false in strip_html_tags
+src/dict/mod.rs:82:18: replace match guard !in_tag with false in strip_html_tags
+src/dict/mod.rs:82:18: delete ! in strip_html_tags
+src/dict/provider.rs:31:9: replace <impl TranslationProvider for DeepLProvider>::name -> &str with ""
+src/dict/provider.rs:31:9: replace <impl TranslationProvider for DeepLProvider>::name -> &str with "xyzzy"
+src/dict/provider.rs:72:9: replace <impl TranslationProvider for DeepLProvider>::configure with ()
+src/dict/provider.rs:82:9: replace <impl TranslationProvider for EchoProvider>::name -> &str with ""
+src/dict/provider.rs:82:9: replace <impl TranslationProvider for EchoProvider>::name -> &str with "xyzzy"

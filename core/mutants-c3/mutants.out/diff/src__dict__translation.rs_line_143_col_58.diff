@@ -1,0 +1,21 @@
+--- src/dict/translation.rs
++++ replace == with != in DictService::install
+@@ -135,17 +135,17 @@
+         // 落盘到 <dicts_dir>/<id>/
+         let target_dir = self.dicts_dir.join(&id);
+         std::fs::create_dir_all(&target_dir).map_err(Error::Io)?;
+         let target_ifo = target_dir.join(format!("{id}.ifo"));
+         let target_idx = target_dir.join(format!("{id}.idx"));
+         let target_dict = target_dir.join(format!("{id}.dict"));
+         std::fs::copy(&ifo_path, &target_ifo).map_err(Error::Io)?;
+         std::fs::copy(&idx_path, &target_idx).map_err(Error::Io)?;
+-        if dict_src.extension().and_then(|e| e.to_str()) == Some("dz") {
++        if dict_src.extension().and_then(|e| e.to_str()) != /* ~ changed by cargo-mutants ~ */ Some("dz") {
+             // .dict.dz：流式解压落盘（ADR 关联裁定5）
+             stardict::decompress_dz(&dict_src, &target_dict)?;
+         } else {
+             std::fs::copy(&dict_src, &target_dict).map_err(Error::Io)?;
+         }
+ 
+         let info = DictInfo {
+             id: id.clone(),

@@ -1,0 +1,20 @@
+src/dict/mod.rs:53:5: replace extract_pos -> Option<String> with None
+src/dict/mod.rs:53:5: replace extract_pos -> Option<String> with Some("xyzzy".into())
+src/dict/mod.rs:76:5: replace strip_html_tags -> String with String::new()
+src/dict/mod.rs:76:5: replace strip_html_tags -> String with "xyzzy".into()
+src/dict/mod.rs:53:5: replace extract_pos -> Option<String> with Some(String::new())
+src/dict/mod.rs:80:13: delete match arm '<' in strip_html_tags
+src/dict/mod.rs:81:20: replace match guard in_tag with true in strip_html_tags
+src/dict/mod.rs:81:20: replace match guard in_tag with false in strip_html_tags
+src/dict/mod.rs:82:18: replace match guard !in_tag with true in strip_html_tags
+src/dict/mod.rs:82:18: replace match guard !in_tag with false in strip_html_tags
+src/dict/mod.rs:82:18: delete ! in strip_html_tags
+src/dict/provider.rs:31:9: replace <impl TranslationProvider for DeepLProvider>::name -> &str with ""
+src/dict/provider.rs:65:9: replace <impl TranslationProvider for DeepLProvider>::configure with ()
+src/dict/provider.rs:31:9: replace <impl TranslationProvider for DeepLProvider>::name -> &str with "xyzzy"
+src/dict/provider.rs:75:9: replace <impl TranslationProvider for EchoProvider>::name -> &str with ""
+src/dict/provider.rs:75:9: replace <impl TranslationProvider for EchoProvider>::name -> &str with "xyzzy"
+src/dict/provider.rs:97:13: replace != with == in deepl_body
+src/dict/provider.rs:93:5: replace deepl_body -> serde_json::Value with Default::default()
+src/dict/provider.rs:105:5: replace deepl_code -> &'static str with ""
+src/dict/provider.rs:105:5: replace deepl_code -> &'static str with "xyzzy"

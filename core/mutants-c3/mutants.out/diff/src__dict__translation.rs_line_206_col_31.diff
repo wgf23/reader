@@ -1,0 +1,21 @@
+--- src/dict/translation.rs
++++ replace != with == in DictService::lookup
+@@ -198,17 +198,17 @@
+         if let Some(id) = dict_id {
+             if !self.registry.iter().any(|ld| ld.info.id == id) {
+                 return Err(Error::NotFound(format!("词库不存在: {id}")));
+             }
+         }
+         let mut attempted = 0usize;
+         for ld in &self.registry {
+             if let Some(id) = dict_id {
+-                if ld.info.id != id {
++                if ld.info.id == /* ~ changed by cargo-mutants ~ */ id {
+                     continue;
+                 }
+             }
+             attempted += 1;
+             let idx = match ld.idx.get_or_init(|| stardict::load_idx(&ld.idx_bytes)) {
+                 Ok(v) => v,
+                 Err(e) => {
+                     log::warn!("词库 {} 索引加载失败，跳过: {e}", ld.info.name);

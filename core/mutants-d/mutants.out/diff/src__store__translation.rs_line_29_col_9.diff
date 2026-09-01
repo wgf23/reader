@@ -1,0 +1,26 @@
+--- src/store/translation.rs
++++ replace TranslationRepo::open -> Result<TranslationRepo> with Ok(Default::default())
+@@ -21,22 +21,17 @@
+ 
+ /// 第二连接（同一 library.db；WAL + busy_timeout=5000）
+ pub struct TranslationRepo {
+     conn: Connection,
+ }
+ 
+ impl TranslationRepo {
+     pub fn open(data_dir: &Path) -> Result<TranslationRepo> {
+-        std::fs::create_dir_all(data_dir).map_err(Error::Io)?;
+-        let conn = Connection::open(data_dir.join("library.db")).map_err(Error::from)?;
+-        conn.execute_batch("PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;")
+-            .map_err(Error::from)?;
+-        migrate_conn(&conn)?;
+-        Ok(TranslationRepo { conn })
++        Ok(Default::default()) /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     fn provider_key_setting(provider: &str) -> String {
+         format!("translate.key.{provider}")
+     }
+ }
+ 
+ impl TranslationCacheRepository for TranslationRepo {

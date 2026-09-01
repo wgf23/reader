@@ -1,0 +1,21 @@
+--- src/dict/translation.rs
++++ replace == with != in DictService::remove
+@@ -167,17 +167,17 @@
+         Ok(info)
+     }
+ 
+     /// 移除词库：删目录 + 注销；未注册 → Err(NotFound)。
+     pub fn remove(&mut self, dict_id: &str) -> Result<()> {
+         let pos = self
+             .registry
+             .iter()
+-            .position(|ld| ld.info.id == dict_id)
++            .position(|ld| ld.info.id != /* ~ changed by cargo-mutants ~ */ dict_id)
+             .ok_or_else(|| Error::NotFound(format!("词库不存在: {dict_id}")))?;
+         let ld = self.registry.remove(pos);
+         let dir = PathBuf::from(&ld.info.path);
+         if dir.is_dir() {
+             std::fs::remove_dir_all(&dir).map_err(Error::Io)?;
+         }
+         Ok(())
+     }

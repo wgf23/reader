@@ -1,0 +1,27 @@
+--- src/dict/translation.rs
++++ replace find_ifo_in -> Option<PathBuf> with None
+@@ -271,23 +271,17 @@
+             candidate = format!("{base}-{n}");
+             n += 1;
+         }
+         candidate
+     }
+ }
+ 
+ fn find_ifo_in(dir: &Path) -> Option<PathBuf> {
+-    let entries = std::fs::read_dir(dir).ok()?;
+-    let mut ifos: Vec<PathBuf> = entries
+-        .filter_map(|e| e.ok().map(|e| e.path()))
+-        .filter(|p| p.extension().and_then(|e| e.to_str()) == Some("ifo"))
+-        .collect();
+-    ifos.sort();
+-    ifos.into_iter().next()
++    None /* ~ changed by cargo-mutants ~ */
+ }
+ 
+ /// 目录内词库文件名主干（id.ifo → id）
+ fn dict_stem(ifo: &Path) -> String {
+     ifo.file_stem()
+         .map(|s| s.to_string_lossy().into_owned())
+         .unwrap_or_else(|| "dict".to_string())
+ }

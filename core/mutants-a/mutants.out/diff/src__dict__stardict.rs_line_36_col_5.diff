@@ -1,0 +1,57 @@
+--- src/dict/stardict.rs
++++ replace parse_ifo -> Result<IfoMeta> with Ok(Default::default())
+@@ -28,53 +28,17 @@
+ pub(crate) struct IdxEntry {
+     pub word: String,
+     pub offset: u32,
+     pub size: u32,
+ }
+ 
+ /// 解析 .ifo：`key=value` 行；`wordcount` 必填（缺失 → Corrupt）。
+ pub(crate) fn parse_ifo(path: &Path) -> Result<IfoMeta> {
+-    let text = std::fs::read_to_string(path).map_err(Error::Io)?;
+-    let mut bookname = String::new();
+-    let mut wordcount: Option<u64> = None;
+-    let mut idxfilesize: Option<u64> = None;
+-    let mut sametypesequence: Option<String> = None;
+-    for line in text.lines() {
+-        let line = line.trim();
+-        if line.is_empty() || line.starts_with('#') {
+-            continue;
+-        }
+-        let Some((k, v)) = line.split_once('=') else { continue };
+-        match k.trim() {
+-            "bookname" => bookname = v.trim().to_string(),
+-            "wordcount" => {
+-                wordcount = v.trim().parse::<u64>().ok().or(wordcount);
+-            }
+-            "idxfilesize" => {
+-                idxfilesize = v.trim().parse::<u64>().ok().or(idxfilesize);
+-            }
+-            "sametypesequence" => sametypesequence = Some(v.trim().to_string()),
+-            _ => {}
+-        }
+-    }
+-    let wordcount = wordcount
+-        .ok_or_else(|| Error::Corrupt(format!("词库 .ifo 缺少 wordcount 字段: {}", path.display())))?;
+-    if bookname.is_empty() {
+-        bookname = path
+-            .file_stem()
+-            .map(|s| s.to_string_lossy().into_owned())
+-            .unwrap_or_else(|| "未命名词库".to_string());
+-    }
+-    Ok(IfoMeta {
+-        bookname,
+-        wordcount,
+-        idxfilesize,
+-        sametypesequence,
+-    })
++    Ok(Default::default()) /* ~ changed by cargo-mutants ~ */
+ }
+ 
+ /// 加载 .idx 全量入内存（langdao 级 ~1-2MB；保存原序）。
+ /// 条目格式：word(UTF-8) \0 + offset(u32 BE) + size(u32 BE)。
+ /// 尾部残字节：全 0 视为填充忽略；非 0 残片 → Corrupt（.idx 截断，US-6）。
+ pub(crate) fn load_idx(idx_bytes: &[u8]) -> Result<Vec<IdxEntry>> {
+     let mut out = Vec::new();
+     let mut pos = 0usize;

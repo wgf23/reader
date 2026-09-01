@@ -1,0 +1,21 @@
+--- src/dict/translation.rs
++++ replace DictService::list -> Result<Vec<DictInfo>> with Ok(vec![Default::default()])
+@@ -179,17 +179,17 @@
+         if dir.is_dir() {
+             std::fs::remove_dir_all(&dir).map_err(Error::Io)?;
+         }
+         Ok(())
+     }
+ 
+     /// 已装词库列表（安装顺序，US-5/7）
+     pub fn list(&self) -> Result<Vec<DictInfo>> {
+-        Ok(self.registry.iter().map(|ld| ld.info.clone()).collect())
++        Ok(vec![Default::default()]) /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     /// 查词：注册表空 → Err("未安装词库…")（US-3）；多词库按安装顺序取首个命中（US-5）；
+     /// 单词典索引加载失败跳过继续；全部失败 → Err(Corrupt)。
+     pub fn lookup(&self, word: &str, dict_id: Option<&str>) -> Result<Option<DictEntry>> {
+         if self.registry.is_empty() {
+             return Err(Error::NotFound(
+                 "未安装词库，请先在设置中导入".to_string(),

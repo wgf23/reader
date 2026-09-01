@@ -1,0 +1,4 @@
+src/dict/translation.rs:91:9: replace DictService::install -> Result<DictInfo> with Ok(Default::default())
+src/dict/translation.rs:68:9: replace DictService::load_from_installed_dir -> Result<LoadedDict> with Ok(Default::default())
+src/dict/translation.rs:187:9: replace DictService::list -> Result<Vec<DictInfo>> with Ok(vec![Default::default()])
+src/dict/translation.rs:193:9: replace DictService::lookup -> Result<Option<DictEntry>> with Ok(Some(Default::default()))

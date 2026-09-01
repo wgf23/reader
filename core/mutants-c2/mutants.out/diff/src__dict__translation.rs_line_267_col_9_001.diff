@@ -1,0 +1,28 @@
+--- src/dict/translation.rs
++++ replace DictService::unique_id -> String with "xyzzy".into()
+@@ -259,24 +259,17 @@
+         (&*file).seek(SeekFrom::Start(entry.offset as u64)).map_err(Error::Io)?;
+         (&*file)
+             .read_exact(&mut buf)
+             .map_err(Error::Io)?;
+         Ok(buf)
+     }
+ 
+     fn unique_id(&self, bookname: &str) -> String {
+-        let base = sanitize_id(bookname);
+-        let mut candidate = base.clone();
+-        let mut n = 2;
+-        while self.registry.iter().any(|ld| ld.info.id == candidate) {
+-            candidate = format!("{base}-{n}");
+-            n += 1;
+-        }
+-        candidate
++        "xyzzy".into() /* ~ changed by cargo-mutants ~ */
+     }
+ }
+ 
+ fn find_ifo_in(dir: &Path) -> Option<PathBuf> {
+     let entries = std::fs::read_dir(dir).ok()?;
+     let mut ifos: Vec<PathBuf> = entries
+         .filter_map(|e| e.ok().map(|e| e.path()))
+         .filter(|p| p.extension().and_then(|e| e.to_str()) == Some("ifo"))

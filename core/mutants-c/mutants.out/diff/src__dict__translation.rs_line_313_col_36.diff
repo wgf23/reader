@@ -1,0 +1,21 @@
+--- src/dict/translation.rs
++++ replace - with + in strip_ifo
+@@ -305,17 +305,17 @@
+     None
+ }
+ 
+ /// 去掉 .ifo 后缀（大小写不敏感）得基名
+ fn strip_ifo(path: &Path) -> PathBuf {
+     let s = path.display().to_string();
+     let lower = s.to_ascii_lowercase();
+     if lower.ends_with(".ifo") {
+-        PathBuf::from(&s[..s.len() - 4])
++        PathBuf::from(&s[..s.len() + /* ~ changed by cargo-mutants ~ */ 4])
+     } else {
+         path.with_extension("")
+     }
+ }
+ 
+ /// bookname 消毒作目录名/id（幂等键）；空 → "dict"；截断防超长路径。
+ /// 消毒结果过于退化（如中文词库名全映射为下划线，仅剩 "5_0" 这类）→ 回退
+ /// "dict-<fnv32 哈希>"，避免不同中文名词库 id 碰撞（langdao-ec/ce 实测）。

@@ -1,0 +1,69 @@
+--- src/dict/translation.rs
++++ replace DictService::lookup -> Result<Option<DictEntry>> with Ok(None)
+@@ -185,65 +185,17 @@
+     /// 已装词库列表（安装顺序，US-5/7）
+     pub fn list(&self) -> Result<Vec<DictInfo>> {
+         Ok(self.registry.iter().map(|ld| ld.info.clone()).collect())
+     }
+ 
+     /// 查词：注册表空 → Err("未安装词库…")（US-3）；多词库按安装顺序取首个命中（US-5）；
+     /// 单词典索引加载失败跳过继续；全部失败 → Err(Corrupt)。
+     pub fn lookup(&self, word: &str, dict_id: Option<&str>) -> Result<Option<DictEntry>> {
+-        if self.registry.is_empty() {
+-            return Err(Error::NotFound(
+-                "未安装词库，请先在设置中导入".to_string(),
+-            ));
+-        }
+-        if let Some(id) = dict_id {
+-            if !self.registry.iter().any(|ld| ld.info.id == id) {
+-                return Err(Error::NotFound(format!("词库不存在: {id}")));
+-            }
+-        }
+-        let mut attempted = 0usize;
+-        for ld in &self.registry {
+-            if let Some(id) = dict_id {
+-                if ld.info.id != id {
+-                    continue;
+-                }
+-            }
+-            attempted += 1;
+-            let idx = match ld.idx.get_or_init(|| stardict::load_idx(&ld.idx_bytes)) {
+-                Ok(v) => v,
+-                Err(e) => {
+-                    log::warn!("词库 {} 索引加载失败，跳过: {e}", ld.info.name);
+-                    continue;
+-                }
+-            };
+-            let Some(entry) = stardict::lookup_entry(idx, word) else {
+-                continue;
+-            };
+-            // 命中条目的区段读取/解析失败 = 词库损坏（US-6 偏移越界/截断）→ 直接透出
+-            let dict_bytes = self.read_region(ld, entry)?;
+-            let seq = ld
+-                .ifo
+-                .sametypesequence
+-                .as_deref()
+-                .map(|s| s.as_bytes())
+-                .unwrap_or(b"");
+-            // 区段字节即 [offset, offset+size)，重定基后交给 parse_entry（其边界校验针对全文件）
+-            let rebased = IdxEntry {
+-                word: entry.word.clone(),
+-                offset: 0,
+-                size: dict_bytes.len() as u32,
+-            };
+-            return stardict::parse_entry(seq, &dict_bytes, &rebased).map(Some);
+-        }
+-        if attempted == 0 {
+-            Err(Error::Corrupt("已安装词库均无法读取".to_string()))
+-        } else {
+-            Ok(None) // 查遍无命中 → 未收录（US-2）
+-        }
++        Ok(None) /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     /// 随机读 .dict 区段（只读命中条目，大词库无整包读取峰值）；偏移越界 → Corrupt（US-6）
+     fn read_region(&self, ld: &LoadedDict, entry: &IdxEntry) -> Result<Vec<u8>> {
+         let file = ld
+             .dict_file
+             .as_ref()
+             .ok_or_else(|| Error::Corrupt(format!("词库 {} 缺少 .dict 文件", ld.info.name)))?;

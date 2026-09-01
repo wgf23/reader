@@ -1,0 +1,2 @@
+src/store/translation.rs:38:9: replace TranslationRepo::provider_key_setting -> String with "xyzzy".into()
+src/store/translation.rs:38:9: replace TranslationRepo::provider_key_setting -> String with String::new()

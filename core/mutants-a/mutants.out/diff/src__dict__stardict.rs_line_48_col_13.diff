@@ -1,0 +1,21 @@
+--- src/dict/stardict.rs
++++ delete match arm "bookname" in parse_ifo
+@@ -40,17 +40,17 @@
+     let mut sametypesequence: Option<String> = None;
+     for line in text.lines() {
+         let line = line.trim();
+         if line.is_empty() || line.starts_with('#') {
+             continue;
+         }
+         let Some((k, v)) = line.split_once('=') else { continue };
+         match k.trim() {
+-            "bookname" => bookname = v.trim().to_string(),
++             /* ~ changed by cargo-mutants ~ */
+             "wordcount" => {
+                 wordcount = v.trim().parse::<u64>().ok().or(wordcount);
+             }
+             "idxfilesize" => {
+                 idxfilesize = v.trim().parse::<u64>().ok().or(idxfilesize);
+             }
+             "sametypesequence" => sametypesequence = Some(v.trim().to_string()),
+             _ => {}

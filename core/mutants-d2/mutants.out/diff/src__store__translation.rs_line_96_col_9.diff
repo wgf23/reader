@@ -1,0 +1,33 @@
+--- src/store/translation.rs
++++ replace <impl TranslationCacheRepository for TranslationRepo>::cache_incr_hit -> Result<()> with Ok(())
+@@ -88,29 +88,17 @@
+                     entry.hit_count as i64
+                 ],
+             )
+             .map_err(Error::from)?;
+         Ok(())
+     }
+ 
+     fn cache_incr_hit(&mut self, key: &CacheKey) -> Result<()> {
+-        self.conn
+-            .execute(
+-                "UPDATE translation_cache SET hit_count = hit_count + 1
+-                 WHERE source_text=?1 AND from_lang=?2 AND to_lang=?3 AND provider=?4",
+-                params![
+-                    key.source_text,
+-                    key.from_lang.as_str(),
+-                    key.to_lang.as_str(),
+-                    key.provider
+-                ],
+-            )
+-            .map_err(Error::from)?;
+-        Ok(())
++        Ok(()) /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     fn cache_clear(&mut self) -> Result<()> {
+         self.conn
+             .execute("DELETE FROM translation_cache", [])
+             .map_err(Error::from)?;
+         Ok(())
+     }

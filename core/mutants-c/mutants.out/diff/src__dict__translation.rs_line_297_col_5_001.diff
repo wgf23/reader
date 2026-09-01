@@ -1,0 +1,29 @@
+--- src/dict/translation.rs
++++ replace dict_path_of -> Option<PathBuf> with Some(Default::default())
+@@ -289,25 +289,17 @@
+ fn dict_stem(ifo: &Path) -> String {
+     ifo.file_stem()
+         .map(|s| s.to_string_lossy().into_owned())
+         .unwrap_or_else(|| "dict".to_string())
+ }
+ 
+ /// 取 `<base>.dict` 或 `<base>.dict.dz`（都存在时优先 .dict）；base 无扩展名
+ fn dict_path_of(base: &Path) -> Option<PathBuf> {
+-    let plain = base.with_extension("dict");
+-    if plain.exists() {
+-        return Some(plain);
+-    }
+-    let dz = PathBuf::from(format!("{}.dict.dz", base.display()));
+-    if dz.exists() {
+-        return Some(dz);
+-    }
+-    None
++    Some(Default::default()) /* ~ changed by cargo-mutants ~ */
+ }
+ 
+ /// 去掉 .ifo 后缀（大小写不敏感）得基名
+ fn strip_ifo(path: &Path) -> PathBuf {
+     let s = path.display().to_string();
+     let lower = s.to_ascii_lowercase();
+     if lower.ends_with(".ifo") {
+         PathBuf::from(&s[..s.len() - 4])

@@ -1,0 +1,21 @@
+--- src/dict/translation.rs
++++ replace == with != in DictService::install
+@@ -94,17 +94,17 @@
+         } else {
+             path.to_path_buf()
+         };
+         let meta = stardict::parse_ifo(&ifo_path)?;
+         // 幂等：同名（bookname）词库已注册 → 返回既有（不重复注册；US-7）
+         if let Some(existing) = self
+             .registry
+             .iter()
+-            .find(|ld| ld.info.name == meta.bookname)
++            .find(|ld| ld.info.name != /* ~ changed by cargo-mutants ~ */ meta.bookname)
+         {
+             return Ok(existing.info.clone());
+         }
+         let id = self.unique_id(&meta.bookname);
+ 
+         let base = strip_ifo(&ifo_path);
+         let idx_path = PathBuf::from(format!("{}.idx", base.display()));
+         let idx_bytes = std::fs::read(&idx_path).map_err(|e| {

@@ -1,0 +1,59 @@
+--- src/dict/translation.rs
++++ replace TranslationService::translate_cached -> Result<(Translation, bool)> with Ok((Default::default(), false))
+@@ -377,55 +377,17 @@
+ 
+     /// 翻译（缓存优先）；返回 (译文, 是否命中缓存)。from_cache 供 api 层标注（US-10/13）。
+     pub fn translate_cached(
+         &mut self,
+         text: &str,
+         from: Lang,
+         to: Lang,
+     ) -> Result<(Translation, bool)> {
+-        let norm = normalize_text(text);
+-        if norm.is_empty() {
+-            return Err(Error::Other("待翻译文本为空".to_string()));
+-        }
+-        let provider_name = self.config.default_provider()?;
+-        let provider = self
+-            .providers
+-            .iter()
+-            .find(|p| p.name() == provider_name)
+-            .ok_or_else(|| Error::NotConfigured(format!("未知翻译 Provider: {provider_name}")))?
+-            .as_ref();
+-
+-        // US-12：未配置 key → NotConfigured（含"API Key"语义），不 panic
+-        if self.config.provider_key(&provider_name)?.is_none() {
+-            return Err(Error::NotConfigured(format!(
+-                "翻译服务未配置：{provider_name} 未配置 API Key，请先在设置中配置"
+-            )));
+-        }
+-
+-        let key = CacheKey {
+-            source_text: norm.clone(),
+-            from_lang: from,
+-            to_lang: to,
+-            provider: provider_name.clone(),
+-        };
+-        // 缓存优先：命中 → incr_hit + 直返（0 网络，US-10/14）
+-        if let Some(entry) = self.cache.cache_get(&key)? {
+-            self.cache.cache_incr_hit(&key)?;
+-            return Ok((entry.result, true));
+-        }
+-        // 未命中 → 调 Provider；失败不写缓存（US-12），Network 错误已携带原文
+-        let t = provider.translate(&norm, from, to)?;
+-        self.cache.cache_put(&CacheEntry {
+-            key,
+-            result: t.clone(),
+-            created_at: now_unix(),
+-            hit_count: 1,
+-        })?;
+-        Ok((t, false))
++        Ok((Default::default(), false)) /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     /// 翻译（薄包装，保持 02-design §2.4 签名）
+     pub fn translate(&mut self, text: &str, from: Lang, to: Lang) -> Result<Translation> {
+         self.translate_cached(text, from, to).map(|(t, _)| t)
+     }
+ 
+     pub fn clear_cache(&mut self) -> Result<()> {

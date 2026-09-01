@@ -1,0 +1,27 @@
+--- src/store/translation.rs
++++ replace upsert_setting -> Result<()> with Ok(())
+@@ -154,23 +154,17 @@
+     }
+ 
+     fn set_default_provider(&mut self, provider: &str) -> Result<()> {
+         upsert_setting(&self.conn, KEY_DEFAULT_PROVIDER, provider)
+     }
+ }
+ 
+ fn upsert_setting(conn: &Connection, key: &str, value: &str) -> Result<()> {
+-    conn.execute(
+-        "INSERT INTO settings(key,value) VALUES(?1,?2)
+-         ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+-        params![key, value],
+-    )
+-    .map_err(Error::from)?;
+-    Ok(())
++    Ok(()) /* ~ changed by cargo-mutants ~ */
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+     use super::*;
+     use crate::types::Lang;
+ 
+     fn key(s: &str, from: Lang, to: Lang, provider: &str) -> CacheKey {

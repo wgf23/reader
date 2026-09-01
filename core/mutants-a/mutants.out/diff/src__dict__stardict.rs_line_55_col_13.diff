@@ -1,0 +1,21 @@
+--- src/dict/stardict.rs
++++ delete match arm "sametypesequence" in parse_ifo
+@@ -47,17 +47,17 @@
+         match k.trim() {
+             "bookname" => bookname = v.trim().to_string(),
+             "wordcount" => {
+                 wordcount = v.trim().parse::<u64>().ok().or(wordcount);
+             }
+             "idxfilesize" => {
+                 idxfilesize = v.trim().parse::<u64>().ok().or(idxfilesize);
+             }
+-            "sametypesequence" => sametypesequence = Some(v.trim().to_string()),
++             /* ~ changed by cargo-mutants ~ */
+             _ => {}
+         }
+     }
+     let wordcount = wordcount
+         .ok_or_else(|| Error::Corrupt(format!("词库 .ifo 缺少 wordcount 字段: {}", path.display())))?;
+     if bookname.is_empty() {
+         bookname = path
+             .file_stem()

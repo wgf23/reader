@@ -1,0 +1,21 @@
+--- src/dict/provider.rs
++++ replace <impl TranslationProvider for EchoProvider>::name -> &str with ""
+@@ -67,17 +67,17 @@
+ }
+ 
+ /// Echo Provider（mock/演示）：无 key 可用，返回 "译文:" + 原文。
+ /// 经 `translate_set_config("echo", "")` 切换默认 Provider 后即无 key 演示（ADR 关联裁定2）。
+ pub struct EchoProvider;
+ 
+ impl TranslationProvider for EchoProvider {
+     fn name(&self) -> &str {
+-        "echo"
++        "" /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     fn translate(&self, text: &str, from: Lang, to: Lang) -> Result<Translation> {
+         Ok(Translation {
+             text: format!("译文:{text}"),
+             from,
+             to,
+             provider: self.name().to_string(),

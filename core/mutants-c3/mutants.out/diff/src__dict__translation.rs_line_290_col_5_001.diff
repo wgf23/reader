@@ -1,0 +1,23 @@
+--- src/dict/translation.rs
++++ replace dict_stem -> String with "xyzzy".into()
+@@ -282,19 +282,17 @@
+         .filter(|p| p.extension().and_then(|e| e.to_str()) == Some("ifo"))
+         .collect();
+     ifos.sort();
+     ifos.into_iter().next()
+ }
+ 
+ /// 目录内词库文件名主干（id.ifo → id）
+ fn dict_stem(ifo: &Path) -> String {
+-    ifo.file_stem()
+-        .map(|s| s.to_string_lossy().into_owned())
+-        .unwrap_or_else(|| "dict".to_string())
++    "xyzzy".into() /* ~ changed by cargo-mutants ~ */
+ }
+ 
+ /// 取 `<base>.dict` 或 `<base>.dict.dz`（都存在时优先 .dict）；base 无扩展名
+ fn dict_path_of(base: &Path) -> Option<PathBuf> {
+     let plain = base.with_extension("dict");
+     if plain.exists() {
+         return Some(plain);
+     }

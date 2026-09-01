@@ -591,6 +591,42 @@ mod tests {
         }
     }
 
+    /// 配置门 Provider：configure 之前 translate 失败 → 观察 set_config 是否只配置了
+    /// 目标 Provider（杀死 translation.rs:441 `==`→`!=` 变异）
+    struct KeyGateProvider {
+        name: &'static str,
+        key: std::cell::RefCell<Option<String>>,
+    }
+
+    impl KeyGateProvider {
+        fn new(name: &'static str) -> Self {
+            Self {
+                name,
+                key: std::cell::RefCell::new(None),
+            }
+        }
+    }
+
+    impl TranslationProvider for KeyGateProvider {
+        fn name(&self) -> &str {
+            self.name
+        }
+        fn translate(&self, text: &str, from: Lang, to: Lang) -> Result<Translation> {
+            if self.key.borrow().is_none() {
+                return Err(Error::NotConfigured(format!("{} 未配置", self.name)));
+            }
+            Ok(Translation {
+                text: format!("OK:{text}"),
+                from,
+                to,
+                provider: self.name.to_string(),
+            })
+        }
+        fn configure(&mut self, key: Option<&str>) {
+            *self.key.borrow_mut() = key.map(|s| s.to_string());
+        }
+    }
+
     fn svc_with(cache: MemCache, config: MemConfig, providers: Vec<Box<dyn TranslationProvider>>) -> TranslationService {
         TranslationService::new(Box::new(cache), Box::new(config), providers)
     }
@@ -838,6 +874,58 @@ mod tests {
     }
 
     #[test]
+    fn dict_scan_existing_on_reopen_registers_installed() {
+        // US-7 安装持久化语义：重开服务后 scan_existing 必须把已装词库重新注册。
+        // 杀死 translation.rs:50（scan_existing → ()）、:279（find_ifo_in 恒 None/空路径）、
+        // :282（== → !=，选错文件）、:290（dict_stem 恒 ""/"xyzzy"，拼错 .idx 名）等变异。
+        let dir = tempfile::tempdir().unwrap();
+        {
+            let mut svc = DictService::new(dir.path()).unwrap();
+            write_synth_dict(dir.path(), "t1", "tgm", &sample_entries());
+            install_named(&mut svc, dir.path(), "t1");
+            assert_eq!(svc.list().unwrap().len(), 1);
+        }
+        let svc = DictService::new(dir.path()).unwrap();
+        let list = svc.list().unwrap();
+        assert_eq!(list.len(), 1, "重开应重扫已装词库");
+        assert_eq!(list[0].name, "t1");
+        let e = svc.lookup("book", None).unwrap().expect("重开后仍可查词");
+        assert!(e.definition.contains("n. 书"));
+    }
+
+    #[test]
+    fn dict_install_with_directory_argument() {
+        // install 入参为含 .ifo 的目录（US-7 路径变体）；杀死 find_ifo_in 三个变异
+        // （恒 None / 恒空路径 / == → != 选错扩展名文件）
+        let dir = tempfile::tempdir().unwrap();
+        let mut svc = DictService::new(dir.path()).unwrap();
+        write_synth_dict(dir.path(), "t1", "tgm", &sample_entries());
+        let info = svc.install(&dir.path().join("t1")).unwrap();
+        assert_eq!(info.name, "t1");
+        assert_eq!(svc.list().unwrap().len(), 1);
+        assert!(svc.lookup("book", None).unwrap().is_some());
+    }
+
+    #[test]
+    fn dict_unique_id_colliding_sanitized_names_get_suffix() {
+        // 三个 bookname 消毒后同为 "foo_bar"（名字互异 → 不走同名幂等短路）→
+        // unique_id 依次产出 foo_bar / foo_bar-2 / foo_bar-3。
+        // 杀死 translation.rs:272 `+=`→`-=`（第三次会产出 foo_bar-1）；
+        // `+=`→`*=` 变异在第三次碰撞时 n 恒 2 死循环 → 超时单列（timeout 口径）。
+        let dir = tempfile::tempdir().unwrap();
+        let mut svc = DictService::new(dir.path()).unwrap();
+        write_synth_dict(dir.path(), "foo bar", "tgm", &sample_entries());
+        write_synth_dict(dir.path(), "foo_bar", "tgm", &sample_entries());
+        write_synth_dict(dir.path(), "foo*bar", "tgm", &sample_entries());
+        let i1 = install_named(&mut svc, dir.path(), "foo bar");
+        let i2 = install_named(&mut svc, dir.path(), "foo_bar");
+        let i3 = install_named(&mut svc, dir.path(), "foo*bar");
+        assert_eq!(i1.id, "foo_bar");
+        assert_eq!(i2.id, "foo_bar-2");
+        assert_eq!(i3.id, "foo_bar-3", "第三次碰撞应继续递增后缀");
+    }
+
+    #[test]
     fn dict_lookup_perf_budget_100_lookups() {
         // US-8：索引已加载后连续 100 次查词平均 <50ms（CI 宽松断言 ≤200ms）
         let dir = tempfile::tempdir().unwrap();
@@ -867,6 +955,53 @@ mod tests {
             start.elapsed().as_millis() <= 200,
             "100 次查词应 ≤200ms（CI 上限），实测 {avg_ms:.2}ms/次"
         );
+    }
+
+    // ---------- sanitize_id / fnv32（id 生成契约） ----------
+
+    #[test]
+    fn sanitize_id_keeps_alnum_hyphen_underscore() {
+        // 杀死 sanitize_id 恒 ""/"xyzzy"（L323）与 `||`→`&&`（L326）、`==`→`!=`（L326）变异
+        assert_eq!(sanitize_id("foo-bar_baz2"), "foo-bar_baz2");
+        assert_eq!(sanitize_id("hello world"), "hello_world");
+    }
+
+    #[test]
+    fn sanitize_id_empty_becomes_dict() {
+        assert_eq!(sanitize_id(""), "dict");
+    }
+
+    #[test]
+    fn sanitize_id_cjk_falls_back_to_hash() {
+        // 中文名全映射下划线且 alnum<3 → dict-<fnv32>（防不同中文名词库 id 碰撞）。
+        // 期望值硬编码（不自调用 fnv32，否则 fnv32 变异自洽逃逸）；
+        // 杀死 fnv32 恒 0/1 与 `^=`→`|=`/`&=` 四个变异。
+        assert_eq!(sanitize_id("中文名"), "dict-3009aee7");
+    }
+
+    #[test]
+    fn sanitize_id_alnum_count_threshold() {
+        // alnum==3（"abc"）与 alnum==4（"abcd"）均不触发哈希回退；
+        // 杀死 L340 `<`→`==`（abc）、`<`→`>`（abcd）、`<`→`<=`（abc）
+        assert_eq!(sanitize_id("abc"), "abc");
+        assert_eq!(sanitize_id("abcd"), "abcd");
+        assert_eq!(sanitize_id("a1b2c3d4"), "a1b2c3d4");
+    }
+
+    #[test]
+    fn sanitize_id_truncates_overlong() {
+        // 杀死 L336 `>`→`==` 与 `>`→`<`（80 字符名 → 原实现截断到 64，变异不截断）
+        let long = "a".repeat(80);
+        let s = sanitize_id(&long);
+        assert_eq!(s.len(), 64);
+        assert!(s.starts_with("aaaa"));
+    }
+
+    #[test]
+    fn fnv32_matches_known_vector() {
+        // 标准 FNV-1a 32 测试向量（杀死 fnv32 全部 4 个变异：恒 0/1、^=→|=、^=→&=）
+        assert_eq!(fnv32("hello"), 0x4f9f_2cab);
+        assert_eq!(fnv32("中文名"), 0x3009_aee7);
     }
 
     // ---------- TranslationService：US-9~14 ----------
@@ -1076,5 +1211,52 @@ mod tests {
         svc.set_config("echo", "").unwrap();
         let t = svc.translate("hi", Lang::En, Lang::Zh).unwrap();
         assert_eq!(t.provider, "echo");
+    }
+
+    #[test]
+    fn translate_created_at_is_recent_epoch() {
+        // 杀死 translation.rs:468 now_unix 恒 0/1/-1 三个变异：缓存行 created_at
+        // 必须为当前 unix 秒（docs/04 §5 created_at 语义）
+        let cache = MemCache::default();
+        let mut config = MemConfig::with_default("echo");
+        config.set_provider_key("echo", "").unwrap();
+        let mut svc = svc_with(cache, config, vec![Box::new(EchoProvider)]);
+        svc.translate("hello", Lang::En, Lang::Zh).unwrap();
+        let key = CacheKey {
+            source_text: "hello".into(),
+            from_lang: Lang::En,
+            to_lang: Lang::Zh,
+            provider: "echo".into(),
+        };
+        let entry = svc.cache.cache_get(&key).unwrap().expect("应有缓存");
+        assert!(
+            entry.created_at > 1_700_000_000,
+            "created_at 应为当前 unix 秒（≥2023-11），实测 {}",
+            entry.created_at
+        );
+    }
+
+    #[test]
+    fn set_config_configure_only_target_provider() {
+        // 杀死 translation.rs:441 `==`→`!=`：set_config 只应 configure 目标 Provider。
+        // gate-a 未 configure 前 translate 失败；set_config("gate-a") 后仅 gate-a 有 key → 成功。
+        let cache = MemCache::default();
+        let mut config = MemConfig::with_default("gate-a");
+        config.set_provider_key("gate-a", "k").unwrap();
+        let mut svc = svc_with(
+            cache,
+            config,
+            vec![
+                Box::new(KeyGateProvider::new("gate-a")),
+                Box::new(KeyGateProvider::new("gate-b")),
+            ],
+        );
+        assert!(
+            matches!(svc.translate("hi", Lang::En, Lang::Zh).unwrap_err(), Error::NotConfigured(_)),
+            "set_config 前 gate-a 实例应未配置"
+        );
+        svc.set_config("gate-a", "k").unwrap();
+        let t = svc.translate("hi", Lang::En, Lang::Zh).unwrap();
+        assert_eq!(t.text, "OK:hi", "仅 gate-a 应被 configure（!= 变异会把 key 配给 gate-b）");
     }
 }

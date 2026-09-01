@@ -1,0 +1,21 @@
+--- src/dict/translation.rs
++++ replace > with >= in sanitize_id
+@@ -328,17 +328,17 @@
+             } else {
+                 '_'
+             }
+         })
+         .collect();
+     if s.is_empty() {
+         s = "dict".to_string();
+     }
+-    if s.len() > 64 {
++    if s.len() >= /* ~ changed by cargo-mutants ~ */ 64 {
+         s.truncate(64);
+     }
+     let alnum_count = s.chars().filter(|c| c.is_ascii_alphanumeric()).count();
+     if alnum_count < 3 {
+         s = format!("dict-{:08x}", fnv32(name));
+     }
+     s
+ }

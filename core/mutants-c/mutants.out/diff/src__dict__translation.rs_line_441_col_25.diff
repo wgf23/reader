@@ -1,0 +1,21 @@
+--- src/dict/translation.rs
++++ replace == with != in TranslationService::set_config
+@@ -433,17 +433,17 @@
+     }
+ 
+     /// 写 settings（set_provider_key + set_default_provider）并对注册 Provider 调 configure
+     /// （ADR 关联裁定2：`translate_set_config("echo","")` 切 echo 即无 key 演示）
+     pub fn set_config(&mut self, provider: &str, key: &str) -> Result<()> {
+         self.config.set_provider_key(provider, key)?;
+         self.config.set_default_provider(provider)?;
+         for p in &mut self.providers {
+-            if p.name() == provider {
++            if p.name() != /* ~ changed by cargo-mutants ~ */ provider {
+                 p.configure(Some(key));
+             }
+         }
+         Ok(())
+     }
+ }
+ 
+ /// 连续空白折叠为单空格并 trim（US-9 跨行自动合并）

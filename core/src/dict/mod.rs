@@ -85,3 +85,38 @@ pub(crate) fn strip_html_tags(s: &str) -> String {
     }
     out
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn strip_html_tags_removes_tags_keeps_text() {
+        // 杀死 mod.rs:80（删除 '<' 臂）：变异后 '<' 被当普通字符推入 → 输出含标签
+        assert_eq!(strip_html_tags("<b>n.</b> A fruit"), "n. A fruit");
+        assert_eq!(strip_html_tags("<i>italic</i> plain"), "italic plain");
+    }
+
+    #[test]
+    fn strip_html_tags_keeps_stray_gt() {
+        // 杀死 mod.rs:81（'>' 守卫 in_tag→true）：变异后游离 '>'（不在标签内）被吞掉
+        assert_eq!(strip_html_tags("a > b"), "a > b");
+        assert_eq!(strip_html_tags("<b>x</b> > y"), "x > y");
+    }
+
+    #[test]
+    fn strip_html_tags_skips_tag_contents() {
+        // 杀死 mod.rs:82（'_ if !in_tag' 守卫 → true）：变异后标签内字符也被推入
+        assert_eq!(strip_html_tags("<em>hi</em>"), "hi");
+        assert_eq!(strip_html_tags("<a href=\"x\">link</a>"), "link");
+    }
+
+    #[test]
+    fn extract_pos_finds_pos_marker_after_strip() {
+        // HTML 释义剥离后取行首词性标记（长标记优先）
+        assert_eq!(extract_pos("<b>n.</b> 苹果"), Some("n.".to_string()));
+        assert_eq!(extract_pos("<b>vt.</b> 打"), Some("vt.".to_string()), "长标记优先于 v.");
+        assert_eq!(extract_pos("*['æpl]\nn. 苹果, 家伙"), Some("n.".to_string()));
+        assert_eq!(extract_pos("没有词性标记"), None);
+    }
+}

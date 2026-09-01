@@ -1,0 +1,35 @@
+--- src/dict/translation.rs
++++ replace DictService::scan_existing with ()
+@@ -42,31 +42,17 @@
+             dicts_dir,
+             registry: Vec::new(),
+         };
+         svc.scan_existing();
+         Ok(svc)
+     }
+ 
+     fn scan_existing(&mut self) {
+-        let Ok(entries) = std::fs::read_dir(&self.dicts_dir) else {
+-            return;
+-        };
+-        let mut dirs: Vec<PathBuf> = entries
+-            .filter_map(|e| e.ok().map(|e| e.path()))
+-            .filter(|p| p.is_dir())
+-            .collect();
+-        dirs.sort();
+-        for dir in dirs {
+-            let Some(ifo) = find_ifo_in(&dir) else { continue };
+-            match self.load_from_installed_dir(&dir, &ifo) {
+-                Ok(ld) => self.registry.push(ld),
+-                Err(e) => log::warn!("跳过损坏词库 {}: {e}", dir.display()),
+-            }
+-        }
++        () /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     fn load_from_installed_dir(&self, dir: &Path, ifo: &Path) -> Result<LoadedDict> {
+         let meta = stardict::parse_ifo(ifo)?;
+         let stem = dict_stem(ifo);
+         let idx_path = dir.join(format!("{stem}.idx"));
+         let idx_bytes = std::fs::read(&idx_path).map_err(Error::Io)?;
+         let dict_file = dict_path_of(&dir.join(&stem)).and_then(|p| File::open(p).ok());

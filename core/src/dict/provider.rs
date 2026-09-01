@@ -35,14 +35,7 @@ impl TranslationProvider for DeepLProvider {
         let key = self.key.clone().ok_or_else(|| {
             Error::NotConfigured("DeepL 未配置 API Key，请先在设置中配置".to_string())
         })?;
-        let mut body = serde_json::json!({
-            "text": [text],
-            "target_lang": deepl_code(to),
-        });
-        if from != Lang::Auto {
-            // Auto（自动检测）不传 source_lang（DeepL 语义）
-            body["source_lang"] = serde_json::json!(deepl_code(from));
-        }
+        let body = deepl_body(text, from, to);
         let resp = ureq::post("https://api-free.deepl.com/v2/translate")
             .set("Authorization", &format!("DeepL-Auth-Key {key}"))
             .send_json(body)
@@ -90,6 +83,21 @@ impl TranslationProvider for EchoProvider {
             provider: self.name().to_string(),
         })
     }
+}
+
+/// 构造 DeepL 请求体（纯函数：把"只含 text/from/to"的隐私约束与 Auto 分支抽成
+/// 可无网络单测的结构单元；行为与内联版完全一致，rework-D 仅做提取不改语义）。
+/// 隐私（US-9/US-13）：请求体只含 text/target_lang[/source_lang]，无书路径/元数据。
+/// Auto（自动检测）不传 source_lang（DeepL 语义）。
+fn deepl_body(text: &str, from: Lang, to: Lang) -> serde_json::Value {
+    let mut body = serde_json::json!({
+        "text": [text],
+        "target_lang": deepl_code(to),
+    });
+    if from != Lang::Auto {
+        body["source_lang"] = serde_json::json!(deepl_code(from));
+    }
+    body
 }
 
 /// DeepL 语言代码（大写）："en"→"EN"、"zh"→"ZH"…
@@ -216,5 +224,38 @@ mod tests {
         assert_eq!(cp.last_text.borrow().as_deref(), Some("a b"));
         assert_eq!(cp.last_from.get(), Lang::En);
         assert_eq!(cp.last_to.get(), Lang::Zh);
+    }
+
+    #[test]
+    fn deepl_body_omits_source_lang_for_auto() {
+        // 杀死 provider.rs:42 的 `!=`→`==` 变异：变异后 from=Auto 会错误附加
+        // source_lang=EN（违反 DeepL 自动检测语义与 US-9 参数契约）
+        let b = deepl_body("hello", Lang::Auto, Lang::Zh);
+        assert_eq!(b["text"][0], "hello");
+        assert_eq!(b["target_lang"], "ZH");
+        assert!(b.get("source_lang").is_none(), "Auto 不应传 source_lang");
+    }
+
+    #[test]
+    fn deepl_body_includes_source_lang_when_specified() {
+        let b = deepl_body("hello", Lang::En, Lang::Zh);
+        assert_eq!(b["text"][0], "hello");
+        assert_eq!(b["target_lang"], "ZH");
+        assert_eq!(b["source_lang"], "EN");
+    }
+
+    #[test]
+    fn deepl_code_maps_all_langs() {
+        // 杀死 deepl_code 恒 "" / 恒 "xyzzy" 两个变异（provider.rs:97）
+        assert_eq!(deepl_code(Lang::Auto), "EN");
+        assert_eq!(deepl_code(Lang::En), "EN");
+        assert_eq!(deepl_code(Lang::Zh), "ZH");
+        assert_eq!(deepl_code(Lang::Ja), "JA");
+        assert_eq!(deepl_code(Lang::Ko), "KO");
+        assert_eq!(deepl_code(Lang::Fr), "FR");
+        assert_eq!(deepl_code(Lang::De), "DE");
+        assert_eq!(deepl_code(Lang::Es), "ES");
+        assert_eq!(deepl_code(Lang::Ru), "RU");
+        assert_eq!(deepl_code(Lang::Other("PT")), "PT", "Other 臂原样透传");
     }
 }

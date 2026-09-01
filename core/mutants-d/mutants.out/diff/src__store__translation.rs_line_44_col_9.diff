@@ -1,0 +1,46 @@
+--- src/store/translation.rs
++++ replace <impl TranslationCacheRepository for TranslationRepo>::cache_get -> Result<Option<CacheEntry>> with Ok(None)
+@@ -36,42 +36,17 @@
+ 
+     fn provider_key_setting(provider: &str) -> String {
+         format!("translate.key.{provider}")
+     }
+ }
+ 
+ impl TranslationCacheRepository for TranslationRepo {
+     fn cache_get(&self, key: &CacheKey) -> Result<Option<CacheEntry>> {
+-        let row: Option<(String, i64, i64)> = self
+-            .conn
+-            .query_row(
+-                "SELECT result, created_at, hit_count FROM translation_cache
+-                 WHERE source_text=?1 AND from_lang=?2 AND to_lang=?3 AND provider=?4",
+-                params![
+-                    key.source_text,
+-                    key.from_lang.as_str(),
+-                    key.to_lang.as_str(),
+-                    key.provider
+-                ],
+-                |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
+-            )
+-            .optional()
+-            .map_err(Error::from)?;
+-        let Some((result_json, created_at, hit_count)) = row else {
+-            return Ok(None);
+-        };
+-        let result: Translation = serde_json::from_str(&result_json)
+-            .map_err(|e| Error::Corrupt(format!("翻译缓存数据损坏: {e}")))?;
+-        Ok(Some(CacheEntry {
+-            key: key.clone(),
+-            result,
+-            created_at,
+-            hit_count: hit_count as u64,
+-        }))
++        Ok(None) /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     fn cache_put(&mut self, entry: &CacheEntry) -> Result<()> {
+         let result_json = serde_json::to_string(&entry.result)
+             .map_err(|e| Error::Other(format!("译文序列化失败: {e}")))?;
+         self.conn
+             .execute(
+                 "INSERT INTO translation_cache (source_text,from_lang,to_lang,provider,result,created_at,hit_count)

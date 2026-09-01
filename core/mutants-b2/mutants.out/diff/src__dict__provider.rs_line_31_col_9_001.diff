@@ -1,0 +1,21 @@
+--- src/dict/provider.rs
++++ replace <impl TranslationProvider for DeepLProvider>::name -> &str with "xyzzy"
+@@ -23,17 +23,17 @@
+ impl Default for DeepLProvider {
+     fn default() -> Self {
+         Self::new()
+     }
+ }
+ 
+ impl TranslationProvider for DeepLProvider {
+     fn name(&self) -> &str {
+-        "deepl"
++        "xyzzy" /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     fn translate(&self, text: &str, from: Lang, to: Lang) -> Result<Translation> {
+         let key = self.key.clone().ok_or_else(|| {
+             Error::NotConfigured("DeepL 未配置 API Key，请先在设置中配置".to_string())
+         })?;
+         let body = deepl_body(text, from, to);
+         let resp = ureq::post("https://api-free.deepl.com/v2/translate")

@@ -1,0 +1,6 @@
+src/dict/mod.rs:80:13: delete match arm '<' in strip_html_tags
+src/dict/mod.rs:81:20: replace match guard in_tag with true in strip_html_tags
+src/dict/mod.rs:82:18: replace match guard !in_tag with true in strip_html_tags
+src/dict/provider.rs:42:17: replace != with == in <impl TranslationProvider for DeepLProvider>::translate
+src/dict/provider.rs:97:5: replace deepl_code -> &'static str with ""
+src/dict/provider.rs:97:5: replace deepl_code -> &'static str with "xyzzy"

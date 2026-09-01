@@ -1,0 +1,24 @@
+--- src/store/translation.rs
++++ replace <impl TranslationCacheRepository for TranslationRepo>::cache_clear -> Result<()> with Ok(())
+@@ -104,20 +104,17 @@
+                     key.provider
+                 ],
+             )
+             .map_err(Error::from)?;
+         Ok(())
+     }
+ 
+     fn cache_clear(&mut self) -> Result<()> {
+-        self.conn
+-            .execute("DELETE FROM translation_cache", [])
+-            .map_err(Error::from)?;
+-        Ok(())
++        Ok(()) /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     fn cache_count(&self) -> Result<u64> {
+         let n: i64 = self
+             .conn
+             .query_row("SELECT COUNT(*) FROM translation_cache", [], |r| r.get(0))
+             .map_err(Error::from)?;
+         Ok(n as u64)

@@ -1,0 +1,2 @@
+src/store/translation.rs:29:9: replace TranslationRepo::open -> Result<TranslationRepo> with Ok(Default::default())
+src/store/translation.rs:44:9: replace <impl TranslationCacheRepository for TranslationRepo>::cache_get -> Result<Option<CacheEntry>> with Ok(Some(Default::default()))

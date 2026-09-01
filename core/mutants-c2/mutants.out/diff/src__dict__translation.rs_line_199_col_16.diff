@@ -1,0 +1,21 @@
+--- src/dict/translation.rs
++++ delete ! in DictService::lookup
+@@ -191,17 +191,17 @@
+     /// 单词典索引加载失败跳过继续；全部失败 → Err(Corrupt)。
+     pub fn lookup(&self, word: &str, dict_id: Option<&str>) -> Result<Option<DictEntry>> {
+         if self.registry.is_empty() {
+             return Err(Error::NotFound(
+                 "未安装词库，请先在设置中导入".to_string(),
+             ));
+         }
+         if let Some(id) = dict_id {
+-            if !self.registry.iter().any(|ld| ld.info.id == id) {
++            if  /* ~ changed by cargo-mutants ~ */self.registry.iter().any(|ld| ld.info.id == id) {
+                 return Err(Error::NotFound(format!("词库不存在: {id}")));
+             }
+         }
+         let mut attempted = 0usize;
+         for ld in &self.registry {
+             if let Some(id) = dict_id {
+                 if ld.info.id != id {
+                     continue;

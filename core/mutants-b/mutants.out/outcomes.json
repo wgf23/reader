@@ -1,0 +1,1375 @@
+{
+  "outcomes": [
+    {
+      "scenario": "Baseline",
+      "summary": "Success",
+      "log_path": "log/baseline.log",
+      "diff_path": null,
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 30.722785738,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 3.317654958,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/mod.rs:53:5: replace extract_pos -> Option<String> with None",
+          "package": "reader_core",
+          "file": "src/dict/mod.rs",
+          "function": {
+            "function_name": "extract_pos",
+            "return_type": "-> Option<String>",
+            "span": {
+              "start": {
+                "line": 50,
+                "column": 1
+              },
+              "end": {
+                "line": 71,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 53,
+              "column": 5
+            },
+            "end": {
+              "line": 70,
+              "column": 9
+            }
+          },
+          "replacement": "None",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__mod.rs_line_53_col_5.log",
+      "diff_path": "diff/src__dict__mod.rs_line_53_col_5.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 5.299623854,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.359896806,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/mod.rs:53:5: replace extract_pos -> Option<String> with Some(\"xyzzy\".into())",
+          "package": "reader_core",
+          "file": "src/dict/mod.rs",
+          "function": {
+            "function_name": "extract_pos",
+            "return_type": "-> Option<String>",
+            "span": {
+              "start": {
+                "line": 50,
+                "column": 1
+              },
+              "end": {
+                "line": 71,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 53,
+              "column": 5
+            },
+            "end": {
+              "line": 70,
+              "column": 9
+            }
+          },
+          "replacement": "Some(\"xyzzy\".into())",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__mod.rs_line_53_col_5_002.log",
+      "diff_path": "diff/src__dict__mod.rs_line_53_col_5_002.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 7.332787674,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.05313192,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/mod.rs:76:5: replace strip_html_tags -> String with String::new()",
+          "package": "reader_core",
+          "file": "src/dict/mod.rs",
+          "function": {
+            "function_name": "strip_html_tags",
+            "return_type": "-> String",
+            "span": {
+              "start": {
+                "line": 73,
+                "column": 1
+              },
+              "end": {
+                "line": 87,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 76,
+              "column": 5
+            },
+            "end": {
+              "line": 86,
+              "column": 8
+            }
+          },
+          "replacement": "String::new()",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__mod.rs_line_76_col_5.log",
+      "diff_path": "diff/src__dict__mod.rs_line_76_col_5.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 9.551834679,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.220129932,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/mod.rs:76:5: replace strip_html_tags -> String with \"xyzzy\".into()",
+          "package": "reader_core",
+          "file": "src/dict/mod.rs",
+          "function": {
+            "function_name": "strip_html_tags",
+            "return_type": "-> String",
+            "span": {
+              "start": {
+                "line": 73,
+                "column": 1
+              },
+              "end": {
+                "line": 87,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 76,
+              "column": 5
+            },
+            "end": {
+              "line": 86,
+              "column": 8
+            }
+          },
+          "replacement": "\"xyzzy\".into()",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__mod.rs_line_76_col_5_001.log",
+      "diff_path": "diff/src__dict__mod.rs_line_76_col_5_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 6.755293007,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.260973435,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/mod.rs:80:13: delete match arm '<' in strip_html_tags",
+          "package": "reader_core",
+          "file": "src/dict/mod.rs",
+          "function": {
+            "function_name": "strip_html_tags",
+            "return_type": "-> String",
+            "span": {
+              "start": {
+                "line": 73,
+                "column": 1
+              },
+              "end": {
+                "line": 87,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 80,
+              "column": 13
+            },
+            "end": {
+              "line": 80,
+              "column": 34
+            }
+          },
+          "replacement": "",
+          "genre": "MatchArm"
+        }
+      },
+      "summary": "MissedMutant",
+      "log_path": "log/src__dict__mod.rs_line_80_col_13.log",
+      "diff_path": "diff/src__dict__mod.rs_line_80_col_13.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.319800507,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 6.137529905,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/mod.rs:53:5: replace extract_pos -> Option<String> with Some(String::new())",
+          "package": "reader_core",
+          "file": "src/dict/mod.rs",
+          "function": {
+            "function_name": "extract_pos",
+            "return_type": "-> Option<String>",
+            "span": {
+              "start": {
+                "line": 50,
+                "column": 1
+              },
+              "end": {
+                "line": 71,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 53,
+              "column": 5
+            },
+            "end": {
+              "line": 70,
+              "column": 9
+            }
+          },
+          "replacement": "Some(String::new())",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__mod.rs_line_53_col_5_001.log",
+      "diff_path": "diff/src__dict__mod.rs_line_53_col_5_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 41.386551048,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.00959336,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/mod.rs:81:20: replace match guard in_tag with false in strip_html_tags",
+          "package": "reader_core",
+          "file": "src/dict/mod.rs",
+          "function": {
+            "function_name": "strip_html_tags",
+            "return_type": "-> String",
+            "span": {
+              "start": {
+                "line": 73,
+                "column": 1
+              },
+              "end": {
+                "line": 87,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 81,
+              "column": 20
+            },
+            "end": {
+              "line": 81,
+              "column": 26
+            }
+          },
+          "replacement": "false",
+          "genre": "MatchArmGuard"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__mod.rs_line_81_col_20_001.log",
+      "diff_path": "diff/src__dict__mod.rs_line_81_col_20_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.840322678,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.061916798,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/mod.rs:81:20: replace match guard in_tag with true in strip_html_tags",
+          "package": "reader_core",
+          "file": "src/dict/mod.rs",
+          "function": {
+            "function_name": "strip_html_tags",
+            "return_type": "-> String",
+            "span": {
+              "start": {
+                "line": 73,
+                "column": 1
+              },
+              "end": {
+                "line": 87,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 81,
+              "column": 20
+            },
+            "end": {
+              "line": 81,
+              "column": 26
+            }
+          },
+          "replacement": "true",
+          "genre": "MatchArmGuard"
+        }
+      },
+      "summary": "MissedMutant",
+      "log_path": "log/src__dict__mod.rs_line_81_col_20.log",
+      "diff_path": "diff/src__dict__mod.rs_line_81_col_20.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 1.931661553,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 4.710008007,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/mod.rs:82:18: replace match guard !in_tag with false in strip_html_tags",
+          "package": "reader_core",
+          "file": "src/dict/mod.rs",
+          "function": {
+            "function_name": "strip_html_tags",
+            "return_type": "-> String",
+            "span": {
+              "start": {
+                "line": 73,
+                "column": 1
+              },
+              "end": {
+                "line": 87,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 82,
+              "column": 18
+            },
+            "end": {
+              "line": 82,
+              "column": 25
+            }
+          },
+          "replacement": "false",
+          "genre": "MatchArmGuard"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__mod.rs_line_82_col_18_001.log",
+      "diff_path": "diff/src__dict__mod.rs_line_82_col_18_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 1.673191723,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.007952171,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/mod.rs:82:18: replace match guard !in_tag with true in strip_html_tags",
+          "package": "reader_core",
+          "file": "src/dict/mod.rs",
+          "function": {
+            "function_name": "strip_html_tags",
+            "return_type": "-> String",
+            "span": {
+              "start": {
+                "line": 73,
+                "column": 1
+              },
+              "end": {
+                "line": 87,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 82,
+              "column": 18
+            },
+            "end": {
+              "line": 82,
+              "column": 25
+            }
+          },
+          "replacement": "true",
+          "genre": "MatchArmGuard"
+        }
+      },
+      "summary": "MissedMutant",
+      "log_path": "log/src__dict__mod.rs_line_82_col_18.log",
+      "diff_path": "diff/src__dict__mod.rs_line_82_col_18.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.32891802,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 5.012028492,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/mod.rs:82:18: delete ! in strip_html_tags",
+          "package": "reader_core",
+          "file": "src/dict/mod.rs",
+          "function": {
+            "function_name": "strip_html_tags",
+            "return_type": "-> String",
+            "span": {
+              "start": {
+                "line": 73,
+                "column": 1
+              },
+              "end": {
+                "line": 87,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 82,
+              "column": 18
+            },
+            "end": {
+              "line": 82,
+              "column": 19
+            }
+          },
+          "replacement": "",
+          "genre": "UnaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__mod.rs_line_82_col_18_002.log",
+      "diff_path": "diff/src__dict__mod.rs_line_82_col_18_002.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 1.8776536190000002,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.017774948,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/provider.rs:31:9: replace <impl TranslationProvider for DeepLProvider>::name -> &str with \"\"",
+          "package": "reader_core",
+          "file": "src/dict/provider.rs",
+          "function": {
+            "function_name": "<impl TranslationProvider for DeepLProvider>::name",
+            "return_type": "-> &str",
+            "span": {
+              "start": {
+                "line": 30,
+                "column": 5
+              },
+              "end": {
+                "line": 32,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 31,
+              "column": 9
+            },
+            "end": {
+              "line": 31,
+              "column": 16
+            }
+          },
+          "replacement": "\"\"",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__provider.rs_line_31_col_9.log",
+      "diff_path": "diff/src__dict__provider.rs_line_31_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 1.706069676,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 4.443560655,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/provider.rs:35:9: replace <impl TranslationProvider for DeepLProvider>::translate -> Result<Translation> with Ok(Default::default())",
+          "package": "reader_core",
+          "file": "src/dict/provider.rs",
+          "function": {
+            "function_name": "<impl TranslationProvider for DeepLProvider>::translate",
+            "return_type": "-> Result<Translation>",
+            "span": {
+              "start": {
+                "line": 34,
+                "column": 5
+              },
+              "end": {
+                "line": 69,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 35,
+              "column": 9
+            },
+            "end": {
+              "line": 68,
+              "column": 11
+            }
+          },
+          "replacement": "Ok(Default::default())",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__provider.rs_line_35_col_9.log",
+      "diff_path": "diff/src__dict__provider.rs_line_35_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 1.417900576,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/provider.rs:31:9: replace <impl TranslationProvider for DeepLProvider>::name -> &str with \"xyzzy\"",
+          "package": "reader_core",
+          "file": "src/dict/provider.rs",
+          "function": {
+            "function_name": "<impl TranslationProvider for DeepLProvider>::name",
+            "return_type": "-> &str",
+            "span": {
+              "start": {
+                "line": 30,
+                "column": 5
+              },
+              "end": {
+                "line": 32,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 31,
+              "column": 9
+            },
+            "end": {
+              "line": 31,
+              "column": 16
+            }
+          },
+          "replacement": "\"xyzzy\"",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__provider.rs_line_31_col_9_001.log",
+      "diff_path": "diff/src__dict__provider.rs_line_31_col_9_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.397692612,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 4.433716362,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/provider.rs:72:9: replace <impl TranslationProvider for DeepLProvider>::configure with ()",
+          "package": "reader_core",
+          "file": "src/dict/provider.rs",
+          "function": {
+            "function_name": "<impl TranslationProvider for DeepLProvider>::configure",
+            "return_type": "",
+            "span": {
+              "start": {
+                "line": 71,
+                "column": 5
+              },
+              "end": {
+                "line": 73,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 72,
+              "column": 9
+            },
+            "end": {
+              "line": 72,
+              "column": 47
+            }
+          },
+          "replacement": "()",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__provider.rs_line_72_col_9.log",
+      "diff_path": "diff/src__dict__provider.rs_line_72_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.123006556,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 0.301309413,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/provider.rs:82:9: replace <impl TranslationProvider for EchoProvider>::name -> &str with \"\"",
+          "package": "reader_core",
+          "file": "src/dict/provider.rs",
+          "function": {
+            "function_name": "<impl TranslationProvider for EchoProvider>::name",
+            "return_type": "-> &str",
+            "span": {
+              "start": {
+                "line": 81,
+                "column": 5
+              },
+              "end": {
+                "line": 83,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 82,
+              "column": 9
+            },
+            "end": {
+              "line": 82,
+              "column": 15
+            }
+          },
+          "replacement": "\"\"",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__provider.rs_line_82_col_9.log",
+      "diff_path": "diff/src__dict__provider.rs_line_82_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.223469804,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.008210665,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/provider.rs:42:17: replace != with == in <impl TranslationProvider for DeepLProvider>::translate",
+          "package": "reader_core",
+          "file": "src/dict/provider.rs",
+          "function": {
+            "function_name": "<impl TranslationProvider for DeepLProvider>::translate",
+            "return_type": "-> Result<Translation>",
+            "span": {
+              "start": {
+                "line": 34,
+                "column": 5
+              },
+              "end": {
+                "line": 69,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 42,
+              "column": 17
+            },
+            "end": {
+              "line": 42,
+              "column": 19
+            }
+          },
+          "replacement": "==",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "MissedMutant",
+      "log_path": "log/src__dict__provider.rs_line_42_col_17.log",
+      "diff_path": "diff/src__dict__provider.rs_line_42_col_17.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.637361115,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 4.999872434,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/provider.rs:86:9: replace <impl TranslationProvider for EchoProvider>::translate -> Result<Translation> with Ok(Default::default())",
+          "package": "reader_core",
+          "file": "src/dict/provider.rs",
+          "function": {
+            "function_name": "<impl TranslationProvider for EchoProvider>::translate",
+            "return_type": "-> Result<Translation>",
+            "span": {
+              "start": {
+                "line": 85,
+                "column": 5
+              },
+              "end": {
+                "line": 92,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 86,
+              "column": 9
+            },
+            "end": {
+              "line": 91,
+              "column": 11
+            }
+          },
+          "replacement": "Ok(Default::default())",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__provider.rs_line_86_col_9.log",
+      "diff_path": "diff/src__dict__provider.rs_line_86_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 0.85515696,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/provider.rs:82:9: replace <impl TranslationProvider for EchoProvider>::name -> &str with \"xyzzy\"",
+          "package": "reader_core",
+          "file": "src/dict/provider.rs",
+          "function": {
+            "function_name": "<impl TranslationProvider for EchoProvider>::name",
+            "return_type": "-> &str",
+            "span": {
+              "start": {
+                "line": 81,
+                "column": 5
+              },
+              "end": {
+                "line": 83,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 82,
+              "column": 9
+            },
+            "end": {
+              "line": 82,
+              "column": 15
+            }
+          },
+          "replacement": "\"xyzzy\"",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__provider.rs_line_82_col_9_001.log",
+      "diff_path": "diff/src__dict__provider.rs_line_82_col_9_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.112079753,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.114395537,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/provider.rs:97:5: replace deepl_code -> &'static str with \"\"",
+          "package": "reader_core",
+          "file": "src/dict/provider.rs",
+          "function": {
+            "function_name": "deepl_code",
+            "return_type": "-> &'static str",
+            "span": {
+              "start": {
+                "line": 95,
+                "column": 1
+              },
+              "end": {
+                "line": 109,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 97,
+              "column": 5
+            },
+            "end": {
+              "line": 108,
+              "column": 6
+            }
+          },
+          "replacement": "\"\"",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "MissedMutant",
+      "log_path": "log/src__dict__provider.rs_line_97_col_5.log",
+      "diff_path": "diff/src__dict__provider.rs_line_97_col_5.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 1.565687407,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 4.887152723,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/provider.rs:97:5: replace deepl_code -> &'static str with \"xyzzy\"",
+          "package": "reader_core",
+          "file": "src/dict/provider.rs",
+          "function": {
+            "function_name": "deepl_code",
+            "return_type": "-> &'static str",
+            "span": {
+              "start": {
+                "line": 95,
+                "column": 1
+              },
+              "end": {
+                "line": 109,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 97,
+              "column": 5
+            },
+            "end": {
+              "line": 108,
+              "column": 6
+            }
+          },
+          "replacement": "\"xyzzy\"",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "MissedMutant",
+      "log_path": "log/src__dict__provider.rs_line_97_col_5_001.log",
+      "diff_path": "diff/src__dict__provider.rs_line_97_col_5_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.118443642,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 4.547934488,
+          "process_status": "Success",
+          "argv": [
+            "/home/heiwa/workspace/.toolchain/rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    }
+  ],
+  "total_mutants": 21,
+  "missed": 6,
+  "caught": 13,
+  "timeout": 0,
+  "unviable": 2,
+  "success": 0,
+  "start_time": "2026-09-01T12:27:15.957198285Z",
+  "end_time": "2026-09-01T12:29:07.134084591Z",
+  "cargo_mutants_version": "27.1.0"
+}

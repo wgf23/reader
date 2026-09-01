@@ -1,0 +1,21 @@
+--- src/dict/stardict.rs
++++ replace || with && in parse_ifo
+@@ -35,17 +35,17 @@
+ pub(crate) fn parse_ifo(path: &Path) -> Result<IfoMeta> {
+     let text = std::fs::read_to_string(path).map_err(Error::Io)?;
+     let mut bookname = String::new();
+     let mut wordcount: Option<u64> = None;
+     let mut idxfilesize: Option<u64> = None;
+     let mut sametypesequence: Option<String> = None;
+     for line in text.lines() {
+         let line = line.trim();
+-        if line.is_empty() || line.starts_with('#') {
++        if line.is_empty() && /* ~ changed by cargo-mutants ~ */ line.starts_with('#') {
+             continue;
+         }
+         let Some((k, v)) = line.split_once('=') else { continue };
+         match k.trim() {
+             "bookname" => bookname = v.trim().to_string(),
+             "wordcount" => {
+                 wordcount = v.trim().parse::<u64>().ok().or(wordcount);
+             }

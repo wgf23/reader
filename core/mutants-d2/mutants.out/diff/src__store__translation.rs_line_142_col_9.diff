@@ -1,0 +1,28 @@
+--- src/store/translation.rs
++++ replace <impl ProviderConfig for TranslationRepo>::provider_key -> Result<Option<String>> with Ok(None)
+@@ -134,24 +134,17 @@
+                 |r| r.get(0),
+             )
+             .optional()
+             .map_err(Error::from)?;
+         Ok(v.unwrap_or_else(|| DEFAULT_PROVIDER.to_string()))
+     }
+ 
+     fn provider_key(&self, provider: &str) -> Result<Option<String>> {
+-        self.conn
+-            .query_row(
+-                "SELECT value FROM settings WHERE key=?1",
+-                params![Self::provider_key_setting(provider)],
+-                |r| r.get(0),
+-            )
+-            .optional()
+-            .map_err(Error::from)
++        Ok(None) /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     fn set_provider_key(&mut self, provider: &str, key: &str) -> Result<()> {
+         upsert_setting(&self.conn, &Self::provider_key_setting(provider), key)
+     }
+ 
+     fn set_default_provider(&mut self, provider: &str) -> Result<()> {
+         upsert_setting(&self.conn, KEY_DEFAULT_PROVIDER, provider)
