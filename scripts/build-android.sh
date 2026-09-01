@@ -13,8 +13,10 @@ set -euo pipefail
 
 TC=/home/heiwa/workspace/.toolchain
 source "$TC/env.sh"
-export JAVA_HOME=$TC/jdk PATH=$JAVA_HOME/bin:$PATH
-export ANDROID_SDK_ROOT=$TC/android-sdk ANDROID_HOME=$ANDROID_SDK_ROOT
+export JAVA_HOME=$TC/jdk
+export PATH=$JAVA_HOME/bin:$PATH
+export ANDROID_SDK_ROOT=$TC/android-sdk
+export ANDROID_HOME=$ANDROID_SDK_ROOT
 export GRADLE_USER_HOME=$TC/gradle-home
 export CARGO_BUILD_JOBS=2
 
