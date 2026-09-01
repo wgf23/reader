@@ -76,6 +76,36 @@ fn dict_service_real_langdao_ec_lookup() {
     assert!(e2.definition.contains("书"));
 }
 
+/// 模拟 app 侧 `ensureBuiltinDict`：仅把 langdao-ec 放进 `<data>/dicts/langdao-ec/`
+/// （不经 install），靠 `DictService::new` 的 `scan_existing` 发现并注册 → 查词可用。
+/// 这正是「内置词库开箱即用」依赖的链路（RustLibraryBackend.open → ensureBuiltinDict → library_open）。
+#[test]
+fn builtin_dict_layout_is_found_by_scan_and_lookup_works() {
+    let Some(ifo_src) = langdao_ec_ifo() else {
+        eprintln!("[skip] langdao-ec 语料缺失，跳过内置词典链路");
+        return;
+    };
+    let src_dir = ifo_src.parent().unwrap().to_path_buf();
+    let data = tempfile::tempdir().unwrap();
+    let dicts_dir = data.path().join("dicts/langdao-ec");
+    std::fs::create_dir_all(&dicts_dir).unwrap();
+    for f in ["langdao-ec-gb.ifo", "langdao-ec-gb.idx", "langdao-ec-gb.dict.dz"] {
+        let src = src_dir.join(f);
+        assert!(src.exists(), "缺少内置词典文件 {f}");
+        std::fs::copy(&src, dicts_dir.join(f)).unwrap();
+    }
+
+    // DictService::new 扫描 <data>/dicts → 发现 langdao-ec
+    let svc = DictService::new(data.path()).unwrap();
+    let list = svc.list().unwrap();
+    assert_eq!(list.len(), 1, "应扫描到内置 langdao-ec");
+    // 查词（英→汉）
+    let e = svc.lookup("apple", None).unwrap().expect("apple 应命中");
+    assert!(e.definition.contains("苹果"), "释义应含'苹果': {}", e.definition);
+    // 未收录
+    assert!(svc.lookup("zzzqqq", None).unwrap().is_none());
+}
+
 #[test]
 fn dict_service_real_langdao_ce_zh_headword_no_phonetic() {
     let p = corpus_dict("langdao-ce/langdao-ce-gb.ifo");

@@ -69,7 +69,22 @@ impl DictService {
         let stem = dict_stem(ifo);
         let idx_path = dir.join(format!("{stem}.idx"));
         let idx_bytes = std::fs::read(&idx_path).map_err(Error::Io)?;
-        let dict_file = dict_path_of(&dir.join(&stem)).and_then(|p| File::open(p).ok());
+        let base = dir.join(&stem);
+        let dict_file = match dict_path_of(&base) {
+            Some(p) => {
+                if p.extension().and_then(|e| e.to_str()) == Some("dz") {
+                    // .dict.dz：扫描路径也解压成明文 .dict（与 install 一致；随机访问
+                    // 不能直接读 gzip，否则区段取到的是压缩字节 → 乱码）。这使按内置资源
+                    // 直接落盘的 .dict.dz、以及用户重启后扫描的 .dz 词典都可用。
+                    let plain = dir.join(format!("{stem}.dict"));
+                    stardict::decompress_dz(&p, &plain)?;
+                    File::open(&plain).ok()
+                } else {
+                    File::open(&p).ok()
+                }
+            }
+            None => None,
+        };
         let id = sanitize_id(&meta.bookname);
         Ok(LoadedDict {
             info: DictInfo {
