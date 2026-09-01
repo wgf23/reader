@@ -1,7 +1,7 @@
 name: reader_app
 description: 跨平台电子书阅读器（Flutter 壳）
 publish_to: 'none'
-version: 0.6.1+7
+version: 0.6.2+8
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -35,3 +35,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/dict/langdao-ec/

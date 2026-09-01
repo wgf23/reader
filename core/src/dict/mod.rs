@@ -11,7 +11,7 @@ mod provider;
 mod stardict;
 mod translation;
 
-pub use provider::{DeepLProvider, EchoProvider};
+pub use provider::{DeepLProvider, EchoProvider, OfflineProvider};
 pub use translation::{DictService, TranslationService};
 
 use crate::error::Result;
@@ -45,6 +45,10 @@ pub trait TranslationProvider: Send {
     fn translate(&self, text: &str, from: Lang, to: Lang) -> Result<Translation>;
     /// 运行时更新凭据（设置页改 key 后无需重建 Provider）；默认 no-op（Echo 忽略）
     fn configure(&mut self, _key: Option<&str>) {}
+    /// 是否需要外部凭据/API Key。离线 Provider（内置词典查义）返回 false，跳过 key 校验。
+    fn needs_key(&self) -> bool {
+        true
+    }
 }
 
 /// 释义首词性标记启发式：剥 HTML 后扫描前几行的行首 "n."/"vt."/"adj."…；无则 None。

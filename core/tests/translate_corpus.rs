@@ -177,14 +177,11 @@ fn api_bridge_dict_translate_cache_full_chain() {
     // 未装词库的移除 → Err
     assert!(block_on(api::dict_remove("no_such".to_string())).is_err());
 
-    // 3) translate：未配置 key → NotConfigured（US-12，消息含 API Key）
-    let err = block_on(api::translate(
-        "Hello world".to_string(),
-        "en".to_string(),
-        "zh".to_string(),
-    ))
-    .unwrap_err();
-    assert!(err.contains("API Key"), "应含 API Key: {err}");
+    // 3) 默认 offline（内置词库离线翻译，无需 key/网络）：词库内单词直接查义
+    let off = block_on(api::translate("book".to_string(), "en".to_string(), "zh".to_string()))
+        .expect("offline 词库内单词应翻译成功");
+    assert_eq!(off.provider, "offline");
+    assert!(!off.text.is_empty(), "offline 应产出词库释义");
 
     // 4) translate_set_config("echo","") → 无 key 演示 → translate 走通（US-17/ADR 裁定2）
     block_on(api::translate_set_config("echo".to_string(), String::new())).unwrap();
@@ -210,9 +207,10 @@ fn api_bridge_dict_translate_cache_full_chain() {
     assert!(t2.from_cache, "第二次应命中缓存");
     assert_eq!(t2.text, t1.text);
 
-    // 6) 缓存落库行数断言（US-13）：translation_cache 恰 1 行（失败不写、命中不重复写）
+    // 6) 缓存落库行数断言（US-13）：恰 2 行（offline "book" + echo "Hello world"；
+    //    失败不写、命中不重复写）
     let repo = TranslationRepo::open(&data_dir).unwrap();
-    assert_eq!(repo.cache_count().unwrap(), 1);
+    assert_eq!(repo.cache_count().unwrap(), 2);
 
     // 7) 清空（US-13）→ 行数 0；再翻同文 → 重新调 Provider（from_cache=false）
     block_on(api::translate_cache_clear()).unwrap();

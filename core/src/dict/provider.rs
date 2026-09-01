@@ -4,7 +4,7 @@
 //! 隐私（US-9/US-13）：DeepL 请求体只含 text/from/to，无书路径/元数据/设备信息。
 //! 网络仅封装在本模块（DeepLProvider 内部），domain 其余代码零网络依赖。
 
-use crate::dict::TranslationProvider;
+use crate::dict::{DictEntry, TranslationProvider};
 use crate::error::{Error, Result};
 use crate::types::{Lang, Translation};
 
@@ -78,6 +78,59 @@ impl TranslationProvider for EchoProvider {
     fn translate(&self, text: &str, from: Lang, to: Lang) -> Result<Translation> {
         Ok(Translation {
             text: format!("译文:{text}"),
+            from,
+            to,
+            provider: self.name().to_string(),
+        })
+    }
+}
+
+/// 离线翻译 Provider：基于已装入的内置/用户词典做词/短语查义（零网络、零 API Key）。
+/// 「查词闭包」由 api.rs 注入（锁定 DICT 静态），避免 domain→interface 依赖。
+/// 词典式离线翻译：整词/整句命中 → 释义；未命中 → 按空格分词逐词查义并拼合。
+pub struct OfflineProvider {
+    lookup: Box<dyn Fn(&str, Option<&str>) -> Result<Option<DictEntry>> + Send>,
+}
+
+impl OfflineProvider {
+    pub fn new(
+        lookup: Box<dyn Fn(&str, Option<&str>) -> Result<Option<DictEntry>> + Send>,
+    ) -> Self {
+        Self { lookup }
+    }
+}
+
+impl TranslationProvider for OfflineProvider {
+    fn name(&self) -> &str {
+        "offline"
+    }
+
+    fn needs_key(&self) -> bool {
+        false
+    }
+
+    fn translate(&self, text: &str, from: Lang, to: Lang) -> Result<Translation> {
+        let norm = crate::dict::translation::normalize_text(text);
+        if norm.is_empty() {
+            return Err(Error::Other("待翻译文本为空".to_string()));
+        }
+        let mut parts: Vec<String> = Vec::new();
+        if let Some(e) = (self.lookup)(&norm, None)? {
+            parts.push(e.definition);
+        } else {
+            for w in norm.split_whitespace() {
+                if let Some(e) = (self.lookup)(w, None)? {
+                    parts.push(e.definition);
+                }
+            }
+        }
+        if parts.is_empty() {
+            return Err(Error::NotConfigured(
+                "离线翻译未命中（请先安装内置词库）".to_string(),
+            ));
+        }
+        Ok(Translation {
+            text: parts.join("；"),
             from,
             to,
             provider: self.name().to_string(),
@@ -257,5 +310,38 @@ mod tests {
         assert_eq!(deepl_code(Lang::Es), "ES");
         assert_eq!(deepl_code(Lang::Ru), "RU");
         assert_eq!(deepl_code(Lang::Other("PT")), "PT", "Other 臂原样透传");
+    }
+
+    #[test]
+    fn offline_provider_looks_up_dict_without_key_and_misses_error() {
+        use crate::dict::OfflineProvider;
+        // 命中闭包（模拟词典大小写不敏感查义）
+        let hit = OfflineProvider::new(Box::new(|word, _| {
+            if word.to_lowercase() == "apple" {
+                Ok(Some(crate::dict::DictEntry {
+                    word: "apple".into(),
+                    phonetic: Some("/ˈæp.əl/".into()),
+                    pos: Some("n.".into()),
+                    definition: "苹果".into(),
+                    example: None,
+                }))
+            } else {
+                Ok(None)
+            }
+        }));
+        // offline 不需要 key（核心诉求：开箱即用离线翻译）
+        assert!(!hit.needs_key(), "offline 不需要 key");
+        let t = hit.translate("Apple", Lang::En, Lang::Zh).unwrap();
+        assert_eq!(t.text, "苹果");
+        assert_eq!(t.text.is_empty(), false);
+        assert_eq!(t.provider, "offline");
+
+        // 整词未命中 → 逐词查义拼合
+        let t2 = hit.translate("apple apple", Lang::En, Lang::Zh).unwrap();
+        assert_eq!(t2.text, "苹果；苹果");
+
+        // 全未命中 → Err
+        let miss = OfflineProvider::new(Box::new(|_, _| Ok(None)));
+        assert!(miss.translate("zzzqqq", Lang::En, Lang::Zh).is_err());
     }
 }

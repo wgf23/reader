@@ -394,8 +394,8 @@ impl TranslationService {
             .ok_or_else(|| Error::NotConfigured(format!("未知翻译 Provider: {provider_name}")))?
             .as_ref();
 
-        // US-12：未配置 key → NotConfigured（含"API Key"语义），不 panic
-        if self.config.provider_key(&provider_name)?.is_none() {
+        // 需 key 的 Provider 才校验（offline 免 key）；未配置 → NotConfigured，不 panic
+        if provider.needs_key() && self.config.provider_key(&provider_name)?.is_none() {
             return Err(Error::NotConfigured(format!(
                 "翻译服务未配置：{provider_name} 未配置 API Key，请先在设置中配置"
             )));

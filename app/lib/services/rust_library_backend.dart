@@ -7,6 +7,7 @@ import 'dart:typed_data';
 import 'package:path_provider/path_provider.dart';
 
 import '../src/rust/api.dart' as rust;
+import 'builtin_dict.dart';
 import 'frb_init.dart';
 import 'library_backend.dart';
 
@@ -16,7 +17,10 @@ class RustLibraryBackend implements LibraryBackend {
   Future<void> open() async {
     await ensureRustLib();
     final dir = await getApplicationSupportDirectory();
-    await rust.libraryOpen(dataDir: '${dir.path}/data');
+    final dataDir = '${dir.path}/data';
+    // 内置词典先落盘，library_open 才能扫到（查词/离线翻译开箱即用）
+    await ensureBuiltinDict(dataDir);
+    await rust.libraryOpen(dataDir: dataDir);
   }
 
   @override

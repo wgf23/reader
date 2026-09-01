@@ -9,8 +9,8 @@
 use std::path::Path;
 use std::sync::{Mutex, OnceLock};
 
-use crate::dict::{DeepLProvider, DictService, EchoProvider, TranslationService};
-use crate::error::Result;
+use crate::dict::{DeepLProvider, DictService, EchoProvider, OfflineProvider, TranslationService};
+use crate::error::{Error, Result};
 use crate::library::LibraryService;
 use crate::store::TranslationRepo;
 use crate::store::{BookRecord, Store};
@@ -112,10 +112,22 @@ pub fn library_open(data_dir: String) -> std::result::Result<(), String> {
     let config_repo = Box::new(TranslationRepo::open(Path::new(&data_dir)).map_err(err_msg)?)
         as Box<dyn ProviderConfig + Send>;
     let _ = DICT.set(Mutex::new(DictService::new(Path::new(&data_dir)).map_err(err_msg)?));
+    // 离线翻译 Provider：查词闭包锁定 DICT 静态（避免 domain→interface 依赖）
+    let offline = OfflineProvider::new(Box::new(|word, dict_id| {
+        let svc = dict_service().map_err(Error::Other)?;
+        let svc = svc
+            .lock()
+            .map_err(|_| Error::Other("词典锁错误".to_string()))?;
+        svc.lookup(word, dict_id)
+    }));
     let _ = TRANSLATION.set(Mutex::new(TranslationService::new(
         cache_repo,
         config_repo,
-        vec![Box::new(DeepLProvider::new()), Box::new(EchoProvider)],
+        vec![
+            Box::new(offline),          // 默认（内置词库离线翻译，开箱即用）
+            Box::new(DeepLProvider::new()),
+            Box::new(EchoProvider),
+        ],
     )));
     Ok(())
 }

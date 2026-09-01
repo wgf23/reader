@@ -17,7 +17,7 @@ use crate::types::{
 
 /// settings 键约定（docs/04 §5 / REQ-003 02-design §3.1）
 const KEY_DEFAULT_PROVIDER: &str = "translate.default_provider";
-const DEFAULT_PROVIDER: &str = "deepl";
+const DEFAULT_PROVIDER: &str = "offline";
 
 /// 第二连接（同一 library.db；WAL + busy_timeout=5000）
 pub struct TranslationRepo {
@@ -259,8 +259,8 @@ mod tests {
     fn provider_config_roundtrip() {
         let dir = tempfile::tempdir().unwrap();
         let mut repo = TranslationRepo::open(dir.path()).unwrap();
-        // 默认 deepl
-        assert_eq!(repo.default_provider().unwrap(), "deepl");
+        // 默认 offline（内置词库离线翻译开箱即用）
+        assert_eq!(repo.default_provider().unwrap(), "offline");
         assert!(repo.provider_key("deepl").unwrap().is_none());
         repo.set_provider_key("deepl", "my-key").unwrap();
         assert_eq!(repo.provider_key("deepl").unwrap().as_deref(), Some("my-key"));
