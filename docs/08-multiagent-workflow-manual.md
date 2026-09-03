@@ -22,6 +22,23 @@ REQ-XXX ─▶ (1)需求分析 ─▶ (2)架构设计 ─▶ (3)开发 ─▶ (4
 
 ---
 
+## 1.1 工作流资产结构（agents / skills / schemas）
+
+工作流以**可组装组件**形态持久化，而非仅一份文档：
+
+| 目录 | 内容 |
+|---|---|
+| `workflow/agents/` | 每个角色一个定义（orchestrator + req-analyst/architect/developer/test-engineer/release-manager）：阶段/职责/读写产物/闸门/派单模板 |
+| `workflow/skills/` | 每个可复用能力：gates、crap、ddd-lint、mutants、coverage、wf-meta-check、prototype-conformance、build-android、build-platform |
+| `workflow/schemas/` | JSON Schema 契约：wf-meta 头、各 phase 必备产物与要素、追溯矩阵行 |
+| `workflow/rules/` | 阈值（crap-config.toml / ddd-rules.toml，评审后冻结） |
+| `workflow/templates/` | 各阶段 Markdown 产物模板 |
+| `workflow/backlog/` `workflow/reports/` `workflow/rework/` | REQ 状态 / 闸门报告 / rework 记录 |
+
+Agents 按 `agents/*.md` 派单，调 `skills/*` 执行闸门，产物按 `schemas/*` 校验。
+
+---
+
 ## 2. 产物契约与模板
 
 **产物文件头（每份产物第一段，机器可读）**：

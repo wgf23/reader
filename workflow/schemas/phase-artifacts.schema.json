@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "phase-artifacts",
+  "title": "各阶段必备产物与要素",
+  "description": "定义每个 phase 应产出哪些产物文件、以及产物正文必备要素（作为生成约束与校验参考）。",
+  "type": "object",
+  "properties": {
+    "requirements": {
+      "artifacts": ["01-req.md"],
+      "required_sections": ["背景与目标", "用户故事与验收标准", "影响面分析", "依赖与优先级", "风险"]
+    },
+    "architecture": {
+      "artifacts": ["02-adr.md", "02-design.md", "02-plan.md"],
+      "required_sections": {
+        "02-adr.md": ["决策点(≥2 备选 + 理由 + 影响)"],
+        "02-design.md": ["模块与职责", "接口签名", "数据模型", "关键时序", "与既有约定兼容性"],
+        "02-plan.md": ["任务清单(≤1天/有验收)", "依赖图(无环)", "冲突检查", "闸门2 自评"]
+      }
+    },
+    "development": {
+      "artifacts": ["03-review.md"],
+      "required_sections": ["设计与既有约定核对", "计划核对", "需求可测性核对", "结论", "实现与自检记录", "闸门3 自评"]
+    },
+    "testing": {
+      "artifacts": ["04-mutation.md", "04-coverage.md"],
+      "required_sections": {
+        "04-mutation.md": ["变异分数", "存活清单", "存活体结论(修复/豁免)"],
+        "04-coverage.md": ["覆盖率表", "不可测项说明", "结论(≥85%)"]
+      }
+    },
+    "delivery": {
+      "artifacts": ["05-delivery.md"],
+      "required_sections": ["验证结果汇总", "发布说明", "已知问题", "追溯矩阵(全闭合)"]
+    }
+  }
+}

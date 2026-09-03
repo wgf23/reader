@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "traceability",
+  "title": "5-delivery 追溯矩阵行",
+  "description": "每条验收标准（US-x）到原型图/设计/实现/测试/状态的追溯条目。",
+  "type": "object",
+  "required": ["us", "requirement", "prototype", "design", "impl", "test", "status"],
+  "properties": {
+    "us": { "type": "string", "pattern": "^US-\\d+$" },
+    "requirement": { "type": "string", "description": "01-req §2 的验收描述" },
+    "prototype": { "type": "string", "description": "对应原型图（docs/wireframes/**）" },
+    "design": { "type": "string", "description": "02-design / 02-adr 落点" },
+    "impl": { "type": "string", "description": "实现文件/行为" },
+    "test": { "type": "string", "description": "测试名/证据" },
+    "status": { "type": "string", "enum": ["✅", "~", "✅*"], "description": "闭合/部分/引擎层(真机)" }
+  }
+}
