@@ -11,7 +11,7 @@
 #   --all-abi：Flutter AOT 编 3 个 ABI（慢）；默认只编 arm64（Rust 库仍全 ABI 打包）
 set -euo pipefail
 
-TC=/home/heiwa/workspace/.toolchain
+TC="${TOOLCHAIN_ROOT:-/home/heiwa/workspace/.toolchain}"
 source "$TC/env.sh"
 export JAVA_HOME=$TC/jdk
 export PATH=$JAVA_HOME/bin:$PATH

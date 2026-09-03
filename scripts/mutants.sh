@@ -9,14 +9,17 @@
 #   - 门槛由测试阶段（闸门4）依据报告判定：score >= 80%。
 set -euo pipefail
 
-source /home/heiwa/workspace/.toolchain/env.sh
+# 工具链与仓库根可配置/自动推导（便于迁移到其它 workspace）
+TC="${TOOLCHAIN_ROOT:-/home/heiwa/workspace/.toolchain}"
+source "$TC/env.sh"
 
 TARGET="${1:-core}"
 shift || true
 OUT_DIR="${OUT_DIR:-workflow/reports}"
 TIMEOUT="${TIMEOUT:-60}"
 
-cd "/home/heiwa/workspace/reader/$TARGET"
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT/$TARGET"
 
 mkdir -p "$OUT_DIR"
 echo "[mutants] 开始变异测试（timeout=${TIMEOUT}s）…"
