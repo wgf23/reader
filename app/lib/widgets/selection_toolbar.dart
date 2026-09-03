@@ -36,26 +36,30 @@ class ReaderSelectionToolbar extends StatelessWidget {
   Widget _btn(String label, IconData icon, SelectionAction action, {bool withColorDots = false}) {
     return InkWell(
       onTap: () => onAction(action),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 20),
-            const SizedBox(height: 2),
-            if (withColorDots)
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(label, style: const TextStyle(fontSize: 11)),
-                  const SizedBox(width: 3),
-                  for (final c in const [Color(0xFFFBC02D), Color(0xFF1A73E8), Color(0xFF43A047), Color(0xFFE91E63)])
-                    Container(width: 4, height: 4, margin: const EdgeInsets.symmetric(horizontal: 1), decoration: BoxDecoration(color: c, shape: BoxShape.circle)),
-                ],
-              )
-            else
-              Text(label, style: const TextStyle(fontSize: 11)),
-          ],
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minWidth: 52, minHeight: 52),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 22),
+              const SizedBox(height: 4),
+              if (withColorDots)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(label, style: const TextStyle(fontSize: 12)),
+                    const SizedBox(width: 4),
+                    for (final c in const [Color(0xFFFBC02D), Color(0xFF1A73E8), Color(0xFF43A047), Color(0xFFE91E63)])
+                      Container(width: 5, height: 5, margin: const EdgeInsets.symmetric(horizontal: 1.5), decoration: BoxDecoration(color: c, shape: BoxShape.circle)),
+                  ],
+                )
+              else
+                Text(label, style: const TextStyle(fontSize: 12)),
+            ],
+          ),
         ),
       ),
     );

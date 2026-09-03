@@ -532,6 +532,9 @@ class _ReaderPageState extends State<ReaderPage> {
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 64),
       child: SelectionArea(
         onSelectionChanged: (content) => _onSelectedText(_sliceSelection(content)),
+        // 禁用 Android 原生「复制」等上下文菜单，避免与自定义工具条（划重点/笔记/翻译/查词/复制）重叠；
+        // 仍保留选区两端手柄供拖动调整。
+        contextMenuBuilder: (context, selectableRegionState) => const SizedBox.shrink(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
