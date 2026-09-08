@@ -61,11 +61,18 @@ void main() {
     // 4) 未收录 → null；坏 dict_id 查词 → Err
     expect(await rust.dictLookup(word: 'zzzqqq'), isNull);
 
-    // 5) 翻译：未配置 key → FRB 将 Err(String) 映射为 Dart 异常（US-12）
-    expect(
-      () => rust.translate(text: 'Hello', from: 'en', to: 'zh'),
-      throwsA(anything),
-    );
+    // 5) REQ-006 默认策略 auto：未配置在线 key → 回退离线（词库命中 hello），
+    //    带回 fallback_reason（US-13/US-17）；不再抛 REQ-003 的 NotConfigured。
+    final off = await rust.translate(text: 'Hello', from: 'en', to: 'zh');
+    expect(off.provider, 'offline');
+    expect(off.fromCache, isFalse);
+    expect(off.fallbackReason, '未配置在线翻译 API Key，已回退离线');
+
+    // 5b) 读配置：默认 auto、无 key、无掩码（US-15）
+    final cfg0 = await rust.translateGetConfig();
+    expect(cfg0.provider, 'auto');
+    expect(cfg0.hasDeeplKey, isFalse);
+    expect(cfg0.deeplKeyMasked, isNull);
 
     await rust.translateSetConfig(provider: 'echo', key: '');
     final t1 = await rust.translate(text: 'Hello world', from: 'en', to: 'zh');
@@ -82,6 +89,25 @@ void main() {
     await rust.translateCacheClear();
     final t3 = await rust.translate(text: 'Hello world', from: 'en', to: 'zh');
     expect(t3.fromCache, isFalse);
+
+    // 7b) 写 key → 读回 hasDeeplKey + 固定掩码（绝不回明文）；策略切换往返（US-15）
+    await rust.translateSetConfig(provider: 'deepl', key: 'dummy-key-for-test');
+    final cfg1 = await rust.translateGetConfig();
+    expect(cfg1.hasDeeplKey, isTrue);
+    expect(cfg1.deeplKeyMasked, '••••••••');
+
+    await rust.translateSetStrategy(strategy: 'echo');
+    final cfg2 = await rust.translateGetConfig();
+    expect(cfg2.provider, 'echo');
+
+    await rust.translateSetStrategy(strategy: 'auto');
+    expect((await rust.translateGetConfig()).provider, 'auto');
+
+    // 未知策略 → Err（FRB 映射为 Dart 异常）
+    expect(
+      () => rust.translateSetStrategy(strategy: 'nope'),
+      throwsA(anything),
+    );
 
     // 8) 移除词库 → 列表为空
     await rust.dictRemove(dictId: info.id);

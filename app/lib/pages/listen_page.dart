@@ -63,6 +63,9 @@ class _ListenPageState extends State<ListenPage> {
   );
   String? _error;
 
+  /// 无匹配系统音色已回退默认（REQ-006 US-21；驱动"系统默认音色"提示）。
+  bool _voiceFallback = false;
+
   int _failureCount = 0;
   bool _dirty = false;
   SentenceLocator? _pending;
@@ -134,12 +137,22 @@ class _ListenPageState extends State<ListenPage> {
     }
   }
 
-  // ---------- 引擎事件 ----------
+  // ---------- 引擎事件（sealed → 穷尽 switch，新增事件编译期强制补分支） ----------
   void _onTtsEvent(TtsEvent event) {
-    if (event is TtsSentenceDone) {
-      _handleSentenceDone(event.sentenceIndex);
-    } else if (event is TtsFailed) {
-      _handleFailed(event.message);
+    switch (event) {
+      case TtsSentenceStarted():
+        // 只确认高亮/滚动锚点，不写盘（听读同进度不变式，US-5）。
+        final i = event.sentenceIndex;
+        if (mounted && i >= 0 && i < _chunks.length) {
+          setState(() => _index = i);
+        }
+      case TtsSentenceDone():
+        // 唯一推进源（US-6）：写进度 + 下一句。
+        _handleSentenceDone(event.sentenceIndex);
+      case TtsVoiceFallback():
+        if (mounted) setState(() => _voiceFallback = true);
+      case TtsFailed():
+        _handleFailed(event.message);
     }
   }
 
@@ -320,6 +333,7 @@ class _ListenPageState extends State<ListenPage> {
       isScrollControlled: true,
       builder: (sheetContext) => ListenSettingsSheet(
         settings: _settings,
+        voiceFallback: _voiceFallback,
         onSettingsChanged: _onSettingsChanged,
         onClose: () => Navigator.of(sheetContext).pop(),
       ),
@@ -328,7 +342,11 @@ class _ListenPageState extends State<ListenPage> {
 
   Future<void> _onSettingsChanged(ListenSettingsData next) async {
     if (!mounted) return;
-    setState(() => _settings = next);
+    // 换音色后重新判定回退状态（匹配到则清除"系统默认音色"提示）。
+    setState(() {
+      _settings = next;
+      _voiceFallback = false;
+    });
     await widget.ttsEngine.configure(
       voiceId: next.voiceId,
       speed: next.speed,
@@ -389,6 +407,7 @@ class _ListenPageState extends State<ListenPage> {
             onSeek: _chunks.isEmpty ? null : _onSeek,
             onTimer: null,
             onVoice: null,
+            voiceFallback: _voiceFallback,
             voiceLabel:
                 _settings.voiceId.contains('female') ? '🎙 系统女声' : '🎙 系统男声',
           ),

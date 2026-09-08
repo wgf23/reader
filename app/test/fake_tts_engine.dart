@@ -42,9 +42,17 @@ class FakeTtsEngine implements TtsEngine {
   @override
   Future<void> stop() async => calls.add('stop');
 
+  /// 模拟一句开始朗读（REQ-006 US-5）
+  void emitStarted(int sentenceIndex) =>
+      _events.add(TtsSentenceStarted(sentenceIndex));
+
   /// 模拟一句朗读完成
   void emitDone(int sentenceIndex) =>
       _events.add(TtsSentenceDone(sentenceIndex));
+
+  /// 模拟音色回退为系统默认（REQ-006 US-21）
+  void emitVoiceFallback(String requestedVoiceId) =>
+      _events.add(TtsVoiceFallback(requestedVoiceId));
 
   /// 模拟朗读失败（US-12）
   void emitFailed(String message) => _events.add(TtsFailed(message));

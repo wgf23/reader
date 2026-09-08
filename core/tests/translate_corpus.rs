@@ -227,6 +227,21 @@ fn api_bridge_dict_translate_cache_full_chain() {
     assert_eq!(t1.from, "en");
     assert_eq!(t1.to, "zh");
 
+    // 4b) REQ-006 读配置 + 设置策略（US-15）：往返一致 + 未知策略 Err。
+    //     杀死 api.rs:366 `translate_set_strategy -> Ok(())` 存活变异体。
+    let cfg = block_on(api::translate_get_config()).unwrap();
+    assert_eq!(cfg.provider, "echo", "set_config 后默认策略为 echo");
+    assert!(!cfg.has_deepl_key, "未写 deepl key → false");
+    assert!(cfg.deepl_key_masked.is_none(), "无 key → 无掩码");
+    block_on(api::translate_set_strategy("auto".to_string())).unwrap();
+    assert_eq!(block_on(api::translate_get_config()).unwrap().provider, "auto");
+    block_on(api::translate_set_strategy("offline".to_string())).unwrap();
+    assert_eq!(block_on(api::translate_get_config()).unwrap().provider, "offline");
+    let err = block_on(api::translate_set_strategy("nope".to_string())).unwrap_err();
+    assert!(err.contains("未知翻译策略"), "应含未知策略提示: {err}");
+    // 恢复 echo 以复用下方缓存命中断言
+    block_on(api::translate_set_strategy("echo".to_string())).unwrap();
+
     // 5) 命中缓存（US-10）：from_cache=true，且 Provider 不重复调用（行数不变）
     let t2 = block_on(api::translate(
         "Hello world".to_string(),
@@ -261,6 +276,18 @@ fn api_bridge_dict_translate_cache_full_chain() {
     ))
     .unwrap_err();
     assert!(err.contains("不支持的语言代码"), "应含提示: {err}");
+
+    // 9) REQ-006：配置真实 key → translate_get_config 掩码分支（has_deepl_key=true，
+    //    仅回固定掩码、绝不回明文）
+    block_on(api::translate_set_config(
+        "deepl".to_string(),
+        "dummy-key".to_string(),
+    ))
+    .unwrap();
+    let cfg2 = block_on(api::translate_get_config()).unwrap();
+    assert_eq!(cfg2.provider, "deepl");
+    assert!(cfg2.has_deepl_key, "已配置 key → true");
+    assert_eq!(cfg2.deepl_key_masked.as_deref(), Some("••••••••"));
 }
 
 #[test]

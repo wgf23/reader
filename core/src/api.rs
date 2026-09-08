@@ -62,7 +62,7 @@ pub struct DictEntryView {
     pub example: Option<String>,
 }
 
-/// 译文视图（from_cache 标注缓存命中，US-10/13）
+/// 译文视图（from_cache 标注缓存命中，US-10/13；fallback_reason REQ-006 US-17/18）
 #[derive(Debug)]
 pub struct TranslationView {
     pub text: String,
@@ -70,6 +70,19 @@ pub struct TranslationView {
     pub to: String,
     pub provider: String,
     pub from_cache: bool,
+    /// 回退原因（如"在线失败，已回退离线"）；未回退为 None。
+    pub fallback_reason: Option<String>,
+}
+
+/// 翻译配置视图（REQ-006 决策点2，US-15；**绝不返回明文 key**）
+#[derive(Debug)]
+pub struct TranslateConfigView {
+    /// "auto" | "offline" | "deepl" | "echo"（= default_provider）
+    pub provider: String,
+    /// `DeepLProvider::key_is_missing` 语义（空串=false）
+    pub has_deepl_key: bool,
+    /// 固定掩码 `••••••••`；无 key 为 None；绝不返回明文。
+    pub deepl_key_masked: Option<String>,
 }
 
 // ---------- REQ-005 听书桥接数据结构（FRB 生成面；ADR 决策点1b/6） ----------
@@ -316,14 +329,44 @@ pub async fn translate(
     let mut svc = translation_service()?
         .lock()
         .map_err(|_| "服务锁错误".to_string())?;
-    let (t, from_cache) = svc.translate_cached(&text, from_lang, to_lang).map_err(err_msg)?;
+    // REQ-006：策略路由（auto 在线优先→回退离线），带回 fallback_reason。
+    let routed = svc
+        .translate_routed(&text, from_lang, to_lang)
+        .map_err(err_msg)?;
     Ok(TranslationView {
-        text: t.text,
-        from: t.from.as_str().to_string(),
-        to: t.to.as_str().to_string(),
-        provider: t.provider,
-        from_cache,
+        text: routed.translation.text,
+        from: routed.translation.from.as_str().to_string(),
+        to: routed.translation.to.as_str().to_string(),
+        provider: routed.translation.provider,
+        from_cache: routed.from_cache,
+        fallback_reason: routed.fallback_reason,
     })
+}
+
+/// 读取当前翻译配置（策略 + 是否已配置 DeepL key + 固定掩码；US-15）
+pub async fn translate_get_config() -> std::result::Result<TranslateConfigView, String> {
+    let svc = translation_service()?
+        .lock()
+        .map_err(|_| "服务锁错误".to_string())?;
+    let cfg = svc.config_view().map_err(err_msg)?;
+    Ok(TranslateConfigView {
+        provider: cfg.provider,
+        has_deepl_key: cfg.has_deepl_key,
+        // 只回填固定掩码，绝不回传明文 key（决策点2）。
+        deepl_key_masked: if cfg.has_deepl_key {
+            Some("••••••••".to_string())
+        } else {
+            None
+        },
+    })
+}
+
+/// 设置翻译策略（"auto"/"offline"/"deepl"/"echo"）；未知 → Err("未知翻译策略: {s}")（US-15）
+pub async fn translate_set_strategy(strategy: String) -> std::result::Result<(), String> {
+    let mut svc = translation_service()?
+        .lock()
+        .map_err(|_| "服务锁错误".to_string())?;
+    svc.set_strategy(&strategy).map_err(err_msg)
 }
 
 /// 一键清空翻译缓存（US-13 / docs/04 领域规则4）

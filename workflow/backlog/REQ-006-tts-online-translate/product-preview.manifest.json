@@ -1,0 +1,156 @@
+{
+  "req": "REQ-006",
+  "product": "听书真正发声/自动滚动 + 在线翻译策略/回退/读配置（真实渲染截图对照）",
+  "screens": [
+    {
+      "id": "S1",
+      "name": "听书模式 · 跟读（自动滚动）",
+      "device": "mobile",
+      "design": {
+        "svg": "docs/wireframes/09-listen-player.svg",
+        "viewport": "900x640",
+        "label": "设计稿 v1 · 听书跟读（线框 09）"
+      },
+      "impl": {
+        "png": "app/screenshots/listen_follow_scroll.png",
+        "viewport": "1170x2532",
+        "label": "真实渲染 · 当前句自动滚动进视口（第 21/30 句）"
+      },
+      "intent": [
+        "正文区 + 当前朗读句蓝色半透明高亮",
+        "REQ-006 新行为：当前句变化时自动滚动进视口（线框 09 正文区）",
+        "控制条元素不变：章节名 / ⏮上一句 / ⏸播放暂停 / ⏭下一句 / 句级 Slider / 语速 1.0x / ⏱ 定时（禁用）/ 🎙 音色（禁用）",
+        "顶部标题「听书」+ 设置入口（ADR 关联裁定1）"
+      ],
+      "acceptance": [
+        "当前句蓝色半透明高亮可见",
+        "高亮句落在 390×844 视口内（自动滚动生效）",
+        "高亮句上方有正文（证明已滚动，非首屏第 0 句）",
+        "控制条章节名可见",
+        "⏮ / ⏸ / ⏭ 三键齐全",
+        "句级进度条 Slider 可见",
+        "语速文本 1.0x 可见",
+        "定时按钮存在且禁用灰置",
+        "音色按钮存在且禁用灰置",
+        "无 ReaderSelectionToolbar 混入"
+      ]
+    },
+    {
+      "id": "S2",
+      "name": "听书设置面板",
+      "device": "mobile",
+      "design": {
+        "svg": "docs/wireframes/10-listen-settings.svg",
+        "viewport": "900x640",
+        "label": "设计稿 v1 · 听书设置（线框 10）"
+      },
+      "impl": {
+        "png": "app/screenshots/listen_settings_fallback.png",
+        "viewport": "1170x2532",
+        "label": "真实渲染 · 无匹配音色回退提示（US-21）"
+      },
+      "intent": [
+        "音色分组：系统男声/系统女声可选（选中态圆点）",
+        "AI 音色 · 在线 / 本地神经音色 Piper / 声音克隆 禁用灰置 + 线框文案",
+        "REQ-006：无匹配系统音色时显示「当前：系统默认音色（未找到所选音色）」，不误导为已选男/女声",
+        "语速 0.5x–3.0x 滑块 + 当前值",
+        "定时关闭分组全禁用灰置；后台播放开关禁用灰置",
+        "面板外隐私说明文案"
+      ],
+      "acceptance": [
+        "系统男声可选（选中态）",
+        "系统女声可选",
+        "AI 音色灰置且文案「需网络（P2）」",
+        "Piper 灰置且文案「下载 52MB（P2）」",
+        "声音克隆灰置且文案「评估中」",
+        "无匹配音色提示「当前：系统默认音色（未找到所选音色）」可见",
+        "语速滑块 0.5x–3.0x + 当前值 1.0x",
+        "定时关闭 5 项（关闭/15/30/60/本章结束）全禁用",
+        "后台播放开关禁用",
+        "隐私文案含「离线音色不联网」"
+      ]
+    },
+    {
+      "id": "S3",
+      "name": "翻译浮层 · 译文卡片来源标签",
+      "device": "mobile",
+      "design": {
+        "svg": "docs/wireframes/08-translation.svg",
+        "viewport": "900x640",
+        "label": "设计稿 v1 · 翻译与词典浮层（线框 08）"
+      },
+      "impl": {
+        "png": "app/screenshots/translation_cards.png",
+        "viewport": "1170x2532",
+        "label": "真实渲染 · 在线/离线/缓存/回退 四种译文卡片"
+      },
+      "intent": [
+        "译文卡片来源标签：在线 / 离线 / 缓存 + provider 名（对应线框「DeepL · 命中缓存」）",
+        "REQ-006：fallbackReason 提示行（如「在线失败，已回退离线」）",
+        "浮层结构 / 选中高亮 / 卡片位置 / 查词卡片 / 加入生词本按钮不变"
+      ],
+      "acceptance": [
+        "「在线」标签可见（provider=deepl，未缓存）",
+        "「离线」标签可见（provider=offline）",
+        "「缓存」标签可见（fromCache=true）",
+        "每张卡片显示 provider 名（deepl / offline）",
+        "回退提示「在线失败，已回退离线」可见",
+        "译文正文 + 标签行布局不变"
+      ]
+    },
+    {
+      "id": "S4",
+      "name": "设置页 · 翻译策略与掩码 key",
+      "device": "mobile",
+      "design": {
+        "svg": "docs/wireframes/03-settings.svg",
+        "viewport": "900x640",
+        "label": "设计稿 v1 · 设置页（线框 03）"
+      },
+      "impl": {
+        "png": "app/screenshots/settings_translate.png",
+        "viewport": "1170x2532",
+        "label": "真实渲染 · 词典与翻译区块（策略下拉 + 掩码 key）"
+      },
+      "intent": [
+        "既有「词典与翻译」区块内新增「翻译策略」下拉（auto/offline/deepl/echo）",
+        "key 掩码回填：已配置时显示 ••••••••，不回填明文",
+        "不新增页面 / 不改左侧导航；导入词库、清空翻译缓存等既有控件保留"
+      ],
+      "acceptance": [
+        "「翻译策略」下拉可见",
+        "当前策略显示「自动（在线优先）」",
+        "「DeepL API Key」输入框可见",
+        "已配置 key 时掩码回填（不回填明文）",
+        "仍在「词典与翻译」区块内，无新增页面",
+        "导入词库 / 清空翻译缓存等既有控件保留"
+      ]
+    },
+    {
+      "id": "S5",
+      "name": "阅读器 · 长按选词工具条（回归守护）",
+      "device": "mobile",
+      "design": {
+        "svg": "docs/wireframes/reader-ui-v2/04-selection.svg",
+        "viewport": "900x640",
+        "label": "设计稿 v2 · 选词工具条（04-selection）"
+      },
+      "impl": {
+        "png": "app/screenshots/reader_selected.png",
+        "viewport": "1170x2532",
+        "label": "真实渲染 · 选词工具条（零改动回归）"
+      },
+      "intent": [
+        "选中文本浮出自定义工具条（划重点/笔记/翻译/查词/复制）",
+        "工具条随选中区浮动、两端选柄可见",
+        "REQ-006 零改动：复用「翻译」入口，不新增入口、不改 5 入口/4 色圆点"
+      ],
+      "acceptance": [
+        "自定义工具条出现且五入口齐全",
+        "无系统原生 ActionMode/工具条",
+        "选中文本有高亮",
+        "未新增翻译入口"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,6536 @@
+{
+  "outcomes": [
+    {
+      "scenario": "Baseline",
+      "summary": "Success",
+      "log_path": "log/baseline.log",
+      "diff_path": null,
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 21.808487797,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 8.271518563,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:50:9: replace DictService::scan_existing with ()",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "DictService::scan_existing",
+            "return_type": "",
+            "span": {
+              "start": {
+                "line": 49,
+                "column": 5
+              },
+              "end": {
+                "line": 65,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 50,
+              "column": 9
+            },
+            "end": {
+              "line": 64,
+              "column": 10
+            }
+          },
+          "replacement": "()",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_50_col_9.log",
+      "diff_path": "diff/src__dict__translation.rs_line_50_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 9.48582205,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.359956601,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:117:37: replace == with != in DictService::install",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "DictService::install",
+            "return_type": "-> Result<DictInfo>",
+            "span": {
+              "start": {
+                "line": 103,
+                "column": 5
+              },
+              "end": {
+                "line": 183,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 117,
+              "column": 37
+            },
+            "end": {
+              "line": 117,
+              "column": 39
+            }
+          },
+          "replacement": "!=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_117_col_37.log",
+      "diff_path": "diff/src__dict__translation.rs_line_117_col_37.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 15.054458499,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.255940668,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:68:9: replace DictService::load_from_installed_dir -> Result<LoadedDict> with Ok(Default::default())",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "DictService::load_from_installed_dir",
+            "return_type": "-> Result<LoadedDict>",
+            "span": {
+              "start": {
+                "line": 67,
+                "column": 5
+              },
+              "end": {
+                "line": 101,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 68,
+              "column": 9
+            },
+            "end": {
+              "line": 100,
+              "column": 11
+            }
+          },
+          "replacement": "Ok(Default::default())",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__translation.rs_line_68_col_9.log",
+      "diff_path": "diff/src__dict__translation.rs_line_68_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 33.821856338,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:136:25: replace != with == in DictService::install",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "DictService::install",
+            "return_type": "-> Result<DictInfo>",
+            "span": {
+              "start": {
+                "line": 103,
+                "column": 5
+              },
+              "end": {
+                "line": 183,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 136,
+              "column": 25
+            },
+            "end": {
+              "line": 136,
+              "column": 27
+            }
+          },
+          "replacement": "==",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_136_col_25.log",
+      "diff_path": "diff/src__dict__translation.rs_line_136_col_25.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 11.457190899,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 7.024972036,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:106:9: replace DictService::install -> Result<DictInfo> with Ok(Default::default())",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "DictService::install",
+            "return_type": "-> Result<DictInfo>",
+            "span": {
+              "start": {
+                "line": 103,
+                "column": 5
+              },
+              "end": {
+                "line": 183,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 106,
+              "column": 9
+            },
+            "end": {
+              "line": 182,
+              "column": 17
+            }
+          },
+          "replacement": "Ok(Default::default())",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__translation.rs_line_106_col_9.log",
+      "diff_path": "diff/src__dict__translation.rs_line_106_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 56.154580262,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:187:9: replace DictService::remove -> Result<()> with Ok(())",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "DictService::remove",
+            "return_type": "-> Result<()>",
+            "span": {
+              "start": {
+                "line": 185,
+                "column": 5
+              },
+              "end": {
+                "line": 198,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 187,
+              "column": 9
+            },
+            "end": {
+              "line": 197,
+              "column": 15
+            }
+          },
+          "replacement": "Ok(())",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_187_col_9.log",
+      "diff_path": "diff/src__dict__translation.rs_line_187_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 9.940982367,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.0531961,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:158:58: replace == with != in DictService::install",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "DictService::install",
+            "return_type": "-> Result<DictInfo>",
+            "span": {
+              "start": {
+                "line": 103,
+                "column": 5
+              },
+              "end": {
+                "line": 183,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 158,
+              "column": 58
+            },
+            "end": {
+              "line": 158,
+              "column": 60
+            }
+          },
+          "replacement": "!=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_158_col_58.log",
+      "diff_path": "diff/src__dict__translation.rs_line_158_col_58.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 27.614376125,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.464034616,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:202:9: replace DictService::list -> Result<Vec<DictInfo>> with Ok(vec![])",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "DictService::list",
+            "return_type": "-> Result<Vec<DictInfo>>",
+            "span": {
+              "start": {
+                "line": 200,
+                "column": 5
+              },
+              "end": {
+                "line": 203,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 202,
+              "column": 9
+            },
+            "end": {
+              "line": 202,
+              "column": 69
+            }
+          },
+          "replacement": "Ok(vec![])",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_202_col_9.log",
+      "diff_path": "diff/src__dict__translation.rs_line_202_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 4.732609887,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.567905114,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:202:9: replace DictService::list -> Result<Vec<DictInfo>> with Ok(vec![Default::default()])",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "DictService::list",
+            "return_type": "-> Result<Vec<DictInfo>>",
+            "span": {
+              "start": {
+                "line": 200,
+                "column": 5
+              },
+              "end": {
+                "line": 203,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 202,
+              "column": 9
+            },
+            "end": {
+              "line": 202,
+              "column": 69
+            }
+          },
+          "replacement": "Ok(vec![Default::default()])",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__translation.rs_line_202_col_9_001.log",
+      "diff_path": "diff/src__dict__translation.rs_line_202_col_9_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 1.015338799,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:75:59: replace == with != in DictService::load_from_installed_dir",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "DictService::load_from_installed_dir",
+            "return_type": "-> Result<LoadedDict>",
+            "span": {
+              "start": {
+                "line": 67,
+                "column": 5
+              },
+              "end": {
+                "line": 101,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 75,
+              "column": 59
+            },
+            "end": {
+              "line": 75,
+              "column": 61
+            }
+          },
+          "replacement": "!=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_75_col_59.log",
+      "diff_path": "diff/src__dict__translation.rs_line_75_col_59.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 63.454396046,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.211122956,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:208:9: replace DictService::lookup -> Result<Option<DictEntry>> with Ok(Some(Default::default()))",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "DictService::lookup",
+            "return_type": "-> Result<Option<DictEntry>>",
+            "span": {
+              "start": {
+                "line": 205,
+                "column": 5
+              },
+              "end": {
+                "line": 257,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 208,
+              "column": 9
+            },
+            "end": {
+              "line": 256,
+              "column": 10
+            }
+          },
+          "replacement": "Ok(Some(Default::default()))",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__translation.rs_line_208_col_9_001.log",
+      "diff_path": "diff/src__dict__translation.rs_line_208_col_9_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 1.56883606,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:190:39: replace == with != in DictService::remove",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "DictService::remove",
+            "return_type": "-> Result<()>",
+            "span": {
+              "start": {
+                "line": 185,
+                "column": 5
+              },
+              "end": {
+                "line": 198,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 190,
+              "column": 39
+            },
+            "end": {
+              "line": 190,
+              "column": 41
+            }
+          },
+          "replacement": "!=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_190_col_39.log",
+      "diff_path": "diff/src__dict__translation.rs_line_190_col_39.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 9.967580324,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.217432782,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:214:16: delete ! in DictService::lookup",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "DictService::lookup",
+            "return_type": "-> Result<Option<DictEntry>>",
+            "span": {
+              "start": {
+                "line": 205,
+                "column": 5
+              },
+              "end": {
+                "line": 257,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 214,
+              "column": 16
+            },
+            "end": {
+              "line": 214,
+              "column": 17
+            }
+          },
+          "replacement": "",
+          "genre": "UnaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_214_col_16.log",
+      "diff_path": "diff/src__dict__translation.rs_line_214_col_16.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.537126053,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.215123664,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:208:9: replace DictService::lookup -> Result<Option<DictEntry>> with Ok(None)",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "DictService::lookup",
+            "return_type": "-> Result<Option<DictEntry>>",
+            "span": {
+              "start": {
+                "line": 205,
+                "column": 5
+              },
+              "end": {
+                "line": 257,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 208,
+              "column": 9
+            },
+            "end": {
+              "line": 256,
+              "column": 10
+            }
+          },
+          "replacement": "Ok(None)",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_208_col_9.log",
+      "diff_path": "diff/src__dict__translation.rs_line_208_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 5.310093354,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.214111402,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:214:58: replace == with != in DictService::lookup",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "DictService::lookup",
+            "return_type": "-> Result<Option<DictEntry>>",
+            "span": {
+              "start": {
+                "line": 205,
+                "column": 5
+              },
+              "end": {
+                "line": 257,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 214,
+              "column": 58
+            },
+            "end": {
+              "line": 214,
+              "column": 60
+            }
+          },
+          "replacement": "!=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_214_col_58.log",
+      "diff_path": "diff/src__dict__translation.rs_line_214_col_58.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.448744225,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.2135550099999999,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:221:31: replace != with == in DictService::lookup",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "DictService::lookup",
+            "return_type": "-> Result<Option<DictEntry>>",
+            "span": {
+              "start": {
+                "line": 205,
+                "column": 5
+              },
+              "end": {
+                "line": 257,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 221,
+              "column": 31
+            },
+            "end": {
+              "line": 221,
+              "column": 33
+            }
+          },
+          "replacement": "==",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_221_col_31.log",
+      "diff_path": "diff/src__dict__translation.rs_line_221_col_31.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.695303071,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.013809335,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:225:23: replace += with -= in DictService::lookup",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "DictService::lookup",
+            "return_type": "-> Result<Option<DictEntry>>",
+            "span": {
+              "start": {
+                "line": 205,
+                "column": 5
+              },
+              "end": {
+                "line": 257,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 225,
+              "column": 23
+            },
+            "end": {
+              "line": 225,
+              "column": 25
+            }
+          },
+          "replacement": "-=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_225_col_23.log",
+      "diff_path": "diff/src__dict__translation.rs_line_225_col_23.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.777011505,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.315103593,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:252:22: replace == with != in DictService::lookup",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "DictService::lookup",
+            "return_type": "-> Result<Option<DictEntry>>",
+            "span": {
+              "start": {
+                "line": 205,
+                "column": 5
+              },
+              "end": {
+                "line": 257,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 252,
+              "column": 22
+            },
+            "end": {
+              "line": 252,
+              "column": 24
+            }
+          },
+          "replacement": "!=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_252_col_22.log",
+      "diff_path": "diff/src__dict__translation.rs_line_252_col_22.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.186282777,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.3878208380000001,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:225:23: replace += with *= in DictService::lookup",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "DictService::lookup",
+            "return_type": "-> Result<Option<DictEntry>>",
+            "span": {
+              "start": {
+                "line": 205,
+                "column": 5
+              },
+              "end": {
+                "line": 257,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 225,
+              "column": 23
+            },
+            "end": {
+              "line": 225,
+              "column": 25
+            }
+          },
+          "replacement": "*=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_225_col_23_001.log",
+      "diff_path": "diff/src__dict__translation.rs_line_225_col_23_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 4.60399136,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.261717523,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:261:9: replace DictService::read_region -> Result<Vec<u8>> with Ok(vec![])",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "DictService::read_region",
+            "return_type": "-> Result<Vec<u8>>",
+            "span": {
+              "start": {
+                "line": 259,
+                "column": 5
+              },
+              "end": {
+                "line": 279,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 261,
+              "column": 9
+            },
+            "end": {
+              "line": 278,
+              "column": 16
+            }
+          },
+          "replacement": "Ok(vec![])",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_261_col_9.log",
+      "diff_path": "diff/src__dict__translation.rs_line_261_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 4.008876297,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.109444938,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:261:9: replace DictService::read_region -> Result<Vec<u8>> with Ok(vec![0])",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "DictService::read_region",
+            "return_type": "-> Result<Vec<u8>>",
+            "span": {
+              "start": {
+                "line": 259,
+                "column": 5
+              },
+              "end": {
+                "line": 279,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 261,
+              "column": 9
+            },
+            "end": {
+              "line": 278,
+              "column": 16
+            }
+          },
+          "replacement": "Ok(vec![0])",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_261_col_9_001.log",
+      "diff_path": "diff/src__dict__translation.rs_line_261_col_9_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.189212805,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.265661227,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:266:39: replace + with - in DictService::read_region",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "DictService::read_region",
+            "return_type": "-> Result<Vec<u8>>",
+            "span": {
+              "start": {
+                "line": 259,
+                "column": 5
+              },
+              "end": {
+                "line": 279,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 266,
+              "column": 39
+            },
+            "end": {
+              "line": 266,
+              "column": 40
+            }
+          },
+          "replacement": "-",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_266_col_39.log",
+      "diff_path": "diff/src__dict__translation.rs_line_266_col_39.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.254453057,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.210859022,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:261:9: replace DictService::read_region -> Result<Vec<u8>> with Ok(vec![1])",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "DictService::read_region",
+            "return_type": "-> Result<Vec<u8>>",
+            "span": {
+              "start": {
+                "line": 259,
+                "column": 5
+              },
+              "end": {
+                "line": 279,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 261,
+              "column": 9
+            },
+            "end": {
+              "line": 278,
+              "column": 16
+            }
+          },
+          "replacement": "Ok(vec![1])",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_261_col_9_002.log",
+      "diff_path": "diff/src__dict__translation.rs_line_261_col_9_002.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.863581443,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.217995138,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:266:39: replace + with * in DictService::read_region",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "DictService::read_region",
+            "return_type": "-> Result<Vec<u8>>",
+            "span": {
+              "start": {
+                "line": 259,
+                "column": 5
+              },
+              "end": {
+                "line": 279,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 266,
+              "column": 39
+            },
+            "end": {
+              "line": 266,
+              "column": 40
+            }
+          },
+          "replacement": "*",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_266_col_39_001.log",
+      "diff_path": "diff/src__dict__translation.rs_line_266_col_39_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.696538995,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.316133907,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:267:16: replace > with == in DictService::read_region",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "DictService::read_region",
+            "return_type": "-> Result<Vec<u8>>",
+            "span": {
+              "start": {
+                "line": 259,
+                "column": 5
+              },
+              "end": {
+                "line": 279,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 267,
+              "column": 16
+            },
+            "end": {
+              "line": 267,
+              "column": 17
+            }
+          },
+          "replacement": "==",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_267_col_16.log",
+      "diff_path": "diff/src__dict__translation.rs_line_267_col_16.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.356754672,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.370428851,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:267:16: replace > with < in DictService::read_region",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "DictService::read_region",
+            "return_type": "-> Result<Vec<u8>>",
+            "span": {
+              "start": {
+                "line": 259,
+                "column": 5
+              },
+              "end": {
+                "line": 279,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 267,
+              "column": 16
+            },
+            "end": {
+              "line": 267,
+              "column": 17
+            }
+          },
+          "replacement": "<",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_267_col_16_001.log",
+      "diff_path": "diff/src__dict__translation.rs_line_267_col_16_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.882713228,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.940826325,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:267:16: replace > with >= in DictService::read_region",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "DictService::read_region",
+            "return_type": "-> Result<Vec<u8>>",
+            "span": {
+              "start": {
+                "line": 259,
+                "column": 5
+              },
+              "end": {
+                "line": 279,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 267,
+              "column": 16
+            },
+            "end": {
+              "line": 267,
+              "column": 17
+            }
+          },
+          "replacement": ">=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_267_col_16_002.log",
+      "diff_path": "diff/src__dict__translation.rs_line_267_col_16_002.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.546586204,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.413987591,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:282:9: replace DictService::unique_id -> String with String::new()",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "DictService::unique_id",
+            "return_type": "-> String",
+            "span": {
+              "start": {
+                "line": 281,
+                "column": 5
+              },
+              "end": {
+                "line": 290,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 282,
+              "column": 9
+            },
+            "end": {
+              "line": 289,
+              "column": 18
+            }
+          },
+          "replacement": "String::new()",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_282_col_9.log",
+      "diff_path": "diff/src__dict__translation.rs_line_282_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.040086209,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.261016027,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:282:9: replace DictService::unique_id -> String with \"xyzzy\".into()",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "DictService::unique_id",
+            "return_type": "-> String",
+            "span": {
+              "start": {
+                "line": 281,
+                "column": 5
+              },
+              "end": {
+                "line": 290,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 282,
+              "column": 9
+            },
+            "end": {
+              "line": 289,
+              "column": 18
+            }
+          },
+          "replacement": "\"xyzzy\".into()",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_282_col_9_001.log",
+      "diff_path": "diff/src__dict__translation.rs_line_282_col_9_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.32561543,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.226527116,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:287:15: replace += with -= in DictService::unique_id",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "DictService::unique_id",
+            "return_type": "-> String",
+            "span": {
+              "start": {
+                "line": 281,
+                "column": 5
+              },
+              "end": {
+                "line": 290,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 287,
+              "column": 15
+            },
+            "end": {
+              "line": 287,
+              "column": 17
+            }
+          },
+          "replacement": "-=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_287_col_15.log",
+      "diff_path": "diff/src__dict__translation.rs_line_287_col_15.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.231635659,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.212508198,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:294:5: replace find_ifo_in -> Option<PathBuf> with None",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "find_ifo_in",
+            "return_type": "-> Option<PathBuf>",
+            "span": {
+              "start": {
+                "line": 293,
+                "column": 1
+              },
+              "end": {
+                "line": 301,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 294,
+              "column": 5
+            },
+            "end": {
+              "line": 300,
+              "column": 28
+            }
+          },
+          "replacement": "None",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_294_col_5.log",
+      "diff_path": "diff/src__dict__translation.rs_line_294_col_5.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.665568933,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.471623429,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:294:5: replace find_ifo_in -> Option<PathBuf> with Some(Default::default())",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "find_ifo_in",
+            "return_type": "-> Option<PathBuf>",
+            "span": {
+              "start": {
+                "line": 293,
+                "column": 1
+              },
+              "end": {
+                "line": 301,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 294,
+              "column": 5
+            },
+            "end": {
+              "line": 300,
+              "column": 28
+            }
+          },
+          "replacement": "Some(Default::default())",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_294_col_5_001.log",
+      "diff_path": "diff/src__dict__translation.rs_line_294_col_5_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.345259015,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.25599851,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:297:60: replace == with != in find_ifo_in",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "find_ifo_in",
+            "return_type": "-> Option<PathBuf>",
+            "span": {
+              "start": {
+                "line": 293,
+                "column": 1
+              },
+              "end": {
+                "line": 301,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 297,
+              "column": 60
+            },
+            "end": {
+              "line": 297,
+              "column": 62
+            }
+          },
+          "replacement": "!=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_297_col_60.log",
+      "diff_path": "diff/src__dict__translation.rs_line_297_col_60.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.666220732,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.06599432,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:305:5: replace dict_stem -> String with String::new()",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "dict_stem",
+            "return_type": "-> String",
+            "span": {
+              "start": {
+                "line": 303,
+                "column": 1
+              },
+              "end": {
+                "line": 308,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 305,
+              "column": 5
+            },
+            "end": {
+              "line": 307,
+              "column": 47
+            }
+          },
+          "replacement": "String::new()",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_305_col_5.log",
+      "diff_path": "diff/src__dict__translation.rs_line_305_col_5.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.135237993,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.257385303,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:305:5: replace dict_stem -> String with \"xyzzy\".into()",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "dict_stem",
+            "return_type": "-> String",
+            "span": {
+              "start": {
+                "line": 303,
+                "column": 1
+              },
+              "end": {
+                "line": 308,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 305,
+              "column": 5
+            },
+            "end": {
+              "line": 307,
+              "column": 47
+            }
+          },
+          "replacement": "\"xyzzy\".into()",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_305_col_5_001.log",
+      "diff_path": "diff/src__dict__translation.rs_line_305_col_5_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.391433813,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.303955285,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:312:5: replace dict_path_of -> Option<PathBuf> with None",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "dict_path_of",
+            "return_type": "-> Option<PathBuf>",
+            "span": {
+              "start": {
+                "line": 310,
+                "column": 1
+              },
+              "end": {
+                "line": 321,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 312,
+              "column": 5
+            },
+            "end": {
+              "line": 320,
+              "column": 9
+            }
+          },
+          "replacement": "None",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_312_col_5.log",
+      "diff_path": "diff/src__dict__translation.rs_line_312_col_5.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.131225567,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.2615773940000001,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:312:5: replace dict_path_of -> Option<PathBuf> with Some(Default::default())",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "dict_path_of",
+            "return_type": "-> Option<PathBuf>",
+            "span": {
+              "start": {
+                "line": 310,
+                "column": 1
+              },
+              "end": {
+                "line": 321,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 312,
+              "column": 5
+            },
+            "end": {
+              "line": 320,
+              "column": 9
+            }
+          },
+          "replacement": "Some(Default::default())",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_312_col_5_001.log",
+      "diff_path": "diff/src__dict__translation.rs_line_312_col_5_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.316099321,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.060925467,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:325:5: replace strip_ifo -> PathBuf with Default::default()",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "strip_ifo",
+            "return_type": "-> PathBuf",
+            "span": {
+              "start": {
+                "line": 323,
+                "column": 1
+              },
+              "end": {
+                "line": 332,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 325,
+              "column": 5
+            },
+            "end": {
+              "line": 331,
+              "column": 6
+            }
+          },
+          "replacement": "Default::default()",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_325_col_5.log",
+      "diff_path": "diff/src__dict__translation.rs_line_325_col_5.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.279608617,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.011694801,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:328:36: replace - with + in strip_ifo",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "strip_ifo",
+            "return_type": "-> PathBuf",
+            "span": {
+              "start": {
+                "line": 323,
+                "column": 1
+              },
+              "end": {
+                "line": 332,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 328,
+              "column": 36
+            },
+            "end": {
+              "line": 328,
+              "column": 37
+            }
+          },
+          "replacement": "+",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_328_col_36.log",
+      "diff_path": "diff/src__dict__translation.rs_line_328_col_36.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.323062941,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.154244882,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:328:36: replace - with / in strip_ifo",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "strip_ifo",
+            "return_type": "-> PathBuf",
+            "span": {
+              "start": {
+                "line": 323,
+                "column": 1
+              },
+              "end": {
+                "line": 332,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 328,
+              "column": 36
+            },
+            "end": {
+              "line": 328,
+              "column": 37
+            }
+          },
+          "replacement": "/",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_328_col_36_001.log",
+      "diff_path": "diff/src__dict__translation.rs_line_328_col_36_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.327914511,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.154200313,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:338:5: replace sanitize_id -> String with String::new()",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "sanitize_id",
+            "return_type": "-> String",
+            "span": {
+              "start": {
+                "line": 334,
+                "column": 1
+              },
+              "end": {
+                "line": 359,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 338,
+              "column": 5
+            },
+            "end": {
+              "line": 358,
+              "column": 6
+            }
+          },
+          "replacement": "String::new()",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_338_col_5.log",
+      "diff_path": "diff/src__dict__translation.rs_line_338_col_5.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.565958577,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.307175373,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:338:5: replace sanitize_id -> String with \"xyzzy\".into()",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "sanitize_id",
+            "return_type": "-> String",
+            "span": {
+              "start": {
+                "line": 334,
+                "column": 1
+              },
+              "end": {
+                "line": 359,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 338,
+              "column": 5
+            },
+            "end": {
+              "line": 358,
+              "column": 6
+            }
+          },
+          "replacement": "\"xyzzy\".into()",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_338_col_5_001.log",
+      "diff_path": "diff/src__dict__translation.rs_line_338_col_5_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.575216185,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.160186645,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:341:54: replace || with && in sanitize_id",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "sanitize_id",
+            "return_type": "-> String",
+            "span": {
+              "start": {
+                "line": 334,
+                "column": 1
+              },
+              "end": {
+                "line": 359,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 341,
+              "column": 54
+            },
+            "end": {
+              "line": 341,
+              "column": 56
+            }
+          },
+          "replacement": "&&",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_341_col_54.log",
+      "diff_path": "diff/src__dict__translation.rs_line_341_col_54.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.423661863,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.053421106,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:341:42: replace || with && in sanitize_id",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "sanitize_id",
+            "return_type": "-> String",
+            "span": {
+              "start": {
+                "line": 334,
+                "column": 1
+              },
+              "end": {
+                "line": 359,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 341,
+              "column": 42
+            },
+            "end": {
+              "line": 341,
+              "column": 44
+            }
+          },
+          "replacement": "&&",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_341_col_42.log",
+      "diff_path": "diff/src__dict__translation.rs_line_341_col_42.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.667706494,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.312589814,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:341:47: replace == with != in sanitize_id",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "sanitize_id",
+            "return_type": "-> String",
+            "span": {
+              "start": {
+                "line": 334,
+                "column": 1
+              },
+              "end": {
+                "line": 359,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 341,
+              "column": 47
+            },
+            "end": {
+              "line": 341,
+              "column": 49
+            }
+          },
+          "replacement": "!=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_341_col_47.log",
+      "diff_path": "diff/src__dict__translation.rs_line_341_col_47.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.22187738,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.261756161,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:341:59: replace == with != in sanitize_id",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "sanitize_id",
+            "return_type": "-> String",
+            "span": {
+              "start": {
+                "line": 334,
+                "column": 1
+              },
+              "end": {
+                "line": 359,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 341,
+              "column": 59
+            },
+            "end": {
+              "line": 341,
+              "column": 61
+            }
+          },
+          "replacement": "!=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_341_col_59.log",
+      "diff_path": "diff/src__dict__translation.rs_line_341_col_59.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 1.8651109240000001,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.054580323,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:351:16: replace > with == in sanitize_id",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "sanitize_id",
+            "return_type": "-> String",
+            "span": {
+              "start": {
+                "line": 334,
+                "column": 1
+              },
+              "end": {
+                "line": 359,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 351,
+              "column": 16
+            },
+            "end": {
+              "line": 351,
+              "column": 17
+            }
+          },
+          "replacement": "==",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_351_col_16.log",
+      "diff_path": "diff/src__dict__translation.rs_line_351_col_16.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.122383447,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.215506101,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:351:16: replace > with < in sanitize_id",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "sanitize_id",
+            "return_type": "-> String",
+            "span": {
+              "start": {
+                "line": 334,
+                "column": 1
+              },
+              "end": {
+                "line": 359,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 351,
+              "column": 16
+            },
+            "end": {
+              "line": 351,
+              "column": 17
+            }
+          },
+          "replacement": "<",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_351_col_16_001.log",
+      "diff_path": "diff/src__dict__translation.rs_line_351_col_16_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.17673055,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.419795709,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:355:20: replace < with == in sanitize_id",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "sanitize_id",
+            "return_type": "-> String",
+            "span": {
+              "start": {
+                "line": 334,
+                "column": 1
+              },
+              "end": {
+                "line": 359,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 355,
+              "column": 20
+            },
+            "end": {
+              "line": 355,
+              "column": 21
+            }
+          },
+          "replacement": "==",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_355_col_20.log",
+      "diff_path": "diff/src__dict__translation.rs_line_355_col_20.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.223141884,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.203549501,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:355:20: replace < with > in sanitize_id",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "sanitize_id",
+            "return_type": "-> String",
+            "span": {
+              "start": {
+                "line": 334,
+                "column": 1
+              },
+              "end": {
+                "line": 359,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 355,
+              "column": 20
+            },
+            "end": {
+              "line": 355,
+              "column": 21
+            }
+          },
+          "replacement": ">",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_355_col_20_001.log",
+      "diff_path": "diff/src__dict__translation.rs_line_355_col_20_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 1.960902857,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.253072551,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:355:20: replace < with <= in sanitize_id",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "sanitize_id",
+            "return_type": "-> String",
+            "span": {
+              "start": {
+                "line": 334,
+                "column": 1
+              },
+              "end": {
+                "line": 359,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 355,
+              "column": 20
+            },
+            "end": {
+              "line": 355,
+              "column": 21
+            }
+          },
+          "replacement": "<=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_355_col_20_002.log",
+      "diff_path": "diff/src__dict__translation.rs_line_355_col_20_002.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.069604707,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 0.904044251,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:351:16: replace > with >= in sanitize_id",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "sanitize_id",
+            "return_type": "-> String",
+            "span": {
+              "start": {
+                "line": 334,
+                "column": 1
+              },
+              "end": {
+                "line": 359,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 351,
+              "column": 16
+            },
+            "end": {
+              "line": 351,
+              "column": 17
+            }
+          },
+          "replacement": ">=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "MissedMutant",
+      "log_path": "log/src__dict__translation.rs_line_351_col_16_002.log",
+      "diff_path": "diff/src__dict__translation.rs_line_351_col_16_002.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.039852619,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 11.623970164,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:363:5: replace fnv32 -> u32 with 0",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "fnv32",
+            "return_type": "-> u32",
+            "span": {
+              "start": {
+                "line": 361,
+                "column": 1
+              },
+              "end": {
+                "line": 369,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 363,
+              "column": 5
+            },
+            "end": {
+              "line": 368,
+              "column": 6
+            }
+          },
+          "replacement": "0",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_363_col_5.log",
+      "diff_path": "diff/src__dict__translation.rs_line_363_col_5.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.058443587,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.106756022,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:363:5: replace fnv32 -> u32 with 1",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "fnv32",
+            "return_type": "-> u32",
+            "span": {
+              "start": {
+                "line": 361,
+                "column": 1
+              },
+              "end": {
+                "line": 369,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 363,
+              "column": 5
+            },
+            "end": {
+              "line": 368,
+              "column": 6
+            }
+          },
+          "replacement": "1",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_363_col_5_001.log",
+      "diff_path": "diff/src__dict__translation.rs_line_363_col_5_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.014317162,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.264435349,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:365:11: replace ^= with |= in fnv32",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "fnv32",
+            "return_type": "-> u32",
+            "span": {
+              "start": {
+                "line": 361,
+                "column": 1
+              },
+              "end": {
+                "line": 369,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 365,
+              "column": 11
+            },
+            "end": {
+              "line": 365,
+              "column": 13
+            }
+          },
+          "replacement": "|=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_365_col_11.log",
+      "diff_path": "diff/src__dict__translation.rs_line_365_col_11.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.39070524,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.103958681,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:427:9: replace TranslationService::translate_cached -> Result<(Translation, bool)> with Ok((Default::default(), true))",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::translate_cached",
+            "return_type": "-> Result<(Translation, bool)>",
+            "span": {
+              "start": {
+                "line": 418,
+                "column": 5
+              },
+              "end": {
+                "line": 429,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 427,
+              "column": 9
+            },
+            "end": {
+              "line": 428,
+              "column": 52
+            }
+          },
+          "replacement": "Ok((Default::default(), true))",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__translation.rs_line_427_col_9.log",
+      "diff_path": "diff/src__dict__translation.rs_line_427_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 1.315073204,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:427:9: replace TranslationService::translate_cached -> Result<(Translation, bool)> with Ok((Default::default(), false))",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::translate_cached",
+            "return_type": "-> Result<(Translation, bool)>",
+            "span": {
+              "start": {
+                "line": 418,
+                "column": 5
+              },
+              "end": {
+                "line": 429,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 427,
+              "column": 9
+            },
+            "end": {
+              "line": 428,
+              "column": 52
+            }
+          },
+          "replacement": "Ok((Default::default(), false))",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__translation.rs_line_427_col_9_001.log",
+      "diff_path": "diff/src__dict__translation.rs_line_427_col_9_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 0.652154118,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:365:11: replace ^= with &= in fnv32",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "fnv32",
+            "return_type": "-> u32",
+            "span": {
+              "start": {
+                "line": 361,
+                "column": 1
+              },
+              "end": {
+                "line": 369,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 365,
+              "column": 11
+            },
+            "end": {
+              "line": 365,
+              "column": 13
+            }
+          },
+          "replacement": "&=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_365_col_11_001.log",
+      "diff_path": "diff/src__dict__translation.rs_line_365_col_11_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.013642696,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.255832982,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:439:9: replace TranslationService::translate_routed -> Result<RoutedTranslation> with Ok(Default::default())",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::translate_routed",
+            "return_type": "-> Result<RoutedTranslation>",
+            "span": {
+              "start": {
+                "line": 431,
+                "column": 5
+              },
+              "end": {
+                "line": 448,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 439,
+              "column": 9
+            },
+            "end": {
+              "line": 447,
+              "column": 60
+            }
+          },
+          "replacement": "Ok(Default::default())",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__translation.rs_line_439_col_9.log",
+      "diff_path": "diff/src__dict__translation.rs_line_439_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 0.702107469,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:460:9: replace TranslationService::translate_auto -> Result<RoutedTranslation> with Ok(Default::default())",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::translate_auto",
+            "return_type": "-> Result<RoutedTranslation>",
+            "span": {
+              "start": {
+                "line": 450,
+                "column": 5
+              },
+              "end": {
+                "line": 570,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 460,
+              "column": 9
+            },
+            "end": {
+              "line": 569,
+              "column": 87
+            }
+          },
+          "replacement": "Ok(Default::default())",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__translation.rs_line_460_col_9.log",
+      "diff_path": "diff/src__dict__translation.rs_line_460_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 0.903086298,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:444:21: replace == with != in TranslationService::translate_routed",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::translate_routed",
+            "return_type": "-> Result<RoutedTranslation>",
+            "span": {
+              "start": {
+                "line": 431,
+                "column": 5
+              },
+              "end": {
+                "line": 448,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 444,
+              "column": 21
+            },
+            "end": {
+              "line": 444,
+              "column": 23
+            }
+          },
+          "replacement": "!=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_444_col_21.log",
+      "diff_path": "diff/src__dict__translation.rs_line_444_col_21.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 1.9639826249999999,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.05455226,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:469:25: delete ! in TranslationService::translate_auto",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::translate_auto",
+            "return_type": "-> Result<RoutedTranslation>",
+            "span": {
+              "start": {
+                "line": 450,
+                "column": 5
+              },
+              "end": {
+                "line": 570,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 469,
+              "column": 25
+            },
+            "end": {
+              "line": 469,
+              "column": 26
+            }
+          },
+          "replacement": "",
+          "genre": "UnaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_469_col_25.log",
+      "diff_path": "diff/src__dict__translation.rs_line_469_col_25.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.127496562,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.106808822,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:285:56: replace == with != in DictService::unique_id",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "DictService::unique_id",
+            "return_type": "-> String",
+            "span": {
+              "start": {
+                "line": 281,
+                "column": 5
+              },
+              "end": {
+                "line": 290,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 285,
+              "column": 56
+            },
+            "end": {
+              "line": 285,
+              "column": 58
+            }
+          },
+          "replacement": "!=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "Timeout",
+      "log_path": "log/src__dict__translation.rs_line_285_col_56.log",
+      "diff_path": "diff/src__dict__translation.rs_line_285_col_56.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.93912552,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 60.023533972,
+          "process_status": "Timeout",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:287:15: replace += with *= in DictService::unique_id",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "DictService::unique_id",
+            "return_type": "-> String",
+            "span": {
+              "start": {
+                "line": 281,
+                "column": 5
+              },
+              "end": {
+                "line": 290,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 287,
+              "column": 15
+            },
+            "end": {
+              "line": 287,
+              "column": 17
+            }
+          },
+          "replacement": "*=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "Timeout",
+      "log_path": "log/src__dict__translation.rs_line_287_col_15_001.log",
+      "diff_path": "diff/src__dict__translation.rs_line_287_col_15_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.551077012,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 60.054406981,
+          "process_status": "Timeout",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:505:36: replace == with != in TranslationService::translate_auto",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::translate_auto",
+            "return_type": "-> Result<RoutedTranslation>",
+            "span": {
+              "start": {
+                "line": 450,
+                "column": 5
+              },
+              "end": {
+                "line": 570,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 505,
+              "column": 36
+            },
+            "end": {
+              "line": 505,
+              "column": 38
+            }
+          },
+          "replacement": "!=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_505_col_36.log",
+      "diff_path": "diff/src__dict__translation.rs_line_505_col_36.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.576505937,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.317788189,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:523:39: replace || with && in TranslationService::translate_auto",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::translate_auto",
+            "return_type": "-> Result<RoutedTranslation>",
+            "span": {
+              "start": {
+                "line": 450,
+                "column": 5
+              },
+              "end": {
+                "line": 570,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 523,
+              "column": 39
+            },
+            "end": {
+              "line": 523,
+              "column": 41
+            }
+          },
+          "replacement": "&&",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_523_col_39.log",
+      "diff_path": "diff/src__dict__translation.rs_line_523_col_39.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.476658066,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.259547125,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:492:36: replace == with != in TranslationService::translate_auto",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::translate_auto",
+            "return_type": "-> Result<RoutedTranslation>",
+            "span": {
+              "start": {
+                "line": 450,
+                "column": 5
+              },
+              "end": {
+                "line": 570,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 492,
+              "column": 36
+            },
+            "end": {
+              "line": 492,
+              "column": 38
+            }
+          },
+          "replacement": "!=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_492_col_36.log",
+      "diff_path": "diff/src__dict__translation.rs_line_492_col_36.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.280132887,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 5.54570572,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:580:9: replace TranslationService::translate_explicit -> Result<RoutedTranslation> with Ok(Default::default())",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::translate_explicit",
+            "return_type": "-> Result<RoutedTranslation>",
+            "span": {
+              "start": {
+                "line": 572,
+                "column": 5
+              },
+              "end": {
+                "line": 662,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 580,
+              "column": 9
+            },
+            "end": {
+              "line": 661,
+              "column": 12
+            }
+          },
+          "replacement": "Ok(Default::default())",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__translation.rs_line_580_col_9.log",
+      "diff_path": "diff/src__dict__translation.rs_line_580_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 1.330482497,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:540:36: replace == with != in TranslationService::translate_auto",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::translate_auto",
+            "return_type": "-> Result<RoutedTranslation>",
+            "span": {
+              "start": {
+                "line": 450,
+                "column": 5
+              },
+              "end": {
+                "line": 570,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 540,
+              "column": 36
+            },
+            "end": {
+              "line": 540,
+              "column": 38
+            }
+          },
+          "replacement": "!=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_540_col_36.log",
+      "diff_path": "diff/src__dict__translation.rs_line_540_col_36.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.727753593,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.164853318,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:562:32: replace || with && in TranslationService::translate_auto",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::translate_auto",
+            "return_type": "-> Result<RoutedTranslation>",
+            "span": {
+              "start": {
+                "line": 450,
+                "column": 5
+              },
+              "end": {
+                "line": 570,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 562,
+              "column": 32
+            },
+            "end": {
+              "line": 562,
+              "column": 34
+            }
+          },
+          "replacement": "&&",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_562_col_32.log",
+      "diff_path": "diff/src__dict__translation.rs_line_562_col_32.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.787314867,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.103869079,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:580:12: delete ! in TranslationService::translate_explicit",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::translate_explicit",
+            "return_type": "-> Result<RoutedTranslation>",
+            "span": {
+              "start": {
+                "line": 572,
+                "column": 5
+              },
+              "end": {
+                "line": 662,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 580,
+              "column": 12
+            },
+            "end": {
+              "line": 580,
+              "column": 13
+            }
+          },
+          "replacement": "",
+          "genre": "UnaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_580_col_12.log",
+      "diff_path": "diff/src__dict__translation.rs_line_580_col_12.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.630147795,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.419253959,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:580:52: replace == with != in TranslationService::translate_explicit",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::translate_explicit",
+            "return_type": "-> Result<RoutedTranslation>",
+            "span": {
+              "start": {
+                "line": 572,
+                "column": 5
+              },
+              "end": {
+                "line": 662,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 580,
+              "column": 52
+            },
+            "end": {
+              "line": 580,
+              "column": 54
+            }
+          },
+          "replacement": "!=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_580_col_52.log",
+      "diff_path": "diff/src__dict__translation.rs_line_580_col_52.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.781844367,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.125551577,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:608:36: replace == with != in TranslationService::translate_explicit",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::translate_explicit",
+            "return_type": "-> Result<RoutedTranslation>",
+            "span": {
+              "start": {
+                "line": 572,
+                "column": 5
+              },
+              "end": {
+                "line": 662,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 608,
+              "column": 36
+            },
+            "end": {
+              "line": 608,
+              "column": 38
+            }
+          },
+          "replacement": "!=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_608_col_36.log",
+      "diff_path": "diff/src__dict__translation.rs_line_608_col_36.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.40351948,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.319958975,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:626:40: replace && with || in TranslationService::translate_explicit",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::translate_explicit",
+            "return_type": "-> Result<RoutedTranslation>",
+            "span": {
+              "start": {
+                "line": 572,
+                "column": 5
+              },
+              "end": {
+                "line": 662,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 626,
+              "column": 40
+            },
+            "end": {
+              "line": 626,
+              "column": 42
+            }
+          },
+          "replacement": "||",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_626_col_40.log",
+      "diff_path": "diff/src__dict__translation.rs_line_626_col_40.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.680963904,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.317522896,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:626:25: delete ! in TranslationService::translate_explicit",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::translate_explicit",
+            "return_type": "-> Result<RoutedTranslation>",
+            "span": {
+              "start": {
+                "line": 572,
+                "column": 5
+              },
+              "end": {
+                "line": 662,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 626,
+              "column": 25
+            },
+            "end": {
+              "line": 626,
+              "column": 26
+            }
+          },
+          "replacement": "",
+          "genre": "UnaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_626_col_25.log",
+      "diff_path": "diff/src__dict__translation.rs_line_626_col_25.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.896836511,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.211769605,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:626:52: replace != with == in TranslationService::translate_explicit",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::translate_explicit",
+            "return_type": "-> Result<RoutedTranslation>",
+            "span": {
+              "start": {
+                "line": 572,
+                "column": 5
+              },
+              "end": {
+                "line": 662,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 626,
+              "column": 52
+            },
+            "end": {
+              "line": 626,
+              "column": 54
+            }
+          },
+          "replacement": "==",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_626_col_52.log",
+      "diff_path": "diff/src__dict__translation.rs_line_626_col_52.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.588477483,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.165467048,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:596:32: replace == with != in TranslationService::translate_explicit",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::translate_explicit",
+            "return_type": "-> Result<RoutedTranslation>",
+            "span": {
+              "start": {
+                "line": 572,
+                "column": 5
+              },
+              "end": {
+                "line": 662,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 596,
+              "column": 32
+            },
+            "end": {
+              "line": 596,
+              "column": 34
+            }
+          },
+          "replacement": "!=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_596_col_32.log",
+      "diff_path": "diff/src__dict__translation.rs_line_596_col_32.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.387468497,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 6.122088342,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:666:9: replace TranslationService::config_view -> Result<TranslateConfig> with Ok(Default::default())",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::config_view",
+            "return_type": "-> Result<TranslateConfig>",
+            "span": {
+              "start": {
+                "line": 664,
+                "column": 5
+              },
+              "end": {
+                "line": 682,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 666,
+              "column": 9
+            },
+            "end": {
+              "line": 681,
+              "column": 11
+            }
+          },
+          "replacement": "Ok(Default::default())",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__translation.rs_line_666_col_9.log",
+      "diff_path": "diff/src__dict__translation.rs_line_666_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 1.317187166,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:629:12: delete ! in TranslationService::translate_explicit",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::translate_explicit",
+            "return_type": "-> Result<RoutedTranslation>",
+            "span": {
+              "start": {
+                "line": 572,
+                "column": 5
+              },
+              "end": {
+                "line": 662,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 629,
+              "column": 12
+            },
+            "end": {
+              "line": 629,
+              "column": 13
+            }
+          },
+          "replacement": "",
+          "genre": "UnaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_629_col_12.log",
+      "diff_path": "diff/src__dict__translation.rs_line_629_col_12.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.375319177,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.112810468,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:646:40: replace == with != in TranslationService::translate_explicit",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::translate_explicit",
+            "return_type": "-> Result<RoutedTranslation>",
+            "span": {
+              "start": {
+                "line": 572,
+                "column": 5
+              },
+              "end": {
+                "line": 662,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 646,
+              "column": 40
+            },
+            "end": {
+              "line": 646,
+              "column": 42
+            }
+          },
+          "replacement": "!=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_646_col_40.log",
+      "diff_path": "diff/src__dict__translation.rs_line_646_col_40.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.738630507,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.36880385,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:671:32: replace == with != in TranslationService::config_view",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::config_view",
+            "return_type": "-> Result<TranslateConfig>",
+            "span": {
+              "start": {
+                "line": 664,
+                "column": 5
+              },
+              "end": {
+                "line": 682,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 671,
+              "column": 32
+            },
+            "end": {
+              "line": 671,
+              "column": 34
+            }
+          },
+          "replacement": "!=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_671_col_32.log",
+      "diff_path": "diff/src__dict__translation.rs_line_671_col_32.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.424402511,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.324367725,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:672:22: delete ! in TranslationService::config_view",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::config_view",
+            "return_type": "-> Result<TranslateConfig>",
+            "span": {
+              "start": {
+                "line": 664,
+                "column": 5
+              },
+              "end": {
+                "line": 682,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 672,
+              "column": 22
+            },
+            "end": {
+              "line": 672,
+              "column": 23
+            }
+          },
+          "replacement": "",
+          "genre": "UnaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_672_col_22.log",
+      "diff_path": "diff/src__dict__translation.rs_line_672_col_22.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.197783028,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.062774538,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:675:30: delete ! in TranslationService::config_view",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::config_view",
+            "return_type": "-> Result<TranslateConfig>",
+            "span": {
+              "start": {
+                "line": 664,
+                "column": 5
+              },
+              "end": {
+                "line": 682,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 675,
+              "column": 30
+            },
+            "end": {
+              "line": 675,
+              "column": 31
+            }
+          },
+          "replacement": "",
+          "genre": "UnaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_675_col_30.log",
+      "diff_path": "diff/src__dict__translation.rs_line_675_col_30.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.190307434,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.334461594,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:686:9: replace TranslationService::set_strategy -> Result<()> with Ok(())",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::set_strategy",
+            "return_type": "-> Result<()>",
+            "span": {
+              "start": {
+                "line": 684,
+                "column": 5
+              },
+              "end": {
+                "line": 691,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 686,
+              "column": 9
+            },
+            "end": {
+              "line": 690,
+              "column": 10
+            }
+          },
+          "replacement": "Ok(())",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_686_col_9.log",
+      "diff_path": "diff/src__dict__translation.rs_line_686_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.230770521,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.419006374,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:686:38: replace || with && in TranslationService::set_strategy",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::set_strategy",
+            "return_type": "-> Result<()>",
+            "span": {
+              "start": {
+                "line": 684,
+                "column": 5
+              },
+              "end": {
+                "line": 691,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 686,
+              "column": 38
+            },
+            "end": {
+              "line": 686,
+              "column": 40
+            }
+          },
+          "replacement": "&&",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_686_col_38.log",
+      "diff_path": "diff/src__dict__translation.rs_line_686_col_38.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.733641765,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.1712552920000001,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:700:9: replace TranslationService::cache_get_translation -> Result<Option<Translation>> with Ok(Some(Default::default()))",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::cache_get_translation",
+            "return_type": "-> Result<Option<Translation>>",
+            "span": {
+              "start": {
+                "line": 693,
+                "column": 5
+              },
+              "end": {
+                "line": 711,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 700,
+              "column": 9
+            },
+            "end": {
+              "line": 710,
+              "column": 17
+            }
+          },
+          "replacement": "Ok(Some(Default::default()))",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__translation.rs_line_700_col_9_001.log",
+      "diff_path": "diff/src__dict__translation.rs_line_700_col_9_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 1.26340496,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:686:21: replace == with != in TranslationService::set_strategy",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::set_strategy",
+            "return_type": "-> Result<()>",
+            "span": {
+              "start": {
+                "line": 684,
+                "column": 5
+              },
+              "end": {
+                "line": 691,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 686,
+              "column": 21
+            },
+            "end": {
+              "line": 686,
+              "column": 23
+            }
+          },
+          "replacement": "!=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_686_col_21.log",
+      "diff_path": "diff/src__dict__translation.rs_line_686_col_21.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.902208736,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.358941392,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:686:80: replace == with != in TranslationService::set_strategy",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::set_strategy",
+            "return_type": "-> Result<()>",
+            "span": {
+              "start": {
+                "line": 684,
+                "column": 5
+              },
+              "end": {
+                "line": 691,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 686,
+              "column": 80
+            },
+            "end": {
+              "line": 686,
+              "column": 82
+            }
+          },
+          "replacement": "!=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_686_col_80.log",
+      "diff_path": "diff/src__dict__translation.rs_line_686_col_80.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.045451949,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.157289017,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:737:9: replace TranslationService::translate -> Result<Translation> with Ok(Default::default())",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::translate",
+            "return_type": "-> Result<Translation>",
+            "span": {
+              "start": {
+                "line": 735,
+                "column": 5
+              },
+              "end": {
+                "line": 738,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 737,
+              "column": 9
+            },
+            "end": {
+              "line": 737,
+              "column": 62
+            }
+          },
+          "replacement": "Ok(Default::default())",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__dict__translation.rs_line_737_col_9.log",
+      "diff_path": "diff/src__dict__translation.rs_line_737_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 0.763413993,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:700:9: replace TranslationService::cache_get_translation -> Result<Option<Translation>> with Ok(None)",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::cache_get_translation",
+            "return_type": "-> Result<Option<Translation>>",
+            "span": {
+              "start": {
+                "line": 693,
+                "column": 5
+              },
+              "end": {
+                "line": 711,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 700,
+              "column": 9
+            },
+            "end": {
+              "line": 710,
+              "column": 17
+            }
+          },
+          "replacement": "Ok(None)",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_700_col_9.log",
+      "diff_path": "diff/src__dict__translation.rs_line_700_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.995463302,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.3132756620000001,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:721:9: replace TranslationService::cache_put_translation -> Result<()> with Ok(())",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::cache_put_translation",
+            "return_type": "-> Result<()>",
+            "span": {
+              "start": {
+                "line": 713,
+                "column": 5
+              },
+              "end": {
+                "line": 733,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 721,
+              "column": 9
+            },
+            "end": {
+              "line": 732,
+              "column": 11
+            }
+          },
+          "replacement": "Ok(())",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_721_col_9.log",
+      "diff_path": "diff/src__dict__translation.rs_line_721_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.7804048420000003,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.109335472,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:741:9: replace TranslationService::clear_cache -> Result<()> with Ok(())",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::clear_cache",
+            "return_type": "-> Result<()>",
+            "span": {
+              "start": {
+                "line": 740,
+                "column": 5
+              },
+              "end": {
+                "line": 742,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 741,
+              "column": 9
+            },
+            "end": {
+              "line": 741,
+              "column": 33
+            }
+          },
+          "replacement": "Ok(())",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_741_col_9.log",
+      "diff_path": "diff/src__dict__translation.rs_line_741_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.830683003,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.172750695,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:747:9: replace TranslationService::set_config -> Result<()> with Ok(())",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::set_config",
+            "return_type": "-> Result<()>",
+            "span": {
+              "start": {
+                "line": 744,
+                "column": 5
+              },
+              "end": {
+                "line": 755,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 747,
+              "column": 9
+            },
+            "end": {
+              "line": 754,
+              "column": 15
+            }
+          },
+          "replacement": "Ok(())",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_747_col_9.log",
+      "diff_path": "diff/src__dict__translation.rs_line_747_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.381671489,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.271530368,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:750:25: replace == with != in TranslationService::set_config",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "TranslationService::set_config",
+            "return_type": "-> Result<()>",
+            "span": {
+              "start": {
+                "line": 744,
+                "column": 5
+              },
+              "end": {
+                "line": 755,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 750,
+              "column": 25
+            },
+            "end": {
+              "line": 750,
+              "column": 27
+            }
+          },
+          "replacement": "!=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_750_col_25.log",
+      "diff_path": "diff/src__dict__translation.rs_line_750_col_25.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.405252949,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.160780948,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:760:5: replace normalize_text -> String with String::new()",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "normalize_text",
+            "return_type": "-> String",
+            "span": {
+              "start": {
+                "line": 758,
+                "column": 1
+              },
+              "end": {
+                "line": 774,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 760,
+              "column": 5
+            },
+            "end": {
+              "line": 773,
+              "column": 27
+            }
+          },
+          "replacement": "String::new()",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_760_col_5.log",
+      "diff_path": "diff/src__dict__translation.rs_line_760_col_5.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.091266916,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.217213705,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:760:5: replace normalize_text -> String with \"xyzzy\".into()",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "normalize_text",
+            "return_type": "-> String",
+            "span": {
+              "start": {
+                "line": 758,
+                "column": 1
+              },
+              "end": {
+                "line": 774,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 760,
+              "column": 5
+            },
+            "end": {
+              "line": 773,
+              "column": 27
+            }
+          },
+          "replacement": "\"xyzzy\".into()",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_760_col_5_001.log",
+      "diff_path": "diff/src__dict__translation.rs_line_760_col_5_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.077229134,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.068958334,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:764:32: replace && with || in normalize_text",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "normalize_text",
+            "return_type": "-> String",
+            "span": {
+              "start": {
+                "line": 758,
+                "column": 1
+              },
+              "end": {
+                "line": 774,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 764,
+              "column": 32
+            },
+            "end": {
+              "line": 764,
+              "column": 34
+            }
+          },
+          "replacement": "||",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_764_col_32.log",
+      "diff_path": "diff/src__dict__translation.rs_line_764_col_32.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.405466482,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.209973307,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:764:16: delete ! in normalize_text",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "normalize_text",
+            "return_type": "-> String",
+            "span": {
+              "start": {
+                "line": 758,
+                "column": 1
+              },
+              "end": {
+                "line": 774,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 764,
+              "column": 16
+            },
+            "end": {
+              "line": 764,
+              "column": 17
+            }
+          },
+          "replacement": "",
+          "genre": "UnaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_764_col_16.log",
+      "diff_path": "diff/src__dict__translation.rs_line_764_col_16.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.14730381,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.365608925,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:764:35: delete ! in normalize_text",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "normalize_text",
+            "return_type": "-> String",
+            "span": {
+              "start": {
+                "line": 758,
+                "column": 1
+              },
+              "end": {
+                "line": 774,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 764,
+              "column": 35
+            },
+            "end": {
+              "line": 764,
+              "column": 36
+            }
+          },
+          "replacement": "",
+          "genre": "UnaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_764_col_35.log",
+      "diff_path": "diff/src__dict__translation.rs_line_764_col_35.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.113673486,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.211145124,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:777:5: replace now_unix -> i64 with 0",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "now_unix",
+            "return_type": "-> i64",
+            "span": {
+              "start": {
+                "line": 776,
+                "column": 1
+              },
+              "end": {
+                "line": 781,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 777,
+              "column": 5
+            },
+            "end": {
+              "line": 780,
+              "column": 22
+            }
+          },
+          "replacement": "0",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_777_col_5.log",
+      "diff_path": "diff/src__dict__translation.rs_line_777_col_5.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.092961245,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.370409519,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:777:5: replace now_unix -> i64 with 1",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "now_unix",
+            "return_type": "-> i64",
+            "span": {
+              "start": {
+                "line": 776,
+                "column": 1
+              },
+              "end": {
+                "line": 781,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 777,
+              "column": 5
+            },
+            "end": {
+              "line": 780,
+              "column": 22
+            }
+          },
+          "replacement": "1",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_777_col_5_001.log",
+      "diff_path": "diff/src__dict__translation.rs_line_777_col_5_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.889133574,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.164590283,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/dict/translation.rs:777:5: replace now_unix -> i64 with -1",
+          "package": "reader_core",
+          "file": "src/dict/translation.rs",
+          "function": {
+            "function_name": "now_unix",
+            "return_type": "-> i64",
+            "span": {
+              "start": {
+                "line": 776,
+                "column": 1
+              },
+              "end": {
+                "line": 781,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 777,
+              "column": 5
+            },
+            "end": {
+              "line": 780,
+              "column": 22
+            }
+          },
+          "replacement": "-1",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__dict__translation.rs_line_777_col_5_002.log",
+      "diff_path": "diff/src__dict__translation.rs_line_777_col_5_002.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.824474955,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.0582831050000001,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    }
+  ],
+  "total_mutants": 102,
+  "missed": 1,
+  "caught": 87,
+  "timeout": 2,
+  "unviable": 12,
+  "success": 0,
+  "start_time": "2026-09-08T16:58:37.898617517Z",
+  "end_time": "2026-09-08T17:02:15.076786335Z",
+  "cargo_mutants_version": "27.1.0"
+}

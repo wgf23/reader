@@ -1,0 +1,2 @@
+src/api.rs:326:5: replace translate -> std::result::Result<TranslationView, String> with Ok(Default::default())
+src/api.rs:348:5: replace translate_get_config -> std::result::Result<TranslateConfigView, String> with Ok(Default::default())

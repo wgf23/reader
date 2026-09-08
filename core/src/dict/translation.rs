@@ -370,6 +370,31 @@ fn fnv32(s: &str) -> u32 {
 
 // ===================== TranslationService（缓存优先编排） =====================
 
+/// 虚拟策略名：在线优先（deepl/echo）→ 失败/无 key 回退离线（REQ-006 决策点1）。
+/// 仅作为 `settings` 值域的策略名，**不注册为 Provider**。
+pub const AUTO_PROVIDER: &str = "auto";
+/// 回退原因：在线 Provider 被实际尝试且失败。
+pub const FALLBACK_REASON_ONLINE_FAILED: &str = "在线失败，已回退离线";
+/// 回退原因：无可用在线 key（或唯一候选为离线）。
+pub const FALLBACK_REASON_ONLINE_UNCONFIGURED: &str = "未配置在线翻译 API Key，已回退离线";
+
+/// 策略路由结果（`fallback_reason` 不进 `Translation` 值对象、不写缓存）。
+#[derive(Debug)]
+pub struct RoutedTranslation {
+    pub translation: Translation,
+    pub from_cache: bool,
+    pub fallback_reason: Option<String>,
+}
+
+/// 翻译配置视图（供桥接 `translate_get_config`；不含明文 key）。
+#[derive(Debug)]
+pub struct TranslateConfig {
+    /// "auto" | "offline" | "deepl" | "echo"（= default_provider）
+    pub provider: String,
+    /// `DeepLProvider::key_is_missing` 语义（空串=false）
+    pub has_deepl_key: bool,
+}
+
 /// 翻译服务（缓存优先；US-9~14）
 pub struct TranslationService {
     cache: Box<dyn TranslationCacheRepository + Send>,
@@ -391,51 +416,320 @@ impl TranslationService {
     }
 
     /// 翻译（缓存优先）；返回 (译文, 是否命中缓存)。from_cache 供 api 层标注（US-10/13）。
+    ///
+    /// REQ-006：委托 [`Self::translate_routed`]（**2 元组签名不变**，丢弃 `fallback_reason`）。
     pub fn translate_cached(
         &mut self,
         text: &str,
         from: Lang,
         to: Lang,
     ) -> Result<(Translation, bool)> {
+        self.translate_routed(text, from, to)
+            .map(|r| (r.translation, r.from_cache))
+    }
+
+    /// 策略路由（REQ-006 决策点1）：`auto` 在线优先 → 失败/无 key 回退离线；
+    /// 显式 provider → 该 provider 优先，失败回退离线；缓存按**真实 provider** 分行。
+    pub fn translate_routed(
+        &mut self,
+        text: &str,
+        from: Lang,
+        to: Lang,
+    ) -> Result<RoutedTranslation> {
         let norm = normalize_text(text);
         if norm.is_empty() {
             return Err(Error::Other("待翻译文本为空".to_string()));
         }
-        let provider_name = self.config.default_provider()?;
-        let provider = self
+        let strategy = self.config.default_provider()?;
+        if strategy == AUTO_PROVIDER {
+            return self.translate_auto(text, &norm, from, to);
+        }
+        self.translate_explicit(&strategy, &norm, from, to)
+    }
+
+    /// `auto` 策略：在线优先（deepl/echo）→ 失败/无 key 回退离线（REQ-006 决策点1）。
+    fn translate_auto(
+        &mut self,
+        text: &str,
+        norm: &str,
+        from: Lang,
+        to: Lang,
+    ) -> Result<RoutedTranslation> {
+        // 在线候选 = 注册顺序中 needs_key 的 Provider（实际即 deepl、echo）；
+        // 离线候选 = needs_key==false（offline）。
+        let online: Vec<String> = self
             .providers
             .iter()
-            .find(|p| p.name() == provider_name)
-            .ok_or_else(|| Error::NotConfigured(format!("未知翻译 Provider: {provider_name}")))?
-            .as_ref();
+            .filter(|p| p.needs_key())
+            .map(|p| p.name().to_string())
+            .collect();
+        let offline: Vec<String> = self
+            .providers
+            .iter()
+            .filter(|p| !p.needs_key())
+            .map(|p| p.name().to_string())
+            .collect();
 
-        // 需 key 的 Provider 才校验（offline 免 key）；未配置 → NotConfigured，不 panic
-        if provider.needs_key() && self.config.provider_key(&provider_name)?.is_none() {
+        // 1) 在线优先：逐个候选查缓存（命中即返回，避免离线先缓存导致永远走缓存）
+        for name in &online {
+            if let Some(t) = self.cache_get_translation(&norm, from, to, name)? {
+                return Ok(RoutedTranslation {
+                    translation: t,
+                    from_cache: true,
+                    fallback_reason: None,
+                });
+            }
+        }
+        // 2) 在线未命中：逐个校验 key → translate
+        let mut online_error: Option<Error> = None;
+        let mut online_unconfigured = false;
+        let mut first_unconfigured: Option<String> = None;
+        for name in &online {
+            let key = self.config.provider_key(name)?;
+            let missing = self
+                .providers
+                .iter()
+                .find(|p| p.name() == name)
+                .map(|p| p.key_is_missing(key.as_deref()))
+                .unwrap_or(key.is_none());
+            if missing {
+                online_unconfigured = true;
+                if first_unconfigured.is_none() {
+                    first_unconfigured = Some(name.clone());
+                }
+                continue;
+            }
+            let provider = self
+                .providers
+                .iter()
+                .find(|p| p.name() == name)
+                .expect("候选 provider 必存在");
+            match provider.translate(&norm, from, to) {
+                Ok(t) => {
+                    self.cache_put_translation(&norm, from, to, name, &t)?;
+                    return Ok(RoutedTranslation {
+                        translation: t,
+                        from_cache: false,
+                        fallback_reason: None,
+                    });
+                }
+                Err(e) => online_error = Some(e),
+            }
+        }
+
+        // 3) 回退离线（先缓存后翻译）
+        let reason = if online_error.is_some() {
+            Some(FALLBACK_REASON_ONLINE_FAILED.to_string())
+        } else if online_unconfigured || online.is_empty() {
+            Some(FALLBACK_REASON_ONLINE_UNCONFIGURED.to_string())
+        } else {
+            None
+        };
+        let mut offline_error: Option<Error> = None;
+        for name in &offline {
+            if let Some(t) = self.cache_get_translation(&norm, from, to, name)? {
+                return Ok(RoutedTranslation {
+                    translation: t,
+                    from_cache: true,
+                    fallback_reason: reason,
+                });
+            }
+            let provider = self
+                .providers
+                .iter()
+                .find(|p| p.name() == name)
+                .expect("离线候选 provider 必存在");
+            match provider.translate(&norm, from, to) {
+                Ok(t) => {
+                    self.cache_put_translation(&norm, from, to, name, &t)?;
+                    return Ok(RoutedTranslation {
+                        translation: t,
+                        from_cache: false,
+                        fallback_reason: reason,
+                    });
+                }
+                Err(e) => offline_error = Some(e),
+            }
+        }
+
+        // 4) 全部失败 → 组合错误（§8 文案契约）
+        if let Some(ne) = online_error {
+            return Err(Error::Network {
+                detail: format!("在线翻译失败：{ne}；离线翻译未命中（请先安装内置词库）"),
+                source_text: text.to_string(),
+            });
+        }
+        if online_unconfigured || online.is_empty() {
+            let pname = first_unconfigured.unwrap_or_else(|| "deepl".to_string());
             return Err(Error::NotConfigured(format!(
-                "翻译服务未配置：{provider_name} 未配置 API Key，请先在设置中配置"
+                "未配置在线翻译 API Key（{pname}），且离线翻译未命中（请先安装内置词库）"
             )));
         }
+        Err(offline_error
+            .unwrap_or_else(|| Error::NotConfigured("离线翻译未命中（请先安装内置词库）".to_string())))
+    }
 
+    /// 显式策略：该 provider 优先（缓存 → key 校验 → translate），失败回退离线。
+    fn translate_explicit(
+        &mut self,
+        name: &str,
+        norm: &str,
+        from: Lang,
+        to: Lang,
+    ) -> Result<RoutedTranslation> {
+        if !self.providers.iter().any(|p| p.name() == name) {
+            return Err(Error::NotConfigured(format!("未知翻译 Provider: {name}")));
+        }
+        // 1) 缓存优先
+        if let Some(t) = self.cache_get_translation(norm, from, to, name)? {
+            return Ok(RoutedTranslation {
+                translation: t,
+                from_cache: true,
+                fallback_reason: None,
+            });
+        }
+        // 2) key 校验 + translate（保留 REQ-003 语义）
+        let key = self.config.provider_key(name)?;
+        let missing = self
+            .providers
+            .iter()
+            .find(|p| p.name() == name)
+            .map(|p| p.key_is_missing(key.as_deref()))
+            .unwrap_or(key.is_none());
+        let primary_error: Option<Error>;
+        if missing {
+            primary_error = Some(Error::NotConfigured(format!(
+                "{name} 未配置 API Key，请先在设置中配置"
+            )));
+        } else {
+            let provider = self
+                .providers
+                .iter()
+                .find(|p| p.name() == name)
+                .expect("provider 必存在");
+            match provider.translate(norm, from, to) {
+                Ok(t) => {
+                    self.cache_put_translation(norm, from, to, name, &t)?;
+                    return Ok(RoutedTranslation {
+                        translation: t,
+                        from_cache: false,
+                        fallback_reason: None,
+                    });
+                }
+                Err(e) => primary_error = Some(e),
+            }
+        }
+        // 3) offline 兜底（排除显式 provider 自身；显式 offline 时无额外兜底）
+        let offline: Vec<String> = self
+            .providers
+            .iter()
+            .filter(|p| !p.needs_key() && p.name() != name)
+            .map(|p| p.name().to_string())
+            .collect();
+        if !offline.is_empty() {
+            let reason = if missing {
+                FALLBACK_REASON_ONLINE_UNCONFIGURED
+            } else {
+                FALLBACK_REASON_ONLINE_FAILED
+            };
+            for off in &offline {
+                if let Some(t) = self.cache_get_translation(norm, from, to, off)? {
+                    return Ok(RoutedTranslation {
+                        translation: t,
+                        from_cache: true,
+                        fallback_reason: Some(reason.to_string()),
+                    });
+                }
+                let provider = self
+                    .providers
+                    .iter()
+                    .find(|p| p.name() == off)
+                    .expect("离线 provider 必存在");
+                if let Ok(t) = provider.translate(norm, from, to) {
+                    self.cache_put_translation(norm, from, to, off, &t)?;
+                    return Ok(RoutedTranslation {
+                        translation: t,
+                        from_cache: false,
+                        fallback_reason: Some(reason.to_string()),
+                    });
+                }
+            }
+        }
+        // 4) 无兜底/兜底失败 → 透出显式 provider 的错误（保留 REQ-003 文案）
+        Err(primary_error.unwrap_or_else(|| {
+            Error::NotConfigured(format!("{name} 未配置 API Key，请先在设置中配置"))
+        }))
+    }
+
+    /// 读配置视图（供 `translate_get_config`）。
+    pub fn config_view(&self) -> Result<TranslateConfig> {
+        let provider = self.config.default_provider()?;
+        let key = self.config.provider_key("deepl")?;
+        let has_deepl_key = self
+            .providers
+            .iter()
+            .find(|p| p.name() == "deepl")
+            .map(|p| !p.key_is_missing(key.as_deref()))
+            .unwrap_or_else(|| {
+                key.as_deref()
+                    .map(|k| !k.trim().is_empty())
+                    .unwrap_or(false)
+            });
+        Ok(TranslateConfig {
+            provider,
+            has_deepl_key,
+        })
+    }
+
+    /// 设置策略（`auto` 或已注册 provider）；未知 → `Err(Other("未知翻译策略: {s}"))`。
+    pub fn set_strategy(&mut self, strategy: &str) -> Result<()> {
+        if strategy == AUTO_PROVIDER || self.providers.iter().any(|p| p.name() == strategy) {
+            self.config.set_default_provider(strategy)
+        } else {
+            Err(Error::Other(format!("未知翻译策略: {strategy}")))
+        }
+    }
+
+    fn cache_get_translation(
+        &mut self,
+        norm: &str,
+        from: Lang,
+        to: Lang,
+        provider: &str,
+    ) -> Result<Option<Translation>> {
         let key = CacheKey {
-            source_text: norm.clone(),
+            source_text: norm.to_string(),
             from_lang: from,
             to_lang: to,
-            provider: provider_name.clone(),
+            provider: provider.to_string(),
         };
-        // 缓存优先：命中 → incr_hit + 直返（0 网络，US-10/14）
         if let Some(entry) = self.cache.cache_get(&key)? {
             self.cache.cache_incr_hit(&key)?;
-            return Ok((entry.result, true));
+            return Ok(Some(entry.result));
         }
-        // 未命中 → 调 Provider；失败不写缓存（US-12），Network 错误已携带原文
-        let t = provider.translate(&norm, from, to)?;
+        Ok(None)
+    }
+
+    fn cache_put_translation(
+        &mut self,
+        norm: &str,
+        from: Lang,
+        to: Lang,
+        provider: &str,
+        t: &Translation,
+    ) -> Result<()> {
+        let key = CacheKey {
+            source_text: norm.to_string(),
+            from_lang: from,
+            to_lang: to,
+            provider: provider.to_string(),
+        };
         self.cache.cache_put(&CacheEntry {
             key,
             result: t.clone(),
             created_at: now_unix(),
             hit_count: 1,
-        })?;
-        Ok((t, false))
+        })
     }
 
     /// 翻译（薄包装，保持 02-design §2.4 签名）
@@ -1273,5 +1567,341 @@ mod tests {
         svc.set_config("gate-a", "k").unwrap();
         let t = svc.translate("hi", Lang::En, Lang::Zh).unwrap();
         assert_eq!(t.text, "OK:hi", "仅 gate-a 应被 configure（!= 变异会把 key 配给 gate-b）");
+    }
+
+    // ---------- REQ-006：auto 路由 / 回退 / 文案 / 配置视图 / 策略 ----------
+
+    /// 可用的离线 Provider stub（needs_key=false）。
+    struct OfflineStub;
+    impl TranslationProvider for OfflineStub {
+        fn name(&self) -> &str {
+            "offline"
+        }
+        fn needs_key(&self) -> bool {
+            false
+        }
+        fn translate(&self, text: &str, from: Lang, to: Lang) -> Result<Translation> {
+            Ok(Translation {
+                text: format!("OFF:{text}"),
+                from,
+                to,
+                provider: "offline".into(),
+            })
+        }
+    }
+
+    /// 离线未命中（NotConfigured），用于组合错误断言。
+    struct MissingOffline;
+    impl TranslationProvider for MissingOffline {
+        fn name(&self) -> &str {
+            "offline"
+        }
+        fn needs_key(&self) -> bool {
+            false
+        }
+        fn translate(&self, _t: &str, _f: Lang, _to: Lang) -> Result<Translation> {
+            Err(Error::NotConfigured(
+                "离线翻译未命中（请先安装内置词库）".to_string(),
+            ))
+        }
+    }
+
+    /// 在线失败（Network），用于回退失败断言。
+    struct FailingDeepL;
+    impl TranslationProvider for FailingDeepL {
+        fn name(&self) -> &str {
+            "deepl"
+        }
+        fn translate(&self, text: &str, _f: Lang, _to: Lang) -> Result<Translation> {
+            Err(Error::Network {
+                detail: "模拟断网".to_string(),
+                source_text: text.to_string(),
+            })
+        }
+    }
+
+    #[derive(Clone, Default)]
+    struct Recorder {
+        text: std::sync::Arc<std::sync::Mutex<Option<String>>>,
+        from: std::sync::Arc<std::sync::Mutex<Option<Lang>>>,
+        to: std::sync::Arc<std::sync::Mutex<Option<Lang>>>,
+    }
+
+    struct RecordingDeepL {
+        rec: Recorder,
+    }
+    impl TranslationProvider for RecordingDeepL {
+        fn name(&self) -> &str {
+            "deepl"
+        }
+        fn translate(&self, text: &str, from: Lang, to: Lang) -> Result<Translation> {
+            *self.rec.text.lock().unwrap() = Some(text.to_string());
+            *self.rec.from.lock().unwrap() = Some(from);
+            *self.rec.to.lock().unwrap() = Some(to);
+            Ok(Translation {
+                text: format!("DEEPL:{text}"),
+                from,
+                to,
+                provider: "deepl".into(),
+            })
+        }
+    }
+
+    #[test]
+    fn translate_auto_prefers_online_when_key_configured() {
+        // US-10：已配置 key → 在线（deepl）优先，provider 为真实名、from_cache=false
+        let mut config = MemConfig::with_default(AUTO_PROVIDER);
+        config.set_provider_key("deepl", "k").unwrap();
+        let mut svc = svc_with(
+            MemCache::default(),
+            config,
+            vec![Box::new(DeepLStub), Box::new(OfflineStub)],
+        );
+        let r = svc.translate_routed("Hello", Lang::En, Lang::Zh).unwrap();
+        assert_eq!(r.translation.provider, "deepl");
+        assert_eq!(r.translation.text, "DEEPL:Hello");
+        assert!(!r.from_cache);
+        assert!(r.fallback_reason.is_none());
+        // 二次命中 deepl 缓存（US-12），不再回退
+        let r2 = svc.translate_routed("Hello", Lang::En, Lang::Zh).unwrap();
+        assert!(r2.from_cache);
+        assert!(r2.fallback_reason.is_none());
+    }
+
+    #[test]
+    fn translate_auto_without_key_falls_back_offline_with_reason() {
+        // US-13：未配置任何在线 key → 走 offline，不 NotConfigured；带"未配置…回退"原因
+        let mut svc = svc_with(
+            MemCache::default(),
+            MemConfig::with_default(AUTO_PROVIDER),
+            vec![Box::new(DeepLStub), Box::new(OfflineStub)],
+        );
+        let r = svc.translate_routed("book", Lang::En, Lang::Zh).unwrap();
+        assert_eq!(r.translation.provider, "offline");
+        assert_eq!(r.translation.text, "OFF:book");
+        assert!(!r.from_cache);
+        assert_eq!(
+            r.fallback_reason.as_deref(),
+            Some(FALLBACK_REASON_ONLINE_UNCONFIGURED)
+        );
+        // 二次命中 offline 缓存
+        let r2 = svc.translate_routed("book", Lang::En, Lang::Zh).unwrap();
+        assert!(r2.from_cache);
+        assert_eq!(
+            r2.fallback_reason.as_deref(),
+            Some(FALLBACK_REASON_ONLINE_UNCONFIGURED)
+        );
+    }
+
+    #[test]
+    fn translate_auto_online_failure_falls_back_offline_with_reason() {
+        // US-17：在线失败 + 离线命中 → offline 结果 + "在线失败，已回退离线"
+        let mut config = MemConfig::with_default(AUTO_PROVIDER);
+        config.set_provider_key("deepl", "k").unwrap();
+        let mut svc = svc_with(
+            MemCache::default(),
+            config,
+            vec![Box::new(FailingDeepL), Box::new(OfflineStub)],
+        );
+        let r = svc.translate_routed("book", Lang::En, Lang::Zh).unwrap();
+        assert_eq!(r.translation.provider, "offline");
+        assert_eq!(
+            r.fallback_reason.as_deref(),
+            Some(FALLBACK_REASON_ONLINE_FAILED)
+        );
+    }
+
+    #[test]
+    fn translate_auto_unconfigured_and_offline_miss_message() {
+        // US-16：无 key + 离线未命中 → 错误同时含两句语义；失败不写缓存
+        let mut svc = svc_with(
+            MemCache::default(),
+            MemConfig::with_default(AUTO_PROVIDER),
+            vec![Box::new(DeepLStub), Box::new(MissingOffline)],
+        );
+        let err = svc.translate_routed("原文", Lang::En, Lang::Zh).unwrap_err();
+        let msg = err.to_string();
+        assert!(msg.contains("未配置在线翻译 API Key"), "msg={msg}");
+        assert!(msg.contains("离线翻译未命中"), "msg={msg}");
+        assert_eq!(svc.cache.cache_count().unwrap(), 0, "失败不写缓存");
+    }
+
+    #[test]
+    fn translate_auto_online_failure_and_offline_miss_message_keeps_text() {
+        // US-17/US-19：在线失败 + 离线未命中 → 组合错误含原因与原文
+        let mut config = MemConfig::with_default(AUTO_PROVIDER);
+        config.set_provider_key("deepl", "k").unwrap();
+        let mut svc = svc_with(
+            MemCache::default(),
+            config,
+            vec![Box::new(FailingDeepL), Box::new(MissingOffline)],
+        );
+        let err = svc.translate_routed("原文文本", Lang::En, Lang::Zh).unwrap_err();
+        let msg = err.to_string();
+        assert!(msg.contains("在线翻译失败"), "msg={msg}");
+        assert!(msg.contains("离线翻译未命中"), "msg={msg}");
+        assert!(msg.contains("原文文本"), "错误应携带原文: {msg}");
+        assert_eq!(svc.cache.cache_count().unwrap(), 0, "失败不写缓存");
+    }
+
+    #[test]
+    fn translate_auto_normalizes_paragraph_and_passes_only_args() {
+        // US-11（跨行折叠）+ US-20（Provider 入参只含 text/from/to）
+        let rec = Recorder::default();
+        let mut config = MemConfig::with_default(AUTO_PROVIDER);
+        config.set_provider_key("deepl", "k").unwrap();
+        let mut svc = svc_with(
+            MemCache::default(),
+            config,
+            vec![
+                Box::new(RecordingDeepL { rec: rec.clone() }),
+                Box::new(OfflineStub),
+            ],
+        );
+        let r = svc
+            .translate_routed("Hello\n  world\t  again", Lang::En, Lang::Zh)
+            .unwrap();
+        assert_eq!(r.translation.text, "DEEPL:Hello world again");
+        assert_eq!(
+            rec.text.lock().unwrap().as_deref(),
+            Some("Hello world again"),
+            "跨行空白应折叠后整段传给 Provider"
+        );
+        assert_eq!(*rec.from.lock().unwrap(), Some(Lang::En));
+        assert_eq!(*rec.to.lock().unwrap(), Some(Lang::Zh));
+    }
+
+    #[test]
+    fn config_view_reports_provider_and_deepl_key_state() {
+        // US-15：读配置视图（provider + has_deepl_key），空串视为未配置
+        let mut svc = svc_with(
+            MemCache::default(),
+            MemConfig::with_default(AUTO_PROVIDER),
+            vec![
+                Box::new(crate::dict::DeepLProvider::new()),
+                Box::new(OfflineStub),
+            ],
+        );
+        let v = svc.config_view().unwrap();
+        assert_eq!(v.provider, AUTO_PROVIDER);
+        assert!(!v.has_deepl_key);
+        svc.set_config("deepl", "real-key").unwrap();
+        let v = svc.config_view().unwrap();
+        assert_eq!(v.provider, "deepl");
+        assert!(v.has_deepl_key);
+        svc.set_config("deepl", "").unwrap();
+        assert!(!svc.config_view().unwrap().has_deepl_key, "空串视为未配置");
+    }
+
+    #[test]
+    fn set_strategy_accepts_auto_and_registered_rejects_unknown() {
+        let mut svc = svc_with(
+            MemCache::default(),
+            MemConfig::with_default(AUTO_PROVIDER),
+            vec![Box::new(DeepLStub), Box::new(OfflineStub)],
+        );
+        svc.set_strategy("offline").unwrap();
+        assert_eq!(svc.config.default_provider().unwrap(), "offline");
+        svc.set_strategy(AUTO_PROVIDER).unwrap();
+        assert_eq!(svc.config.default_provider().unwrap(), AUTO_PROVIDER);
+        let err = svc.set_strategy("nope").unwrap_err();
+        assert!(err.to_string().contains("未知翻译策略"), "{err}");
+    }
+
+    #[test]
+    fn translate_explicit_online_falls_back_offline_with_reason() {
+        // 显式 deepl + 断网 → 回退 offline 并带原因（决策点1 契约）
+        let mut config = MemConfig::with_default("deepl");
+        config.set_provider_key("deepl", "k").unwrap();
+        let mut svc = svc_with(
+            MemCache::default(),
+            config,
+            vec![Box::new(FailingDeepL), Box::new(OfflineStub)],
+        );
+        let r = svc.translate_routed("book", Lang::En, Lang::Zh).unwrap();
+        assert_eq!(r.translation.provider, "offline");
+        assert_eq!(
+            r.fallback_reason.as_deref(),
+            Some(FALLBACK_REASON_ONLINE_FAILED)
+        );
+    }
+
+    #[test]
+    fn translate_explicit_unknown_provider_is_error() {
+        // 覆盖 translate_explicit 未知 provider 防御分支（配置被外部写脏时）
+        let mut svc = svc_with(
+            MemCache::default(),
+            MemConfig::with_default("nope"),
+            vec![Box::new(OfflineStub)],
+        );
+        let err = svc.translate_routed("hi", Lang::En, Lang::Zh).unwrap_err();
+        assert!(err.to_string().contains("未知翻译 Provider"), "{err}");
+    }
+
+    #[test]
+    fn translate_explicit_missing_key_falls_back_offline_unconfigured_reason() {
+        // 显式 deepl 无 key + offline 可用 → 回退原因应为"未配置…"（missing 分支）
+        let mut svc = svc_with(
+            MemCache::default(),
+            MemConfig::with_default("deepl"),
+            vec![Box::new(DeepLStub), Box::new(OfflineStub)],
+        );
+        let r = svc.translate_routed("book", Lang::En, Lang::Zh).unwrap();
+        assert_eq!(r.translation.provider, "offline");
+        assert!(!r.from_cache);
+        assert_eq!(
+            r.fallback_reason.as_deref(),
+            Some(FALLBACK_REASON_ONLINE_UNCONFIGURED)
+        );
+    }
+
+    #[test]
+    fn translate_explicit_missing_key_offline_cache_hit_with_reason() {
+        // 预置 offline 缓存 → 显式 deepl 无 key 回退时命中 offline 缓存并带原因
+        let mut cache = MemCache::default();
+        cache
+            .cache_put(&CacheEntry {
+                key: CacheKey {
+                    source_text: "book".into(),
+                    from_lang: Lang::En,
+                    to_lang: Lang::Zh,
+                    provider: "offline".into(),
+                },
+                result: Translation {
+                    text: "OFF-CACHED".into(),
+                    from: Lang::En,
+                    to: Lang::Zh,
+                    provider: "offline".into(),
+                },
+                created_at: 1,
+                hit_count: 1,
+            })
+            .unwrap();
+        let mut svc = svc_with(
+            cache,
+            MemConfig::with_default("deepl"),
+            vec![Box::new(DeepLStub), Box::new(OfflineStub)],
+        );
+        let r = svc.translate_routed("book", Lang::En, Lang::Zh).unwrap();
+        assert_eq!(r.translation.text, "OFF-CACHED");
+        assert!(r.from_cache);
+        assert_eq!(
+            r.fallback_reason.as_deref(),
+            Some(FALLBACK_REASON_ONLINE_UNCONFIGURED)
+        );
+    }
+
+    #[test]
+    fn config_view_without_deepl_provider_uses_key_fallback() {
+        // 未注册 deepl provider → has_deepl_key 走 key 非空兜底闭包（空白=false/非空=true）
+        let mut config = MemConfig::with_default(AUTO_PROVIDER);
+        config.set_provider_key("deepl", "   ").unwrap();
+        let svc = svc_with(MemCache::default(), config, vec![Box::new(OfflineStub)]);
+        assert!(!svc.config_view().unwrap().has_deepl_key, "空白 key=false");
+
+        let mut config2 = MemConfig::with_default(AUTO_PROVIDER);
+        config2.set_provider_key("deepl", "k").unwrap();
+        let svc2 = svc_with(MemCache::default(), config2, vec![Box::new(OfflineStub)]);
+        assert!(svc2.config_view().unwrap().has_deepl_key, "非空 key=true");
     }
 }

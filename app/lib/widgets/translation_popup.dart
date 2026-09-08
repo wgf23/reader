@@ -7,11 +7,20 @@ import 'package:flutter/material.dart';
 
 import '../services/translate_backend.dart';
 
-/// 译文结果卡片：译文 + Provider 名 + "缓存"徽标（US-13/15 可断言）
+/// 译文结果卡片：译文 + Provider 名 + 来源标签（REQ-006 US-18 可断言）
+///
+/// 标签映射：`fromCache → 缓存`；`provider=="offline" → 离线`；否则 `在线`；
+/// 始终显示 provider 名；`fallbackReason != null` 追加回退提示行。
 class TranslationResultCard extends StatelessWidget {
   const TranslationResultCard({super.key, required this.translation});
 
   final TranslationData translation;
+
+  String get _sourceLabel {
+    if (translation.fromCache) return '缓存';
+    if (translation.provider == 'offline') return '离线';
+    return '在线';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,14 +45,14 @@ class TranslationResultCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
-                      '缓存',
+                      _sourceLabel,
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: theme.colorScheme.onSecondaryContainer,
                       ),
                     ),
                   )
                 else
-                  Text('在线', style: theme.textTheme.labelSmall),
+                  Text(_sourceLabel, style: theme.textTheme.labelSmall),
                 const SizedBox(width: 6),
                 Text(
                   translation.provider,
@@ -55,6 +64,15 @@ class TranslationResultCard extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             SelectableText(translation.text, style: theme.textTheme.bodyLarge),
+            if (translation.fallbackReason != null) ...[
+              const SizedBox(height: 6),
+              Text(
+                translation.fallbackReason!,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: theme.colorScheme.error,
+                ),
+              ),
+            ],
           ],
         ),
       ),

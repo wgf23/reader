@@ -64,6 +64,11 @@ impl TranslationProvider for DeepLProvider {
     fn configure(&mut self, key: Option<&str>) {
         self.key = key.map(|s| s.to_string());
     }
+
+    /// REQ-006（US-13/US-16）：`None` 或空白串均视为未配置（避免空 key 发请求）。
+    fn key_is_missing(&self, key: Option<&str>) -> bool {
+        key.map(|k| k.trim().is_empty()).unwrap_or(true)
+    }
 }
 
 /// Echo Provider（mock/演示）：无 key 可用，返回 "译文:" + 原文。
@@ -242,6 +247,20 @@ mod tests {
         assert_eq!(t.provider, "echo");
         assert_eq!(t.from, Lang::En);
         assert_eq!(t.to, Lang::Zh);
+    }
+
+    #[test]
+    fn key_is_missing_semantics_default_and_deepl_override() {
+        // Echo 用默认实现：仅 None 视为未配置（Some("") 的演示语义不变）
+        let echo = EchoProvider;
+        assert!(echo.key_is_missing(None));
+        assert!(!echo.key_is_missing(Some("")));
+        // DeepL 覆写：None 或空白串均视为未配置
+        let deepl = DeepLProvider::new();
+        assert!(deepl.key_is_missing(None));
+        assert!(deepl.key_is_missing(Some("")));
+        assert!(deepl.key_is_missing(Some("   ")));
+        assert!(!deepl.key_is_missing(Some("real-key")));
     }
 
     #[test]

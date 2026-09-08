@@ -49,6 +49,15 @@ pub trait TranslationProvider: Send {
     fn needs_key(&self) -> bool {
         true
     }
+
+    /// 空/空白 key 是否视为未配置（REQ-006 决策点1）。
+    ///
+    /// 默认仅 `None` 视为未配置（Echo 的 `Some("")` 演示语义不变）；
+    /// `DeepLProvider` 覆写为 `None` 或空白串均视为未配置，修复
+    /// `translate_set_config("deepl", "")` 会带空 key 发请求的问题。
+    fn key_is_missing(&self, key: Option<&str>) -> bool {
+        key.is_none()
+    }
 }
 
 /// 释义首词性标记启发式：剥 HTML 后扫描前几行的行首 "n."/"vt."/"adj."…；无则 None。

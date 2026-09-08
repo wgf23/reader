@@ -7,7 +7,7 @@ import 'frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
 // These functions are ignored because they are not marked as `pub`: `_unused_result_type`, `chapter_text`, `dict_service`, `err_msg`, `service`, `to_locator_view`, `to_summary`, `translation_service`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
 /// 打开（或创建）书库，指定数据目录。应用启动时调用一次。
 /// 装配：SERVICE（既有）+ DICT/TRANSLATION 双单例（REQ-003 02-design §4.1）。
@@ -70,6 +70,14 @@ Future<DictEntryView?> dictLookup({required String word, String? dictId}) =>
 Future<TranslationView> translate(
         {required String text, required String from, required String to}) =>
     RustLib.instance.api.crateApiTranslate(text: text, from: from, to: to);
+
+/// 读取当前翻译配置（策略 + 是否已配置 DeepL key + 固定掩码；US-15）
+Future<TranslateConfigView> translateGetConfig() =>
+    RustLib.instance.api.crateApiTranslateGetConfig();
+
+/// 设置翻译策略（"auto"/"offline"/"deepl"/"echo"）；未知 → Err("未知翻译策略: {s}")（US-15）
+Future<void> translateSetStrategy({required String strategy}) =>
+    RustLib.instance.api.crateApiTranslateSetStrategy(strategy: strategy);
 
 /// 一键清空翻译缓存（US-13 / docs/04 领域规则4）
 Future<void> translateCacheClear() =>
@@ -387,7 +395,38 @@ class SentenceChunkView {
           locator == other.locator;
 }
 
-/// 译文视图（from_cache 标注缓存命中，US-10/13）
+/// 翻译配置视图（REQ-006 决策点2，US-15；**绝不返回明文 key**）
+class TranslateConfigView {
+  /// "auto" | "offline" | "deepl" | "echo"（= default_provider）
+  final String provider;
+
+  /// `DeepLProvider::key_is_missing` 语义（空串=false）
+  final bool hasDeeplKey;
+
+  /// 固定掩码 `••••••••`；无 key 为 None；绝不返回明文。
+  final String? deeplKeyMasked;
+
+  const TranslateConfigView({
+    required this.provider,
+    required this.hasDeeplKey,
+    this.deeplKeyMasked,
+  });
+
+  @override
+  int get hashCode =>
+      provider.hashCode ^ hasDeeplKey.hashCode ^ deeplKeyMasked.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TranslateConfigView &&
+          runtimeType == other.runtimeType &&
+          provider == other.provider &&
+          hasDeeplKey == other.hasDeeplKey &&
+          deeplKeyMasked == other.deeplKeyMasked;
+}
+
+/// 译文视图（from_cache 标注缓存命中，US-10/13；fallback_reason REQ-006 US-17/18）
 class TranslationView {
   final String text;
   final String from;
@@ -395,12 +434,16 @@ class TranslationView {
   final String provider;
   final bool fromCache;
 
+  /// 回退原因（如"在线失败，已回退离线"）；未回退为 None。
+  final String? fallbackReason;
+
   const TranslationView({
     required this.text,
     required this.from,
     required this.to,
     required this.provider,
     required this.fromCache,
+    this.fallbackReason,
   });
 
   @override
@@ -409,7 +452,8 @@ class TranslationView {
       from.hashCode ^
       to.hashCode ^
       provider.hashCode ^
-      fromCache.hashCode;
+      fromCache.hashCode ^
+      fallbackReason.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -420,5 +464,6 @@ class TranslationView {
           from == other.from &&
           to == other.to &&
           provider == other.provider &&
-          fromCache == other.fromCache;
+          fromCache == other.fromCache &&
+          fallbackReason == other.fallbackReason;
 }

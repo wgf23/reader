@@ -39,7 +39,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.13.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 953425062;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -2040275071;
 
 // Section: executor
 
@@ -564,6 +564,41 @@ fn wire__crate__api__translate_cache_clear_impl(
         },
     )
 }
+fn wire__crate__api__translate_get_config_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "translate_get_config",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, String>(
+                    (move || async move {
+                        let output_ok = crate::api::translate_get_config().await?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
 fn wire__crate__api__translate_set_config_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -594,6 +629,42 @@ fn wire__crate__api__translate_set_config_impl(
                     (move || async move {
                         let output_ok =
                             crate::api::translate_set_config(api_provider, api_key).await?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__translate_set_strategy_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "translate_set_strategy",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_strategy = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, String>(
+                    (move || async move {
+                        let output_ok = crate::api::translate_set_strategy(api_strategy).await?;
                         std::result::Result::Ok(output_ok)
                     })()
                     .await,
@@ -1060,6 +1131,20 @@ impl SseDecode for crate::api::SentenceChunkView {
     }
 }
 
+impl SseDecode for crate::api::TranslateConfigView {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_provider = <String>::sse_decode(deserializer);
+        let mut var_hasDeeplKey = <bool>::sse_decode(deserializer);
+        let mut var_deeplKeyMasked = <Option<String>>::sse_decode(deserializer);
+        return crate::api::TranslateConfigView {
+            provider: var_provider,
+            has_deepl_key: var_hasDeeplKey,
+            deepl_key_masked: var_deeplKeyMasked,
+        };
+    }
+}
+
 impl SseDecode for crate::api::TranslationView {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -1068,12 +1153,14 @@ impl SseDecode for crate::api::TranslationView {
         let mut var_to = <String>::sse_decode(deserializer);
         let mut var_provider = <String>::sse_decode(deserializer);
         let mut var_fromCache = <bool>::sse_decode(deserializer);
+        let mut var_fallbackReason = <Option<String>>::sse_decode(deserializer);
         return crate::api::TranslationView {
             text: var_text,
             from: var_from,
             to: var_to,
             provider: var_provider,
             from_cache: var_fromCache,
+            fallback_reason: var_fallbackReason,
         };
     }
 }
@@ -1135,12 +1222,14 @@ fn pde_ffi_dispatcher_primary_impl(
         13 => wire__crate__api__progress_save_impl(port, ptr, rust_vec_len, data_len),
         14 => wire__crate__api__translate_impl(port, ptr, rust_vec_len, data_len),
         15 => wire__crate__api__translate_cache_clear_impl(port, ptr, rust_vec_len, data_len),
-        16 => wire__crate__api__translate_set_config_impl(port, ptr, rust_vec_len, data_len),
-        17 => wire__crate__api__tts_listen_settings_get_impl(port, ptr, rust_vec_len, data_len),
-        18 => wire__crate__api__tts_listen_settings_set_impl(port, ptr, rust_vec_len, data_len),
-        19 => wire__crate__api__tts_locator_for_sentence_impl(port, ptr, rust_vec_len, data_len),
-        20 => wire__crate__api__tts_segment_impl(port, ptr, rust_vec_len, data_len),
-        21 => wire__crate__api__tts_sentence_index_at_impl(port, ptr, rust_vec_len, data_len),
+        16 => wire__crate__api__translate_get_config_impl(port, ptr, rust_vec_len, data_len),
+        17 => wire__crate__api__translate_set_config_impl(port, ptr, rust_vec_len, data_len),
+        18 => wire__crate__api__translate_set_strategy_impl(port, ptr, rust_vec_len, data_len),
+        19 => wire__crate__api__tts_listen_settings_get_impl(port, ptr, rust_vec_len, data_len),
+        20 => wire__crate__api__tts_listen_settings_set_impl(port, ptr, rust_vec_len, data_len),
+        21 => wire__crate__api__tts_locator_for_sentence_impl(port, ptr, rust_vec_len, data_len),
+        22 => wire__crate__api__tts_segment_impl(port, ptr, rust_vec_len, data_len),
+        23 => wire__crate__api__tts_sentence_index_at_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -1327,6 +1416,28 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::SentenceChunkView>
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::TranslateConfigView {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.provider.into_into_dart().into_dart(),
+            self.has_deepl_key.into_into_dart().into_dart(),
+            self.deepl_key_masked.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::TranslateConfigView
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::TranslateConfigView>
+    for crate::api::TranslateConfigView
+{
+    fn into_into_dart(self) -> crate::api::TranslateConfigView {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::TranslationView {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
@@ -1335,6 +1446,7 @@ impl flutter_rust_bridge::IntoDart for crate::api::TranslationView {
             self.to.into_into_dart().into_dart(),
             self.provider.into_into_dart().into_dart(),
             self.from_cache.into_into_dart().into_dart(),
+            self.fallback_reason.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
@@ -1547,6 +1659,15 @@ impl SseEncode for crate::api::SentenceChunkView {
     }
 }
 
+impl SseEncode for crate::api::TranslateConfigView {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.provider, serializer);
+        <bool>::sse_encode(self.has_deepl_key, serializer);
+        <Option<String>>::sse_encode(self.deepl_key_masked, serializer);
+    }
+}
+
 impl SseEncode for crate::api::TranslationView {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -1555,6 +1676,7 @@ impl SseEncode for crate::api::TranslationView {
         <String>::sse_encode(self.to, serializer);
         <String>::sse_encode(self.provider, serializer);
         <bool>::sse_encode(self.from_cache, serializer);
+        <Option<String>>::sse_encode(self.fallback_reason, serializer);
     }
 }
 

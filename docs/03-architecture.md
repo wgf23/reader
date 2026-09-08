@@ -160,10 +160,23 @@ async fn dict_install(path: String) -> Result<()>;              // 安装 StarDi
 async fn dict_remove(name: String) -> Result<()>;
 async fn dict_list() -> Result<Vec<DictInfo>>;
 async fn dict_lookup(word: String) -> Result<Option<DictEntry>>; // 离线查词，多词库首命中
-async fn translate(text: String, from: Lang, to: Lang) -> Result<Translation>; // 缓存优先；失败带原文
+async fn translate(text: String, from: Lang, to: Lang) -> Result<TranslationView>; // 缓存优先；失败带原文
 async fn translate_cache_clear() -> Result<()>;                 // 隐私：清空翻译缓存
-async fn translate_set_config(cfg: ProviderConfig) -> Result<()>; // Provider key/开关
+async fn translate_set_config(cfg: ProviderConfig) -> Result<()>; // Provider key/开关（语义不变）
 ```
+> REQ-006 增补（在线翻译策略/读配置；ADR 决策点1/2）：
+> - `translate` 内部改为策略路由 `TranslationService::translate_routed`：默认策略 `auto`
+>   （`settings.translate.default_provider`，默认值由 `"offline"` 改 `"auto"`）＝在线优先
+>   （deepl/echo）→ 失败/无 key 回退 `offline`；显式 provider 亦回退 `offline`。
+>   缓存键仍为真实 provider（`offline`/`deepl` 分行），`translation_cache` 零 schema 变更。
+> - `TranslationView` 增 `fallback_reason: Option<String>`（如"在线失败，已回退离线"、
+>   "未配置在线翻译 API Key，已回退离线"；不进 `Translation` 值对象、不写缓存）。
+> - 新增 `struct TranslateConfigView { provider, has_deepl_key, deepl_key_masked }` +
+>   `async fn translate_get_config() -> Result<TranslateConfigView>`（**只回填固定掩码，绝不回传明文 key**）
+>   + `async fn translate_set_strategy(strategy: String) -> Result<()>`（值域 auto/offline/deepl/echo，
+>   未知 → Err("未知翻译策略: {s}")）。`translate_set_config` 签名/语义保持不变。
+> - 隐私不变：`TranslationProvider::translate(text, from, to)` 入参、`deepl_body` 只含
+>   `text/target_lang[/source_lang]`。
 - 分层：契约类型与 `TranslationCacheRepository` trait 在 `core/src/types.rs`（共享内核）；`store/translation.rs` 实现；装配在 `api.rs` 的 `library_open`（双单例注入）；dict/translation 属 domain 层，不直接依赖 store（经 trait），满足 ddd-rules。
 - 异步方案（ADR）：core 内同步（ureq HTTP、rustls），async 由 flutter_rust_bridge 桥接层承载，core 不引入 tokio。
 
@@ -207,9 +220,12 @@ UI: 创建 ReflowEngine(WebView) ──加载规范EPUB──▶ 分页JS计算�
 
 ```
 选中文本 → translate(text, from, to)
-  → 核心: 查 translation_cache(原文+语言对+provider) ──命中──▶ 直返(0 网络)
-  └─未命中: 调 Provider 适配器(DeepL...) → 写缓存 → 返回
-  → UI 展示译文卡片(标注"命中缓存"/provider名)
+  → 核心: 解析策略 settings.translate.default_provider（默认 auto）
+       auto: 在线候选(deepl/echo)逐个查缓存 ──命中──▶ 直返(0 网络)
+             未命中 → 逐个校验 key → Provider.translate → 写缓存(真实 provider) → 返回
+             在线全败/无 key → 回退 offline（先缓存后翻译）→ 返回并带 fallback_reason
+       显式 provider: 该 provider 优先，失败亦回退 offline
+  → UI 展示译文卡片(标签：缓存/离线/在线 + provider 名 + 回退提示)
 ```
 
 ### 6.4 导入多文件
@@ -321,6 +337,17 @@ abstract class TtsEngine {
 > REQ-005 落地：`SentenceChunk{index,text,charStart,charEnd,locator}` +
 > `SentenceLocator{bookId,href,progression,totalProgression,snippet?}`（与桥接 DTO 一一对应）；
 > 具体实现 `SystemTtsEngine`（flutter_tts，离线）。`index` 是 `TtsSentenceDone` 的唯一依据。
+>
+> REQ-006 增补（ADR 决策点3/6）：
+> - `sealed class TtsEvent` 增 `TtsSentenceStarted(index)`（平台 `speak.onStart`，只确认高亮/滚动
+>   锚点，**不写盘**）与 `TtsVoiceFallback(requestedVoiceId)`（无匹配系统音色，用于"系统默认音色"提示）；
+>   `ListenPage._onTtsEvent` 用穷尽 `switch` 处理（新增事件编译期强制补分支）。
+> - 推进只由 `TtsSentenceDone` 驱动；`speak` 立即返回、不 `await` 完成（Future 仅做失败检测）；
+>   `SystemTtsEngine.configure` 顺序：`awaitSpeakCompletion(true)` → `setLanguage('zh-CN')` →
+>   `setSpeechRate` → 音色匹配（无匹配 → `clearVoice()` + `TtsVoiceFallback`）；`speak(focus:true)`
+>   请求音频焦点，返回 `0/false`/异常 → `TtsFailed`。
+> - Android 主清单（构建期接口）声明 `<queries>` `android.intent.action.TTS_SERVICE` +
+>   `android.permission.INTERNET`（release 在线翻译必需）。
 
 ### 13.3 桥接 API 增补（Rust 侧，对齐 docs/04 §9）
 

@@ -1,0 +1,28 @@
+src/dict/mod.rs:50:9: replace TranslationProvider::needs_key -> bool with false
+src/dict/mod.rs:66:5: replace extract_pos -> Option<String> with Some(String::new())
+src/dict/mod.rs:66:5: replace extract_pos -> Option<String> with Some("xyzzy".into())
+src/dict/mod.rs:89:5: replace strip_html_tags -> String with String::new()
+src/dict/mod.rs:89:5: replace strip_html_tags -> String with "xyzzy".into()
+src/dict/mod.rs:93:13: delete match arm '<' in strip_html_tags
+src/dict/mod.rs:59:9: replace TranslationProvider::key_is_missing -> bool with true
+src/dict/mod.rs:59:9: replace TranslationProvider::key_is_missing -> bool with false
+src/dict/mod.rs:94:20: replace match guard in_tag with true in strip_html_tags
+src/dict/mod.rs:66:5: replace extract_pos -> Option<String> with None
+src/dict/mod.rs:94:20: replace match guard in_tag with false in strip_html_tags
+src/dict/mod.rs:95:18: replace match guard !in_tag with false in strip_html_tags
+src/dict/mod.rs:95:18: replace match guard !in_tag with true in strip_html_tags
+src/dict/mod.rs:95:18: delete ! in strip_html_tags
+src/dict/provider.rs:65:9: replace <impl TranslationProvider for DeepLProvider>::configure with ()
+src/dict/provider.rs:31:9: replace <impl TranslationProvider for DeepLProvider>::name -> &str with ""
+src/dict/provider.rs:31:9: replace <impl TranslationProvider for DeepLProvider>::name -> &str with "xyzzy"
+src/dict/provider.rs:70:9: replace <impl TranslationProvider for DeepLProvider>::key_is_missing -> bool with true
+src/dict/provider.rs:70:9: replace <impl TranslationProvider for DeepLProvider>::key_is_missing -> bool with false
+src/dict/provider.rs:80:9: replace <impl TranslationProvider for EchoProvider>::name -> &str with ""
+src/dict/provider.rs:80:9: replace <impl TranslationProvider for EchoProvider>::name -> &str with "xyzzy"
+src/dict/provider.rs:110:9: replace <impl TranslationProvider for OfflineProvider>::name -> &str with ""
+src/dict/provider.rs:110:9: replace <impl TranslationProvider for OfflineProvider>::name -> &str with "xyzzy"
+src/dict/provider.rs:114:9: replace <impl TranslationProvider for OfflineProvider>::needs_key -> bool with true
+src/dict/provider.rs:155:13: replace != with == in deepl_body
+src/dict/provider.rs:163:5: replace deepl_code -> &'static str with ""
+src/dict/provider.rs:163:5: replace deepl_code -> &'static str with "xyzzy"
+src/dict/provider.rs:151:5: replace deepl_body -> serde_json::Value with Default::default()

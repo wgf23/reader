@@ -68,7 +68,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => 953425062;
+  int get rustContentHash => -2040275071;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -115,8 +115,12 @@ abstract class RustLibApi extends BaseApi {
 
   Future<void> crateApiTranslateCacheClear();
 
+  Future<TranslateConfigView> crateApiTranslateGetConfig();
+
   Future<void> crateApiTranslateSetConfig(
       {required String provider, required String key});
+
+  Future<void> crateApiTranslateSetStrategy({required String strategy});
 
   Future<ListenSettingsView> crateApiTtsListenSettingsGet();
 
@@ -514,6 +518,29 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<TranslateConfigView> crateApiTranslateGetConfig() {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 16, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_translate_config_view,
+        decodeErrorData: sse_decode_String,
+      ),
+      constMeta: kCrateApiTranslateGetConfigConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiTranslateGetConfigConstMeta => const TaskConstMeta(
+        debugName: "translate_get_config",
+        argNames: [],
+      );
+
+  @override
   Future<void> crateApiTranslateSetConfig(
       {required String provider, required String key}) {
     return handler.executeNormal(NormalTask(
@@ -522,7 +549,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(provider, serializer);
         sse_encode_String(key, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 16, port: port_);
+            funcId: 17, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -540,12 +567,37 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<void> crateApiTranslateSetStrategy({required String strategy}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(strategy, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 18, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_unit,
+        decodeErrorData: sse_decode_String,
+      ),
+      constMeta: kCrateApiTranslateSetStrategyConstMeta,
+      argValues: [strategy],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiTranslateSetStrategyConstMeta =>
+      const TaskConstMeta(
+        debugName: "translate_set_strategy",
+        argNames: ["strategy"],
+      );
+
+  @override
   Future<ListenSettingsView> crateApiTtsListenSettingsGet() {
     return handler.executeNormal(NormalTask(
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 17, port: port_);
+            funcId: 19, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_listen_settings_view,
@@ -571,7 +623,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_box_autoadd_listen_settings_view(settings, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 18, port: port_);
+            funcId: 20, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -599,7 +651,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(href, serializer);
         sse_encode_u_32(idx, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 19, port: port_);
+            funcId: 21, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_locator_view,
@@ -626,7 +678,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(bookId, serializer);
         sse_encode_String(href, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 20, port: port_);
+            funcId: 22, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_list_sentence_chunk_view,
@@ -655,7 +707,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(href, serializer);
         sse_encode_box_autoadd_locator_view(locator, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 21, port: port_);
+            funcId: 23, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_u_32,
@@ -893,17 +945,31 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  TranslateConfigView dco_decode_translate_config_view(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return TranslateConfigView(
+      provider: dco_decode_String(arr[0]),
+      hasDeeplKey: dco_decode_bool(arr[1]),
+      deeplKeyMasked: dco_decode_opt_String(arr[2]),
+    );
+  }
+
+  @protected
   TranslationView dco_decode_translation_view(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 5)
-      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
     return TranslationView(
       text: dco_decode_String(arr[0]),
       from: dco_decode_String(arr[1]),
       to: dco_decode_String(arr[2]),
       provider: dco_decode_String(arr[3]),
       fromCache: dco_decode_bool(arr[4]),
+      fallbackReason: dco_decode_opt_String(arr[5]),
     );
   }
 
@@ -1195,6 +1261,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  TranslateConfigView sse_decode_translate_config_view(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_provider = sse_decode_String(deserializer);
+    var var_hasDeeplKey = sse_decode_bool(deserializer);
+    var var_deeplKeyMasked = sse_decode_opt_String(deserializer);
+    return TranslateConfigView(
+        provider: var_provider,
+        hasDeeplKey: var_hasDeeplKey,
+        deeplKeyMasked: var_deeplKeyMasked);
+  }
+
+  @protected
   TranslationView sse_decode_translation_view(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_text = sse_decode_String(deserializer);
@@ -1202,12 +1281,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_to = sse_decode_String(deserializer);
     var var_provider = sse_decode_String(deserializer);
     var var_fromCache = sse_decode_bool(deserializer);
+    var var_fallbackReason = sse_decode_opt_String(deserializer);
     return TranslationView(
         text: var_text,
         from: var_from,
         to: var_to,
         provider: var_provider,
-        fromCache: var_fromCache);
+        fromCache: var_fromCache,
+        fallbackReason: var_fallbackReason);
   }
 
   @protected
@@ -1457,6 +1538,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_translate_config_view(
+      TranslateConfigView self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.provider, serializer);
+    sse_encode_bool(self.hasDeeplKey, serializer);
+    sse_encode_opt_String(self.deeplKeyMasked, serializer);
+  }
+
+  @protected
   void sse_encode_translation_view(
       TranslationView self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
@@ -1465,6 +1555,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_String(self.to, serializer);
     sse_encode_String(self.provider, serializer);
     sse_encode_bool(self.fromCache, serializer);
+    sse_encode_opt_String(self.fallbackReason, serializer);
   }
 
   @protected

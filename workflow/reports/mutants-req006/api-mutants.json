@@ -1,0 +1,98 @@
+[
+  {
+    "diff": "--- src/api.rs\n+++ replace translate -> std::result::Result<TranslationView, String> with Ok(Default::default())\n@@ -318,34 +318,17 @@\n }\n \n /// 翻译：缓存优先；命中 from_cache=true（US-10/13）；未配置/网络失败给明确错误（US-12）\n pub async fn translate(\n     text: String,\n     from: String,\n     to: String,\n ) -> std::result::Result<TranslationView, String> {\n-    let from_lang = Lang::parse(&from)\n-        .ok_or_else(|| format!(\"不支持的语言代码: {from}\"))?;\n-    let to_lang = Lang::parse(&to).ok_or_else(|| format!(\"不支持的语言代码: {to}\"))?;\n-    let mut svc = translation_service()?\n-        .lock()\n-        .map_err(|_| \"服务锁错误\".to_string())?;\n-    // REQ-006：策略路由（auto 在线优先→回退离线），带回 fallback_reason。\n-    let routed = svc\n-        .translate_routed(&text, from_lang, to_lang)\n-        .map_err(err_msg)?;\n-    Ok(TranslationView {\n-        text: routed.translation.text,\n-        from: routed.translation.from.as_str().to_string(),\n-        to: routed.translation.to.as_str().to_string(),\n-        provider: routed.translation.provider,\n-        from_cache: routed.from_cache,\n-        fallback_reason: routed.fallback_reason,\n-    })\n+    Ok(Default::default()) /* ~ changed by cargo-mutants ~ */\n }\n \n /// 读取当前翻译配置（策略 + 是否已配置 DeepL key + 固定掩码；US-15）\n pub async fn translate_get_config() -> std::result::Result<TranslateConfigView, String> {\n     let svc = translation_service()?\n         .lock()\n         .map_err(|_| \"服务锁错误\".to_string())?;\n     let cfg = svc.config_view().map_err(err_msg)?;\n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "translate",
+      "return_type": "-> std::result::Result<TranslationView, String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 344
+        },
+        "start": {
+          "column": 1,
+          "line": 320
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:326:5: replace translate -> std::result::Result<TranslationView, String> with Ok(Default::default())",
+    "package": "reader_core",
+    "replacement": "Ok(Default::default())",
+    "span": {
+      "end": {
+        "column": 7,
+        "line": 343
+      },
+      "start": {
+        "column": 5,
+        "line": 326
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace translate_get_config -> std::result::Result<TranslateConfigView, String> with Ok(Default::default())\n@@ -340,30 +340,17 @@\n         provider: routed.translation.provider,\n         from_cache: routed.from_cache,\n         fallback_reason: routed.fallback_reason,\n     })\n }\n \n /// 读取当前翻译配置（策略 + 是否已配置 DeepL key + 固定掩码；US-15）\n pub async fn translate_get_config() -> std::result::Result<TranslateConfigView, String> {\n-    let svc = translation_service()?\n-        .lock()\n-        .map_err(|_| \"服务锁错误\".to_string())?;\n-    let cfg = svc.config_view().map_err(err_msg)?;\n-    Ok(TranslateConfigView {\n-        provider: cfg.provider,\n-        has_deepl_key: cfg.has_deepl_key,\n-        // 只回填固定掩码，绝不回传明文 key（决策点2）。\n-        deepl_key_masked: if cfg.has_deepl_key {\n-            Some(\"••••••••\".to_string())\n-        } else {\n-            None\n-        },\n-    })\n+    Ok(Default::default()) /* ~ changed by cargo-mutants ~ */\n }\n \n /// 设置翻译策略（\"auto\"/\"offline\"/\"deepl\"/\"echo\"）；未知 → Err(\"未知翻译策略: {s}\")（US-15）\n pub async fn translate_set_strategy(strategy: String) -> std::result::Result<(), String> {\n     let mut svc = translation_service()?\n         .lock()\n         .map_err(|_| \"服务锁错误\".to_string())?;\n     svc.set_strategy(&strategy).map_err(err_msg)\n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "translate_get_config",
+      "return_type": "-> std::result::Result<TranslateConfigView, String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 362
+        },
+        "start": {
+          "column": 1,
+          "line": 346
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:348:5: replace translate_get_config -> std::result::Result<TranslateConfigView, String> with Ok(Default::default())",
+    "package": "reader_core",
+    "replacement": "Ok(Default::default())",
+    "span": {
+      "end": {
+        "column": 7,
+        "line": 361
+      },
+      "start": {
+        "column": 5,
+        "line": 348
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace translate_set_strategy -> std::result::Result<(), String> with Ok(())\n@@ -358,20 +358,17 @@\n         } else {\n             None\n         },\n     })\n }\n \n /// 设置翻译策略（\"auto\"/\"offline\"/\"deepl\"/\"echo\"）；未知 → Err(\"未知翻译策略: {s}\")（US-15）\n pub async fn translate_set_strategy(strategy: String) -> std::result::Result<(), String> {\n-    let mut svc = translation_service()?\n-        .lock()\n-        .map_err(|_| \"服务锁错误\".to_string())?;\n-    svc.set_strategy(&strategy).map_err(err_msg)\n+    Ok(()) /* ~ changed by cargo-mutants ~ */\n }\n \n /// 一键清空翻译缓存（US-13 / docs/04 领域规则4）\n pub async fn translate_cache_clear() -> std::result::Result<(), String> {\n     let mut svc = translation_service()?\n         .lock()\n         .map_err(|_| \"服务锁错误\".to_string())?;\n     svc.clear_cache().map_err(err_msg)\n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "translate_set_strategy",
+      "return_type": "-> std::result::Result<(), String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 370
+        },
+        "start": {
+          "column": 1,
+          "line": 364
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:366:5: replace translate_set_strategy -> std::result::Result<(), String> with Ok(())",
+    "package": "reader_core",
+    "replacement": "Ok(())",
+    "span": {
+      "end": {
+        "column": 49,
+        "line": 369
+      },
+      "start": {
+        "column": 5,
+        "line": 366
+      }
+    }
+  }
+]

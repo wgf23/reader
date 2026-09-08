@@ -1,0 +1,2 @@
+src/dict/translation.rs:285:56: replace == with != in DictService::unique_id
+src/dict/translation.rs:287:15: replace += with *= in DictService::unique_id

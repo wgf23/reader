@@ -63,6 +63,7 @@ class RustTranslateBackend implements TranslateBackend {
       to: t.to,
       provider: t.provider,
       fromCache: t.fromCache,
+      fallbackReason: t.fallbackReason,
     );
   }
 
@@ -72,6 +73,20 @@ class RustTranslateBackend implements TranslateBackend {
   @override
   Future<void> setConfig(String provider, String key) =>
       rust.translateSetConfig(provider: provider, key: key);
+
+  @override
+  Future<TranslateConfigData> getConfig() async {
+    final c = await rust.translateGetConfig();
+    return TranslateConfigData(
+      provider: c.provider,
+      hasDeeplKey: c.hasDeeplKey,
+      deeplKeyMasked: c.deeplKeyMasked,
+    );
+  }
+
+  @override
+  Future<void> setStrategy(String strategy) =>
+      rust.translateSetStrategy(strategy: strategy);
 }
 
 /// 确保 Rust 库已加载（RustLibraryBackend.open 之外，翻译后端首次使用前调用）

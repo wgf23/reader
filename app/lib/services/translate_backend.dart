@@ -43,6 +43,7 @@ class TranslationData {
     required this.to,
     required this.provider,
     required this.fromCache,
+    this.fallbackReason,
   });
 
   final String text;
@@ -50,6 +51,25 @@ class TranslationData {
   final String to;
   final String provider;
   final bool fromCache;
+
+  /// 回退原因（REQ-006 US-17/18；如"在线失败，已回退离线"），未回退为 null。
+  final String? fallbackReason;
+}
+
+/// 翻译配置 DTO（REQ-006 US-15；**key 仅掩码，绝不含明文**）
+class TranslateConfigData {
+  const TranslateConfigData({
+    required this.provider,
+    required this.hasDeeplKey,
+    this.deeplKeyMasked,
+  });
+
+  /// "auto" | "offline" | "deepl" | "echo"
+  final String provider;
+  final bool hasDeeplKey;
+
+  /// 固定掩码；无 key 为 null。
+  final String? deeplKeyMasked;
 }
 
 abstract class TranslateBackend {
@@ -64,4 +84,10 @@ abstract class TranslateBackend {
   });
   Future<void> clearCache();
   Future<void> setConfig(String provider, String key);
+
+  /// 读取当前翻译配置（策略 + 是否已配置 DeepL key + 掩码；REQ-006 US-15）
+  Future<TranslateConfigData> getConfig();
+
+  /// 设置翻译策略（"auto"/"offline"/"deepl"/"echo"；REQ-006 US-15）
+  Future<void> setStrategy(String strategy);
 }

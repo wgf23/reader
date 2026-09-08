@@ -1,4 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- REQ-006（US-2）：release 在线翻译（DeepL）必需；debug/profile 清单的重复声明由
+         manifest merger 去重，不冲突。 -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="reader_app"
         android:name="${applicationName}"
@@ -40,6 +43,11 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <!-- REQ-006（US-1）：Android 11(API30)+ 包可见性下 TextToSpeech 需显式声明
+             TTS_SERVICE 才能解析默认引擎（flutter_tts 4.2.5 README:81-91）。 -->
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE"/>
         </intent>
     </queries>
 </manifest>

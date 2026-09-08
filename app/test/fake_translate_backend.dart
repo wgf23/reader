@@ -7,17 +7,24 @@ class FakeTranslateBackend implements TranslateBackend {
     this.installedDicts = const [],
     this.translationText = '译文:Hello world',
     this.fromCache = false,
+    this.fallbackReason,
+    this.translationProvider = 'echo',
     this.lookupResult,
     this.translateFailures = 0,
     this.lookupFailures = 0,
     this.lookupError,
     this.translateError,
     this.delay = Duration.zero,
+    this.configProvider = 'auto',
+    this.hasDeeplKey = false,
+    this.deeplKeyMasked,
   });
 
   final List<DictInfoData> installedDicts;
   final String translationText;
   final bool fromCache;
+  final String? fallbackReason;
+  final String translationProvider;
   final DictEntryData? lookupResult;
   int translateFailures; // 前 N 次翻译调用失败
   int lookupFailures; // 前 N 次查词调用失败
@@ -35,6 +42,12 @@ class FakeTranslateBackend implements TranslateBackend {
   String? lastConfigProvider;
   String? lastConfigKey;
   String? lastTranslatedText;
+
+  /// REQ-006：getConfig/setStrategy 可断言状态。
+  String configProvider;
+  bool hasDeeplKey;
+  String? deeplKeyMasked;
+  String? lastStrategy;
 
   @override
   Future<DictInfoData> installDict(String path) async {
@@ -80,8 +93,9 @@ class FakeTranslateBackend implements TranslateBackend {
       text: '$translationText[$translateCalls]',
       from: from,
       to: to,
-      provider: 'echo',
+      provider: translationProvider,
       fromCache: fromCache,
+      fallbackReason: fallbackReason,
     );
   }
 
@@ -94,5 +108,23 @@ class FakeTranslateBackend implements TranslateBackend {
   Future<void> setConfig(String provider, String key) async {
     lastConfigProvider = provider;
     lastConfigKey = key;
+    if (provider == 'deepl') {
+      // 保存非空 key → 已配置；空串 → 清除（与空 key 保存语义一致）。
+      hasDeeplKey = key.trim().isNotEmpty;
+      deeplKeyMasked = hasDeeplKey ? (deeplKeyMasked ?? '••••••••') : null;
+    }
+  }
+
+  @override
+  Future<TranslateConfigData> getConfig() async => TranslateConfigData(
+        provider: configProvider,
+        hasDeeplKey: hasDeeplKey,
+        deeplKeyMasked: hasDeeplKey ? (deeplKeyMasked ?? '••••••••') : null,
+      );
+
+  @override
+  Future<void> setStrategy(String strategy) async {
+    lastStrategy = strategy;
+    configProvider = strategy;
   }
 }

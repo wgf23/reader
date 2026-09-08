@@ -18,11 +18,15 @@ class ListenSettingsSheet extends StatefulWidget {
     required this.settings,
     required this.onSettingsChanged,
     required this.onClose,
+    this.voiceFallback = false,
   });
 
   final ListenSettingsData settings;
   final ValueChanged<ListenSettingsData> onSettingsChanged;
   final VoidCallback onClose;
+
+  /// 无匹配系统音色已回退默认 → 显示"系统默认音色"提示（REQ-006 US-21）。
+  final bool voiceFallback;
 
   @override
   State<ListenSettingsSheet> createState() => _ListenSettingsSheetState();
@@ -65,6 +69,14 @@ class _ListenSettingsSheetState extends State<ListenSettingsSheet> {
             const SizedBox(height: 4),
             // ---------- 音色 ----------
             const Text('音色', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+            if (widget.voiceFallback)
+              const Padding(
+                padding: EdgeInsets.only(top: 4),
+                child: Text(
+                  '当前：系统默认音色（未找到所选音色）',
+                  style: TextStyle(fontSize: 12, color: Color(0xFFB71C1C)),
+                ),
+              ),
             RadioGroup<String>(
               groupValue: _settings.voiceId,
               onChanged: (v) {

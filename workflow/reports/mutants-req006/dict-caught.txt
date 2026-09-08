@@ -1,0 +1,87 @@
+src/dict/translation.rs:50:9: replace DictService::scan_existing with ()
+src/dict/translation.rs:117:37: replace == with != in DictService::install
+src/dict/translation.rs:136:25: replace != with == in DictService::install
+src/dict/translation.rs:187:9: replace DictService::remove -> Result<()> with Ok(())
+src/dict/translation.rs:158:58: replace == with != in DictService::install
+src/dict/translation.rs:202:9: replace DictService::list -> Result<Vec<DictInfo>> with Ok(vec![])
+src/dict/translation.rs:75:59: replace == with != in DictService::load_from_installed_dir
+src/dict/translation.rs:190:39: replace == with != in DictService::remove
+src/dict/translation.rs:214:16: delete ! in DictService::lookup
+src/dict/translation.rs:208:9: replace DictService::lookup -> Result<Option<DictEntry>> with Ok(None)
+src/dict/translation.rs:214:58: replace == with != in DictService::lookup
+src/dict/translation.rs:221:31: replace != with == in DictService::lookup
+src/dict/translation.rs:225:23: replace += with -= in DictService::lookup
+src/dict/translation.rs:252:22: replace == with != in DictService::lookup
+src/dict/translation.rs:225:23: replace += with *= in DictService::lookup
+src/dict/translation.rs:261:9: replace DictService::read_region -> Result<Vec<u8>> with Ok(vec![])
+src/dict/translation.rs:261:9: replace DictService::read_region -> Result<Vec<u8>> with Ok(vec![0])
+src/dict/translation.rs:266:39: replace + with - in DictService::read_region
+src/dict/translation.rs:261:9: replace DictService::read_region -> Result<Vec<u8>> with Ok(vec![1])
+src/dict/translation.rs:266:39: replace + with * in DictService::read_region
+src/dict/translation.rs:267:16: replace > with == in DictService::read_region
+src/dict/translation.rs:267:16: replace > with < in DictService::read_region
+src/dict/translation.rs:267:16: replace > with >= in DictService::read_region
+src/dict/translation.rs:282:9: replace DictService::unique_id -> String with String::new()
+src/dict/translation.rs:282:9: replace DictService::unique_id -> String with "xyzzy".into()
+src/dict/translation.rs:287:15: replace += with -= in DictService::unique_id
+src/dict/translation.rs:294:5: replace find_ifo_in -> Option<PathBuf> with None
+src/dict/translation.rs:294:5: replace find_ifo_in -> Option<PathBuf> with Some(Default::default())
+src/dict/translation.rs:297:60: replace == with != in find_ifo_in
+src/dict/translation.rs:305:5: replace dict_stem -> String with String::new()
+src/dict/translation.rs:305:5: replace dict_stem -> String with "xyzzy".into()
+src/dict/translation.rs:312:5: replace dict_path_of -> Option<PathBuf> with None
+src/dict/translation.rs:312:5: replace dict_path_of -> Option<PathBuf> with Some(Default::default())
+src/dict/translation.rs:325:5: replace strip_ifo -> PathBuf with Default::default()
+src/dict/translation.rs:328:36: replace - with + in strip_ifo
+src/dict/translation.rs:328:36: replace - with / in strip_ifo
+src/dict/translation.rs:338:5: replace sanitize_id -> String with String::new()
+src/dict/translation.rs:338:5: replace sanitize_id -> String with "xyzzy".into()
+src/dict/translation.rs:341:54: replace || with && in sanitize_id
+src/dict/translation.rs:341:42: replace || with && in sanitize_id
+src/dict/translation.rs:341:47: replace == with != in sanitize_id
+src/dict/translation.rs:341:59: replace == with != in sanitize_id
+src/dict/translation.rs:351:16: replace > with == in sanitize_id
+src/dict/translation.rs:351:16: replace > with < in sanitize_id
+src/dict/translation.rs:355:20: replace < with == in sanitize_id
+src/dict/translation.rs:355:20: replace < with > in sanitize_id
+src/dict/translation.rs:355:20: replace < with <= in sanitize_id
+src/dict/translation.rs:363:5: replace fnv32 -> u32 with 0
+src/dict/translation.rs:363:5: replace fnv32 -> u32 with 1
+src/dict/translation.rs:365:11: replace ^= with |= in fnv32
+src/dict/translation.rs:365:11: replace ^= with &= in fnv32
+src/dict/translation.rs:444:21: replace == with != in TranslationService::translate_routed
+src/dict/translation.rs:469:25: delete ! in TranslationService::translate_auto
+src/dict/translation.rs:505:36: replace == with != in TranslationService::translate_auto
+src/dict/translation.rs:523:39: replace || with && in TranslationService::translate_auto
+src/dict/translation.rs:492:36: replace == with != in TranslationService::translate_auto
+src/dict/translation.rs:540:36: replace == with != in TranslationService::translate_auto
+src/dict/translation.rs:562:32: replace || with && in TranslationService::translate_auto
+src/dict/translation.rs:580:12: delete ! in TranslationService::translate_explicit
+src/dict/translation.rs:580:52: replace == with != in TranslationService::translate_explicit
+src/dict/translation.rs:608:36: replace == with != in TranslationService::translate_explicit
+src/dict/translation.rs:626:40: replace && with || in TranslationService::translate_explicit
+src/dict/translation.rs:626:25: delete ! in TranslationService::translate_explicit
+src/dict/translation.rs:626:52: replace != with == in TranslationService::translate_explicit
+src/dict/translation.rs:596:32: replace == with != in TranslationService::translate_explicit
+src/dict/translation.rs:629:12: delete ! in TranslationService::translate_explicit
+src/dict/translation.rs:646:40: replace == with != in TranslationService::translate_explicit
+src/dict/translation.rs:671:32: replace == with != in TranslationService::config_view
+src/dict/translation.rs:672:22: delete ! in TranslationService::config_view
+src/dict/translation.rs:675:30: delete ! in TranslationService::config_view
+src/dict/translation.rs:686:9: replace TranslationService::set_strategy -> Result<()> with Ok(())
+src/dict/translation.rs:686:38: replace || with && in TranslationService::set_strategy
+src/dict/translation.rs:686:21: replace == with != in TranslationService::set_strategy
+src/dict/translation.rs:686:80: replace == with != in TranslationService::set_strategy
+src/dict/translation.rs:700:9: replace TranslationService::cache_get_translation -> Result<Option<Translation>> with Ok(None)
+src/dict/translation.rs:721:9: replace TranslationService::cache_put_translation -> Result<()> with Ok(())
+src/dict/translation.rs:741:9: replace TranslationService::clear_cache -> Result<()> with Ok(())
+src/dict/translation.rs:747:9: replace TranslationService::set_config -> Result<()> with Ok(())
+src/dict/translation.rs:750:25: replace == with != in TranslationService::set_config
+src/dict/translation.rs:760:5: replace normalize_text -> String with String::new()
+src/dict/translation.rs:760:5: replace normalize_text -> String with "xyzzy".into()
+src/dict/translation.rs:764:32: replace && with || in normalize_text
+src/dict/translation.rs:764:16: delete ! in normalize_text
+src/dict/translation.rs:764:35: delete ! in normalize_text
+src/dict/translation.rs:777:5: replace now_unix -> i64 with 0
+src/dict/translation.rs:777:5: replace now_unix -> i64 with 1
+src/dict/translation.rs:777:5: replace now_unix -> i64 with -1
