@@ -75,4 +75,63 @@ void main() {
     await tester.pumpAndSettle();
     expect(translate.installed, isEmpty);
   });
+
+  testWidgets('REQ-006 US-15 已配置 key 掩码回填 + 策略下拉 + 未编辑不写 key + 空 key 清除',
+      (tester) async {
+    final translate = FakeTranslateBackend(
+      configProvider: 'auto',
+      hasDeeplKey: true,
+      deeplKeyMasked: '••••••••',
+    );
+    await tester.pumpWidget(wrap(SettingsPage(translateBackend: translate)));
+    await tester.pumpAndSettle();
+
+    // 回填掩码 + 策略显示当前值；TextField 仍唯一（策略用 Dropdown）
+    final field = tester.widget<TextField>(find.byType(TextField));
+    expect(field.controller!.text, '••••••••');
+    expect(find.byType(TextField), findsOneWidget);
+    expect(find.byType(DropdownButtonFormField<String>), findsOneWidget);
+    expect(find.text('自动（在线优先）'), findsOneWidget);
+
+    // 未编辑 key 直接保存 → 不写 key（避免掩码写回），但写策略
+    await tester.tap(find.text('保存'));
+    await tester.pumpAndSettle();
+    expect(translate.lastConfigKey, isNull, reason: '未编辑不写 key');
+    expect(translate.lastStrategy, 'auto');
+
+    // 清空并保存 → setConfig('deepl','') + 明确提示
+    await tester.enterText(find.byType(TextField), '');
+    await tester.tap(find.text('保存'));
+    await tester.pumpAndSettle();
+    expect(translate.lastConfigKey, '');
+    expect(translate.hasDeeplKey, isFalse);
+    expect(find.textContaining('已清除 DeepL API Key'), findsOneWidget);
+
+    // 切换策略 → setStrategy 被调
+    await tester.tap(find.byType(DropdownButtonFormField<String>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('DeepL 在线').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('保存'));
+    await tester.pumpAndSettle();
+    expect(translate.lastStrategy, 'deepl');
+  });
+
+  testWidgets('REQ-006 US-15 输入 key 保存 → setConfig + setStrategy + 掩码回填',
+      (tester) async {
+    final translate = FakeTranslateBackend(configProvider: 'auto');
+    await tester.pumpWidget(wrap(SettingsPage(translateBackend: translate)));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), 'my-key');
+    await tester.tap(find.text('保存'));
+    await tester.pumpAndSettle();
+    expect(translate.lastConfigProvider, 'deepl');
+    expect(translate.lastConfigKey, 'my-key');
+    expect(translate.lastStrategy, 'auto');
+    expect(find.text('已保存 DeepL API Key'), findsOneWidget);
+    // 回填掩码
+    final field = tester.widget<TextField>(find.byType(TextField));
+    expect(field.controller!.text, '••••••••');
+  });
 }

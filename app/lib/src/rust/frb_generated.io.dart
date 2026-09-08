@@ -94,6 +94,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SentenceChunkView dco_decode_sentence_chunk_view(dynamic raw);
 
   @protected
+  TranslateConfigView dco_decode_translate_config_view(dynamic raw);
+
+  @protected
   TranslationView dco_decode_translation_view(dynamic raw);
 
   @protected
@@ -190,6 +193,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SentenceChunkView sse_decode_sentence_chunk_view(
+      SseDeserializer deserializer);
+
+  @protected
+  TranslateConfigView sse_decode_translate_config_view(
       SseDeserializer deserializer);
 
   @protected
@@ -297,6 +304,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_sentence_chunk_view(
       SentenceChunkView self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_translate_config_view(
+      TranslateConfigView self, SseSerializer serializer);
 
   @protected
   void sse_encode_translation_view(

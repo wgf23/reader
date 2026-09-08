@@ -258,13 +258,23 @@ impl AnnotationService {
 pub trait TranslationProvider {          // 在线 Provider 统一接口
     fn name(&self) -> &str;
     fn translate(&self, text: &str, from: Lang, to: Lang) -> Result<Translation>;
+    fn needs_key(&self) -> bool { true }
+    // REQ-006：空/空白 key 是否视为未配置（默认仅 None；DeepL 覆写空白串亦视为未配置）
+    fn key_is_missing(&self, key: Option<&str>) -> bool { key.is_none() }
 }
 pub struct TranslationService;
 impl TranslationService {
     pub fn lookup(word: &str) -> Result<Option<DictEntry>>;   // StarDict 本地
     pub fn translate(text: &str, from: Lang, to: Lang) -> Result<Translation>; // 缓存优先
     pub fn install_dict(path: &Path) -> Result<()>;
+    // REQ-006：策略路由（auto 在线优先→回退离线）/ 读配置视图 / 设置策略
+    pub fn translate_routed(&mut self, text: &str, from: Lang, to: Lang) -> Result<RoutedTranslation>;
+    pub fn translate_cached(&mut self, text: &str, from: Lang, to: Lang) -> Result<(Translation, bool)>;
+    pub fn config_view(&self) -> Result<TranslateConfig>;
+    pub fn set_strategy(&mut self, strategy: &str) -> Result<()>;
 }
+// 常量：AUTO_PROVIDER="auto"；FALLBACK_REASON_ONLINE_FAILED/UNCONFIGURED；RoutedTranslation{translation,from_cache,fallback_reason}
+// settings 键 translate.default_provider 默认值 "offline" → "auto"（键名不变、值域扩展，无迁移）
 
 // search/
 pub struct SearchService;
@@ -359,6 +369,13 @@ fn segment(text: &str, book_id: &BookId, href: &str) -> Result<Vec<SentenceChunk
 fn locator_for_sentence(text: &str, book_id: &BookId, href: &str, idx: usize) -> Result<Locator>;
 fn sentence_index_at(text: &str, book_id: &BookId, href: &str, loc: &Locator) -> Result<usize>;
 ```
+
+> REQ-006 增补（Flutter 侧 `TtsEngine`/`SystemTtsEngine`，ADR 决策点3/6）：
+> - 事件：`TtsSentenceStarted(index)`（onStart，只确认高亮/滚动锚点、**不写盘**）、
+>   `TtsVoiceFallback(requestedVoiceId)`（无匹配系统音色 → `clearVoice()` 回退默认）。
+> - 初始化：`awaitSpeakCompletion(true)` → `setLanguage('zh-CN')` → `setSpeechRate` → 音色匹配；
+>   `speak(focus:true)` 请求音频焦点，返回 `0/false`/异常 → `TtsFailed`；`speak` 立即返回，
+>   推进只由 `TtsSentenceDone` 驱动。听读同进度不变式不变（`reading_progress` 唯一事实源）。
 > `char_range` / `TextAnchor.start/end` 为 UTF-16 code unit 半开区间 `[start, end)`；
 > `progression_i = char_start_i / utf16_len(text)`（clamp `[0,1]`）；`sentence_index_at` 返回
 > 满足 `progression_i <= loc.progression` 的最大 `i`（章首 0 / 章末 N-1）；FFI 侧为 async +

@@ -76,6 +76,8 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_web.dart';
 
 @protected SentenceChunkView dco_decode_sentence_chunk_view(dynamic raw);
 
+@protected TranslateConfigView dco_decode_translate_config_view(dynamic raw);
+
 @protected TranslationView dco_decode_translation_view(dynamic raw);
 
 @protected int dco_decode_u_32(dynamic raw);
@@ -135,6 +137,8 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_web.dart';
 @protected ProgressView sse_decode_progress_view(SseDeserializer deserializer);
 
 @protected SentenceChunkView sse_decode_sentence_chunk_view(SseDeserializer deserializer);
+
+@protected TranslateConfigView sse_decode_translate_config_view(SseDeserializer deserializer);
 
 @protected TranslationView sse_decode_translation_view(SseDeserializer deserializer);
 
@@ -197,6 +201,8 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_web.dart';
 @protected void sse_encode_progress_view(ProgressView self, SseSerializer serializer);
 
 @protected void sse_encode_sentence_chunk_view(SentenceChunkView self, SseSerializer serializer);
+
+@protected void sse_encode_translate_config_view(TranslateConfigView self, SseSerializer serializer);
 
 @protected void sse_encode_translation_view(TranslationView self, SseSerializer serializer);
 

@@ -24,6 +24,7 @@ class ListenControlBar extends StatefulWidget {
     this.onVoice,
     this.timerLabel = '⏱ 30 分钟',
     this.voiceLabel = '🎙 系统男声',
+    this.voiceFallback = false,
   });
 
   final String chapterTitle;
@@ -46,6 +47,9 @@ class ListenControlBar extends StatefulWidget {
 
   final String timerLabel;
   final String voiceLabel;
+
+  /// 无匹配系统音色已回退默认 → 显示"系统默认音色"（REQ-006 US-21）。
+  final bool voiceFallback;
 
   @override
   State<ListenControlBar> createState() => _ListenControlBarState();
@@ -121,8 +125,10 @@ class _ListenControlBarState extends State<ListenControlBar> {
                     height: 32,
                     child: OutlinedButton(
                       onPressed: widget.onVoice,
-                      child: Text(widget.voiceLabel,
-                          style: const TextStyle(fontSize: 12)),
+                      child: Text(
+                        widget.voiceFallback ? '🎙 系统默认音色' : widget.voiceLabel,
+                        style: const TextStyle(fontSize: 12),
+                      ),
                     ),
                   ),
                 ],

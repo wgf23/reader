@@ -64,13 +64,29 @@ class SentenceChunk {
   final SentenceLocator locator;
 }
 
-/// 播放事件
+/// 播放事件（`sealed`：新增子类时 `ListenPage` 的 `switch` 编译期强制补分支）
 sealed class TtsEvent {}
+
+/// 当前句开始朗读（平台 `speak.onStart`；REQ-006 US-5）。
+///
+/// **仅用于确认高亮/滚动锚点，不得写盘**（听读同进度不变式）。
+class TtsSentenceStarted extends TtsEvent {
+  TtsSentenceStarted(this.sentenceIndex);
+
+  final int sentenceIndex;
+}
 
 class TtsSentenceDone extends TtsEvent {
   TtsSentenceDone(this.sentenceIndex);
 
   final int sentenceIndex;
+}
+
+/// 无匹配系统音色，已回退默认音色（REQ-006 US-21；用于"系统默认音色"提示）。
+class TtsVoiceFallback extends TtsEvent {
+  TtsVoiceFallback(this.requestedVoiceId);
+
+  final String requestedVoiceId;
 }
 
 class TtsFailed extends TtsEvent {

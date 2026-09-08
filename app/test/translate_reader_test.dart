@@ -214,4 +214,63 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('未配置翻译后端'), findsOneWidget);
   });
+
+  // ---------- REQ-006：译文来源标签 + 回退提示（US-18） ----------
+
+  testWidgets('US-18 译文卡片标签：在线/离线/缓存 + provider 名 + 回退提示', (tester) async {
+    Future<void> pumpCard(TranslationData t) => tester.pumpWidget(
+          wrap(Scaffold(body: TranslationResultCard(translation: t))),
+        );
+
+    await pumpCard(const TranslationData(
+      text: 'Hello', from: 'en', to: 'zh', provider: 'deepl', fromCache: false));
+    expect(find.text('在线'), findsOneWidget);
+    expect(find.text('deepl'), findsOneWidget);
+
+    await pumpCard(const TranslationData(
+      text: 'Hello', from: 'en', to: 'zh', provider: 'offline', fromCache: false));
+    expect(find.text('离线'), findsOneWidget);
+    expect(find.text('offline'), findsOneWidget);
+    expect(find.text('在线'), findsNothing);
+
+    await pumpCard(const TranslationData(
+      text: 'Hello', from: 'en', to: 'zh', provider: 'deepl', fromCache: true));
+    expect(find.text('缓存'), findsOneWidget);
+    expect(find.text('deepl'), findsOneWidget);
+
+    await pumpCard(const TranslationData(
+      text: 'Hello',
+      from: 'en',
+      to: 'zh',
+      provider: 'offline',
+      fromCache: false,
+      fallbackReason: '在线失败，已回退离线',
+    ));
+    expect(find.text('在线失败，已回退离线'), findsOneWidget);
+  });
+
+  testWidgets('US-17/18 翻译结果经 ReaderPage 渲染 provider 与回退提示', (tester) async {
+    final translate = FakeTranslateBackend(
+      translationProvider: 'offline',
+      fallbackReason: '未配置在线翻译 API Key，已回退离线',
+    );
+    await tester.pumpWidget(wrap(ReaderPage(
+      bookId: 'b1',
+      bookTitle: '测试书',
+      backend: FakeBackend(),
+      translateBackend: translate,
+    )));
+    await tester.pumpAndSettle();
+    final selectionArea =
+        tester.widget<SelectionArea>(find.byType(SelectionArea));
+    selectionArea.onSelectionChanged!(const SelectedContent(plainText: '很久以前'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('翻译'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(TranslationResultCard), findsOneWidget);
+    expect(find.text('离线'), findsOneWidget);
+    expect(find.text('offline'), findsOneWidget);
+    expect(find.textContaining('未配置在线翻译 API Key'), findsOneWidget);
+  });
 }

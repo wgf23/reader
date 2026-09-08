@@ -62,6 +62,24 @@ Future<FakeTtsEngine> _pump(
 SentenceChunk _chunkAt(FakeTtsBackend b, String href, int i) =>
     b.chunksFor(href)[i];
 
+/// 长句表（每句约 5 行）→ `maxScrollExtent > 0`，用于滚动同步断言（US-7/8/9）。
+Map<String, List<String>> _longSentences() => {
+      'chapter_0001.xhtml': List<String>.generate(
+        8,
+        (i) => '第$i句。${'这是一段足够长的正文内容用来换行滚动。' * 8}',
+      ),
+      'chapter_0002.xhtml': ['下一章句一。'],
+    };
+
+/// 取跟读组件内部 ScrollController 的当前偏移。
+double _scrollOffset(WidgetTester tester) {
+  final scrollable = find.descendant(
+    of: find.byType(ListenFollowHighlight),
+    matching: find.byType(Scrollable),
+  );
+  return tester.state<ScrollableState>(scrollable).position.pixels;
+}
+
 /// 下一章 segment 抛错，用于覆盖 _loadNextChapter 的 catch 分支。
 class _ThrowingTtsBackend extends FakeTtsBackend {
   @override
@@ -677,5 +695,99 @@ void main() {
 
     expect(engine.spokenTexts, isEmpty);
     expect(find.textContaining('打开听书失败'), findsOneWidget);
+  });
+
+  // ---------- REQ-006：onStart / 自动滚动 / seek 同步 / 音色提示 ----------
+
+  testWidgets('US-5 emitStarted 切换高亮锚点且不写盘', (tester) async {
+    final backend = FakeListenBackend();
+    final ttsBackend = FakeTtsBackend();
+    final engine = await _pump(
+      tester,
+      backend: backend,
+      ttsBackend: ttsBackend,
+    );
+    expect(backend.saved, isEmpty, reason: '进入听书不写盘');
+
+    engine.emitStarted(2);
+    await tester.pump(const Duration(milliseconds: 1));
+
+    final w = tester.widget<ListenFollowHighlight>(
+      find.byType(ListenFollowHighlight),
+    );
+    expect(w.text.substring(w.highlightStart, w.highlightEnd), '第三句。');
+    await tester.pump(const Duration(milliseconds: 350));
+    expect(backend.saved, isEmpty, reason: 'TtsSentenceStarted 只确认高亮，不写盘');
+  });
+
+  testWidgets('US-8 句推进 → 高亮切句且滚动偏移前移（旧句不再高亮）', (tester) async {
+    final sentences = _longSentences();
+    final backend = FakeListenBackend(sentences: sentences);
+    final ttsBackend = FakeTtsBackend(sentences: sentences);
+    final engine = await _pump(
+      tester,
+      backend: backend,
+      ttsBackend: ttsBackend,
+    );
+    await tester.pumpAndSettle();
+    final before = _scrollOffset(tester);
+
+    engine.emitDone(0);
+    await tester.pumpAndSettle();
+
+    final w = tester.widget<ListenFollowHighlight>(
+      find.byType(ListenFollowHighlight),
+    );
+    final second = sentences['chapter_0001.xhtml']![1];
+    expect(w.text.substring(w.highlightStart, w.highlightEnd), second);
+    expect(_scrollOffset(tester), greaterThan(before), reason: '应自动滚动到句 1');
+    await tester.pump(const Duration(milliseconds: 350));
+  });
+
+  testWidgets('US-9 拖动进度条到末句 → 高亮/滚动锚点同步且不越界', (tester) async {
+    final sentences = _longSentences();
+    final backend = FakeListenBackend(sentences: sentences);
+    final ttsBackend = FakeTtsBackend(sentences: sentences);
+    final engine = await _pump(
+      tester,
+      backend: backend,
+      ttsBackend: ttsBackend,
+    );
+    final chunks = ttsBackend.chunksFor('chapter_0001.xhtml');
+
+    final slider = find.descendant(
+      of: find.byType(ListenControlBar),
+      matching: find.byType(Slider),
+    );
+    final rect = tester.getRect(slider);
+    await tester.tapAt(Offset(rect.left + rect.width * 0.98, rect.center.dy));
+    await tester.pumpAndSettle();
+
+    expect(engine.spokenIndexes.last, chunks.length - 1, reason: '不越界');
+    final w = tester.widget<ListenFollowHighlight>(
+      find.byType(ListenFollowHighlight),
+    );
+    expect(w.highlightStart, chunks.last.charStart);
+    expect(w.highlightEnd, chunks.last.charEnd);
+    expect(_scrollOffset(tester), greaterThan(0));
+    await tester.pump(const Duration(milliseconds: 350));
+  });
+
+  testWidgets('US-21 emitVoiceFallback → 控制条/设置面板显示"系统默认音色"', (tester) async {
+    final engine = await _pump(
+      tester,
+      backend: FakeListenBackend(),
+      ttsBackend: FakeTtsBackend(),
+    );
+    expect(find.text('🎙 系统男声'), findsOneWidget);
+
+    engine.emitVoiceFallback('system_male');
+    await tester.pump(const Duration(milliseconds: 1));
+    expect(find.text('🎙 系统默认音色'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('听书设置'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('系统默认音色'), findsWidgets);
+    expect(find.text('系统男声'), findsOneWidget, reason: 'P0 音色选项仍在');
   });
 }
