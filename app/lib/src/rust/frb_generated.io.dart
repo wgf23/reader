@@ -34,6 +34,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   DictEntryView dco_decode_box_autoadd_dict_entry_view(dynamic raw);
 
   @protected
+  ListenSettingsView dco_decode_box_autoadd_listen_settings_view(dynamic raw);
+
+  @protected
+  LocatorView dco_decode_box_autoadd_locator_view(dynamic raw);
+
+  @protected
   ProgressView dco_decode_box_autoadd_progress_view(dynamic raw);
 
   @protected
@@ -64,6 +70,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
 
   @protected
+  List<SentenceChunkView> dco_decode_list_sentence_chunk_view(dynamic raw);
+
+  @protected
+  ListenSettingsView dco_decode_listen_settings_view(dynamic raw);
+
+  @protected
+  LocatorView dco_decode_locator_view(dynamic raw);
+
+  @protected
   String? dco_decode_opt_String(dynamic raw);
 
   @protected
@@ -76,7 +91,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ProgressView dco_decode_progress_view(dynamic raw);
 
   @protected
+  SentenceChunkView dco_decode_sentence_chunk_view(dynamic raw);
+
+  @protected
   TranslationView dco_decode_translation_view(dynamic raw);
+
+  @protected
+  int dco_decode_u_32(dynamic raw);
 
   @protected
   BigInt dco_decode_u_64(dynamic raw);
@@ -102,6 +123,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   DictEntryView sse_decode_box_autoadd_dict_entry_view(
       SseDeserializer deserializer);
+
+  @protected
+  ListenSettingsView sse_decode_box_autoadd_listen_settings_view(
+      SseDeserializer deserializer);
+
+  @protected
+  LocatorView sse_decode_box_autoadd_locator_view(SseDeserializer deserializer);
 
   @protected
   ProgressView sse_decode_box_autoadd_progress_view(
@@ -136,6 +164,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
 
   @protected
+  List<SentenceChunkView> sse_decode_list_sentence_chunk_view(
+      SseDeserializer deserializer);
+
+  @protected
+  ListenSettingsView sse_decode_listen_settings_view(
+      SseDeserializer deserializer);
+
+  @protected
+  LocatorView sse_decode_locator_view(SseDeserializer deserializer);
+
+  @protected
   String? sse_decode_opt_String(SseDeserializer deserializer);
 
   @protected
@@ -150,7 +189,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ProgressView sse_decode_progress_view(SseDeserializer deserializer);
 
   @protected
+  SentenceChunkView sse_decode_sentence_chunk_view(
+      SseDeserializer deserializer);
+
+  @protected
   TranslationView sse_decode_translation_view(SseDeserializer deserializer);
+
+  @protected
+  int sse_decode_u_32(SseDeserializer deserializer);
 
   @protected
   BigInt sse_decode_u_64(SseDeserializer deserializer);
@@ -179,6 +225,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_dict_entry_view(
       DictEntryView self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_listen_settings_view(
+      ListenSettingsView self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_locator_view(
+      LocatorView self, SseSerializer serializer);
 
   @protected
   void sse_encode_box_autoadd_progress_view(
@@ -216,6 +270,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
       Uint8List self, SseSerializer serializer);
 
   @protected
+  void sse_encode_list_sentence_chunk_view(
+      List<SentenceChunkView> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_listen_settings_view(
+      ListenSettingsView self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_locator_view(LocatorView self, SseSerializer serializer);
+
+  @protected
   void sse_encode_opt_String(String? self, SseSerializer serializer);
 
   @protected
@@ -230,8 +295,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_progress_view(ProgressView self, SseSerializer serializer);
 
   @protected
+  void sse_encode_sentence_chunk_view(
+      SentenceChunkView self, SseSerializer serializer);
+
+  @protected
   void sse_encode_translation_view(
       TranslationView self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_u_32(int self, SseSerializer serializer);
 
   @protected
   void sse_encode_u_64(BigInt self, SseSerializer serializer);

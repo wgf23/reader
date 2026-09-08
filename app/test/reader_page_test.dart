@@ -1,13 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show SelectedContent;
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:reader_app/pages/listen_page.dart';
 import 'package:reader_app/pages/reader_page.dart';
+import 'package:reader_app/services/library_backend.dart';
 import 'package:reader_app/widgets/directory_drawer.dart';
 import 'package:reader_app/widgets/display_settings_sheet.dart';
 import 'package:reader_app/widgets/reader_chrome.dart';
 
 import 'fake_backend.dart';
+import 'fake_tts_backend.dart';
+import 'fake_tts_engine.dart';
+
+/// 听书测试用句表（与 FakeBackend 两章文本一致）
+const _listenSentences = {
+  'chapter_0001.xhtml': ['很久以前，有一座山。'],
+  'chapter_0002.xhtml': ['故事结束了。'],
+};
 
 /// 分页模式 fake 构建器（不实例化真实 WebView）
 Widget fakePagedBuilder(
@@ -167,9 +178,17 @@ void main() {
     expect(backend.saved, isNotNull);
   });
 
-  testWidgets('⋯更多弹层：4 个占位项（阅读统计/听书/笔记/导出）', (tester) async {
+  testWidgets('⋯更多弹层：听书可跳转 ListenPage，其余三项仍占位（US-1/US-25）',
+      (tester) async {
+    final engine = FakeTtsEngine();
     await tester.pumpWidget(MaterialApp(
-      home: ReaderPage(bookId: 'b1', bookTitle: '测试书', backend: FakeBackend()),
+      home: ReaderPage(
+        bookId: 'b1',
+        bookTitle: '测试书',
+        backend: FakeBackend(),
+        ttsBackend: FakeTtsBackend(sentences: _listenSentences),
+        ttsEngine: engine,
+      ),
     ));
     await tester.pumpAndSettle();
     await _toggleChrome(tester);
@@ -179,6 +198,73 @@ void main() {
     expect(find.text('听书'), findsOneWidget);
     expect(find.text('笔记'), findsOneWidget);
     expect(find.text('导出'), findsOneWidget);
+
+    await tester.tap(find.text('听书'));
+    await tester.pumpAndSettle();
+    expect(find.byType(ListenPage), findsOneWidget, reason: '听书项必须真正 push 听书页');
+    expect(find.text('导出'), findsNothing, reason: '底部弹层应先关闭');
+    expect(engine.spokenIndexes, isNotEmpty, reason: '进入后应从当前句起播');
+  });
+
+  testWidgets('听书返回后阅读页重读进度（US-15）', (tester) async {
+    final backend = FakeBackend();
+    final engine = FakeTtsEngine();
+    await tester.pumpWidget(MaterialApp(
+      home: ReaderPage(
+        bookId: 'b1',
+        bookTitle: '测试书',
+        backend: backend,
+        ttsBackend: FakeTtsBackend(sentences: _listenSentences),
+        ttsEngine: engine,
+      ),
+    ));
+    await tester.pumpAndSettle();
+    await _toggleChrome(tester);
+    await tester.tap(find.byTooltip('更多'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('听书'));
+    await tester.pumpAndSettle();
+    expect(find.byType(ListenPage), findsOneWidget);
+
+    // 模拟听书写入第二章进度
+    backend.saved = const ProgressData(
+      href: 'chapter_0002.xhtml',
+      progression: 0.0,
+    );
+    await tester.tap(find.byTooltip('返回'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('故事结束了。'), findsOneWidget, reason: '返回后应重读进度并跳到第二章');
+  });
+
+  testWidgets('US-22 选中工具条"复制"写入系统剪贴板', (tester) async {
+    String? clipboardText;
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async {
+        if (call.method == 'Clipboard.setData') {
+          final args = call.arguments as Map;
+          clipboardText = args['text'] as String?;
+        }
+        return null;
+      },
+    );
+    addTearDown(() {
+      tester.binding.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null);
+    });
+
+    await tester.pumpWidget(MaterialApp(
+      home: ReaderPage(bookId: 'b1', bookTitle: '测试书', backend: FakeBackend()),
+    ));
+    await tester.pumpAndSettle();
+    final sa = tester.widget<SelectionArea>(find.byType(SelectionArea));
+    sa.onSelectionChanged!(const SelectedContent(plainText: '很久以前'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('复制'));
+    await tester.pumpAndSettle();
+    expect(clipboardText, '很久以前');
   });
 
   testWidgets('目录抽屉：打开列出章节 → 选另一章跳转 + saveProgress', (tester) async {

@@ -327,6 +327,10 @@ pub enum ListenState { Idle, Playing, Paused, Stopped, Interrupted }
 
 `listen.voice_id`、`listen.speed`、`listen.timer`、`listen.auto_next`（章节连播开关）。
 
+> REQ-005 落地：本期仅建 `listen.voice_id` / `listen.speed` / `listen.auto_next` 三键
+> （默认 `system_male` / `1.0` / `true`，speed clamp `[0.5,3.0]`）；`listen.timer` 因定时关闭
+> 明确不做（P2 禁用占位）**本期不建**。桥接 `tts_listen_settings_get/set`（见 docs/03 §4/§13.3）。
+
 ### 9.3 状态机
 
 ```
@@ -349,7 +353,13 @@ Playing →(音频焦点丢失, 移动端 P2)→ Interrupted →(恢复策略)�
 ### 9.5 核心接口摘要（Rust `tts/` 模块）
 
 ```rust
-fn segment(book_id: BookId, href: &str) -> Result<Vec<SentenceChunk>>;
-fn locator_for_sentence(book_id: BookId, href: &str, idx: usize) -> Result<Locator>;
-fn sentence_index_at(book_id: BookId, href: &str, loc: &Locator) -> Result<usize>;
+// REQ-005（ADR 决策点1a）：domain 改为文本入参纯函数（只 use crate::types）；
+// 章文本由 interface 层 api.rs 经 LibraryService::open_book 按 href 取 Chapter.text 后传入。
+fn segment(text: &str, book_id: &BookId, href: &str) -> Result<Vec<SentenceChunk>>;
+fn locator_for_sentence(text: &str, book_id: &BookId, href: &str, idx: usize) -> Result<Locator>;
+fn sentence_index_at(text: &str, book_id: &BookId, href: &str, loc: &Locator) -> Result<usize>;
 ```
+> `char_range` / `TextAnchor.start/end` 为 UTF-16 code unit 半开区间 `[start, end)`；
+> `progression_i = char_start_i / utf16_len(text)`（clamp `[0,1]`）；`sentence_index_at` 返回
+> 满足 `progression_i <= loc.progression` 的最大 `i`（章首 0 / 章末 N-1）；FFI 侧为 async +
+> `LocatorView`/`SentenceChunkView`（见 docs/03 §13.3）。

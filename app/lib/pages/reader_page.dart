@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show SelectedContent;
+import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 
 import '../engines/paged_web_view.dart';
+import '../engines/system_tts_engine.dart';
+import '../engines/tts_engine.dart';
 import '../services/library_backend.dart';
+import '../services/rust_tts_backend.dart';
 import '../services/translate_backend.dart';
+import '../services/tts_backend.dart';
 import '../widgets/directory_drawer.dart';
 import '../widgets/display_settings_sheet.dart';
 import '../widgets/reader_chrome.dart';
 import '../widgets/selection_toolbar.dart';
 import '../widgets/translation_popup.dart';
+import 'listen_page.dart';
 
 /// 分页视图构建器（测试注入 fake，避免依赖系统 WebView）。
 typedef PagedViewBuilder = Widget Function(
@@ -38,6 +44,8 @@ class ReaderPage extends StatefulWidget {
     this.translateBackend,
     this.pagedViewBuilder,
     this.initialPagedMode = false,
+    this.ttsBackend,
+    this.ttsEngine,
   });
 
   final String bookId;
@@ -48,6 +56,10 @@ class ReaderPage extends StatefulWidget {
 
   /// 初始分页模式（测试注入用，默认滚动）
   final bool initialPagedMode;
+
+  /// 听书后端/引擎（测试注入；null → 点击"听书"时懒创建 Rust/系统实现）
+  final TtsBackend? ttsBackend;
+  final TtsEngine? ttsEngine;
 
   @override
   State<ReaderPage> createState() => _ReaderPageState();
@@ -274,13 +286,56 @@ class _ReaderPageState extends State<ReaderPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(leading: const Icon(Icons.insights), title: const Text('阅读统计'), onTap: () => Navigator.pop(context)),
-            ListTile(leading: const Icon(Icons.headphones), title: const Text('听书'), onTap: () => Navigator.pop(context)),
+            ListTile(leading: const Icon(Icons.headphones), title: const Text('听书'), onTap: () {
+              Navigator.pop(context); // 先关闭底部弹层（US-1）
+              _openListen();
+            }),
             ListTile(leading: const Icon(Icons.sticky_note_2), title: const Text('笔记'), onTap: () => Navigator.pop(context)),
             ListTile(leading: const Icon(Icons.ios_share), title: const Text('导出'), onTap: () => Navigator.pop(context)),
           ],
         ),
       ),
     );
+  }
+
+  /// 进入听书页并传入当前阅读位置；返回后重读进度（US-1/US-2/US-15）。
+  Future<void> _openListen() async {
+    final view = _view;
+    if (view == null) return;
+    final ttsBackend = widget.ttsBackend ?? RustTtsBackend();
+    final ttsEngine = widget.ttsEngine ?? SystemTtsEngine();
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ListenPage(
+          bookId: widget.bookId,
+          bookTitle: widget.bookTitle,
+          href: _hrefFor(view),
+          progression: _chapterProgress,
+          backend: widget.backend,
+          ttsBackend: ttsBackend,
+          ttsEngine: ttsEngine,
+        ),
+      ),
+    );
+    await _reloadProgress();
+  }
+
+  /// 返回阅读页后重读进度并跳转（听读写同一 `reading_progress`，US-15）。
+  Future<void> _reloadProgress() async {
+    final view = _view;
+    if (view == null) return;
+    try {
+      final progress = await widget.backend.loadProgress(widget.bookId);
+      if (progress == null || !mounted) return;
+      final idx = _chapterIndexForHref(view, progress.href);
+      setState(() {
+        if (idx >= 0) _chapterIndex = idx;
+        _chapterProgress = progress.progression.clamp(0.0, 1.0);
+      });
+      _jumpToProgress(_chapterProgress);
+    } catch (_) {
+      // 重读失败不阻断返回（保持当前页）
+    }
   }
 
   // ---------- 选中/翻译/查词（REQ-003，统一工具条） ----------
@@ -374,6 +429,17 @@ class _ReaderPageState extends State<ReaderPage> {
     }
   }
 
+  /// 复制选中文本到系统剪贴板（US-22 P1；失败不崩溃）。
+  Future<void> _copySelection() async {
+    final text = _selectedText;
+    if (text == null) return;
+    try {
+      await Clipboard.setData(ClipboardData(text: text));
+    } catch (_) {
+      // 测试/无剪贴板平台：静默失败，保留选中态
+    }
+  }
+
   void _onSelectionAction(SelectionAction action) {
     switch (action) {
       case SelectionAction.translate:
@@ -381,9 +447,7 @@ class _ReaderPageState extends State<ReaderPage> {
       case SelectionAction.lookup:
         _doLookup();
       case SelectionAction.copy:
-        if (_selectedText != null) {
-          // 复制（移动端可经 Clipboard；此处占位，保留选中态）
-        }
+        _copySelection();
       case SelectionAction.highlight:
       case SelectionAction.note:
         // 占位：划重点/笔记 为后续 REQ

@@ -108,6 +108,16 @@ impl LibraryService {
         self.store.load_progress(id)
     }
 
+    /// 读取设置项（REQ-005 决策点6：听书设置 `listen.*`；薄转发至 store）。
+    pub fn get_setting(&self, key: &str) -> Result<Option<String>> {
+        self.store.get_setting(key)
+    }
+
+    /// 写入设置项（UPSERT；薄转发至 store）。
+    pub fn set_setting(&mut self, key: &str, value: &str) -> Result<()> {
+        self.store.set_setting(key, value)
+    }
+
     fn canonical_path(&self, id: &str) -> Result<std::path::PathBuf> {
         let record = self.store.get_book(id)?;
         record
@@ -268,5 +278,29 @@ mod tests {
         let p2 = svc.load_progress(&rec.id).unwrap().unwrap();
         assert_eq!(p2.href, "chapter_0001.xhtml");
         assert!((p2.progression - 0.9).abs() < 1e-4);
+    }
+
+    #[test]
+    fn settings_forwarded_to_store_roundtrip() {
+        // REQ-005：LibraryService::get_setting/set_setting 薄转发必须真实落库
+        let dir = tempfile::tempdir().unwrap();
+        let store = Store::open(&dir.path().join("data")).unwrap();
+        let mut svc = LibraryService::new(store);
+        assert!(svc.get_setting("listen.speed").unwrap().is_none());
+        svc.set_setting("listen.speed", "1.5").unwrap();
+        assert_eq!(
+            svc.get_setting("listen.speed").unwrap().as_deref(),
+            Some("1.5")
+        );
+        svc.set_setting("listen.speed", "2.0").unwrap();
+        assert_eq!(
+            svc.get_setting("listen.speed").unwrap().as_deref(),
+            Some("2.0")
+        );
+        svc.set_setting("listen.auto_next", "0").unwrap();
+        assert_eq!(
+            svc.get_setting("listen.auto_next").unwrap().as_deref(),
+            Some("0")
+        );
     }
 }

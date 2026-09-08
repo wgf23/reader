@@ -3,14 +3,19 @@
 //! 设计：docs/02-technical.md §11（TTS 方案）、docs/04-module-design.md §9（领域设计）。
 //! 约定：合成与播放**不**在本模块（走 Flutter 侧 `TtsEngine`，见 app/lib/engines/tts_engine.dart）；
 //! 本模块只负责文本切分与"听读同一进度"的位置换算（"脑子"）。
+//!
+//! REQ-005（ADR 决策点1a/1b）：三个函数改为**文本入参**（domain 纯函数，只 `use crate::types`），
+//! 由 interface 层 `api.rs` 经 `LibraryService::open_book` 取章文本后调用。
+//! `char_range`/`TextAnchor.start/end` 统一使用 **UTF-16 code unit 半开区间 `[start, end)`**，
+//! 与 Dart `String` 索引一致（US-17 高亮可直接 `substring`）。
 
-use crate::types::{BookId, Locator};
+use crate::types::{BookId, Locator, TextAnchor};
 
 /// 朗读句子块（切句粒度 = 句子）
 #[derive(Debug, Clone)]
 pub struct SentenceChunk {
     pub text: String,
-    /// 在章文本中的字符区间
+    /// 在章文本中的字符区间（UTF-16 code unit，半开 `[start, end)`）
     pub char_range: (u32, u32),
     /// 句 ↔ 位置映射（听读进度统一）
     pub locator: Locator,
@@ -58,36 +63,283 @@ pub struct ListenSession {
     pub timer: Option<u32>, // 定时分钟数
 }
 
-/// 对章文本按句子切分（中文标点 。！？；… 与段落边界，保持引号/书名号完整）
-pub fn segment(_book_id: &BookId, _href: &str) -> Result<Vec<SentenceChunk>, TtsError> {
-    // TODO(P1): docs/04 §9.5
-    Err(TtsError::NotImplemented)
+/// 对章文本按句子切分（中文标点 。！？；… 与段落边界，保持引号/书名号完整）。
+///
+/// 规则见 docs/04 §9.4 规则2 / ADR 决策点1(b)：
+/// 1. 句末定界 `。！？；…` 与 ASCII `.!?;`；段落边界 `\n`/`\r\n` 强制断句；
+/// 2. 定界符后紧跟的收尾引号/括号并入本句；
+/// 3. 连续 `……`/`...` 视为一个定界整体；
+/// 4. ASCII `.` 仅在"前一个非空白为字母且后一个为空白/串尾且非缩写、非数字间"时断句；
+/// 5. `char_range_i = [start_i, start_{i+1})` 连续不重叠，末句 `end = utf16_len`；
+/// 6. 空/纯空白文本返回 `Ok(vec![])`；超长无标点整段作为一句。
+pub fn segment(text: &str, book_id: &BookId, href: &str) -> Result<Vec<SentenceChunk>, TtsError> {
+    if text.trim().is_empty() {
+        return Ok(Vec::new());
+    }
+    let (chars, total) = char_table(text);
+    if chars.is_empty() {
+        return Ok(Vec::new());
+    }
+    let starts = sentence_starts(&chars);
+    let mut out: Vec<SentenceChunk> = Vec::new();
+    for (idx, &(bs, us)) in starts.iter().enumerate() {
+        let be = starts.get(idx + 1).map(|s| s.0).unwrap_or(text.len());
+        let ue = starts.get(idx + 1).map(|s| s.1).unwrap_or(total);
+        let trimmed = text[bs..be].trim();
+        if trimmed.is_empty() {
+            // 理论不可达（starts 均为非空白起点）；兜底保持区间连续。
+            if let Some(last) = out.last_mut() {
+                last.char_range.1 = ue;
+                if let Some(anchor) = last.locator.text.as_mut() {
+                    anchor.end = ue;
+                }
+            }
+            continue;
+        }
+        let snippet = utf16_prefix(trimmed, 40);
+        let progression = if total == 0 {
+            0.0
+        } else {
+            (us as f32 / total as f32).clamp(0.0, 1.0)
+        };
+        let locator = Locator {
+            book_id: book_id.clone(),
+            href: href.to_string(),
+            progression,
+            // 本期无全书权重：total_progression 取章内近似，仅展示（ADR 关联裁定6）
+            total_progression: progression,
+            text: Some(TextAnchor {
+                snippet,
+                start: us,
+                end: ue,
+            }),
+            cfi: None,
+            page: None,
+            rect: None,
+        };
+        out.push(SentenceChunk {
+            text: trimmed.to_string(),
+            char_range: (us, ue),
+            locator,
+        });
+    }
+    Ok(out)
 }
 
-/// 第 idx 句的 Locator
+/// 第 `idx` 句的 Locator（`0 <= idx < N`，否则 `Err`）。
 pub fn locator_for_sentence(
-    _book_id: &BookId,
-    _href: &str,
-    _idx: usize,
+    text: &str,
+    book_id: &BookId,
+    href: &str,
+    idx: usize,
 ) -> Result<Locator, TtsError> {
-    // TODO(P1)
-    Err(TtsError::NotImplemented)
+    let chunks = segment(text, book_id, href)?;
+    chunks
+        .into_iter()
+        .nth(idx)
+        .map(|c| c.locator)
+        .ok_or_else(|| TtsError::Other(format!("句子索引越界: {idx}")))
 }
 
-/// Locator 落在哪一句（听读进度互转）
+/// Locator 落在哪一句（听读进度互转）。
+///
+/// 返回满足 `progression_i <= loc.progression` 的最大 `i`：
+/// 章首 `0.0 → 0`，章末 `1.0 → N-1`；`href`/`book_id` 不匹配、`progression` 为
+/// NaN/<0/>1、空文本 → `Err`（不 panic）。
 pub fn sentence_index_at(
-    _book_id: &BookId,
-    _href: &str,
-    _loc: &Locator,
+    text: &str,
+    book_id: &BookId,
+    href: &str,
+    loc: &Locator,
 ) -> Result<usize, TtsError> {
-    // TODO(P1)
-    Err(TtsError::NotImplemented)
+    if loc.book_id.as_str() != book_id.as_str() {
+        return Err(TtsError::Other(format!(
+            "book_id 不匹配: {} != {}",
+            loc.book_id, book_id
+        )));
+    }
+    if loc.href != href {
+        return Err(TtsError::Other(format!(
+            "href 不匹配: {} != {href}",
+            loc.href
+        )));
+    }
+    let p = loc.progression;
+    if !p.is_finite() || !(0.0..=1.0).contains(&p) {
+        return Err(TtsError::Other(format!("非法 progression: {p}")));
+    }
+    let chunks = segment(text, book_id, href)?;
+    if chunks.is_empty() {
+        return Err(TtsError::Other("空文本无句子".to_string()));
+    }
+    let mut best: Option<usize> = None;
+    for (i, c) in chunks.iter().enumerate() {
+        if c.locator.progression <= p + 1e-6 {
+            best = Some(i);
+        } else {
+            break;
+        }
+    }
+    best.ok_or_else(|| TtsError::Other(format!("progression 落在首句之前: {p}")))
+}
+
+// ===================== 内部辅助 =====================
+
+/// 章文本字符表：字符 + 字节起点 + UTF-16 起点
+struct Ch {
+    c: char,
+    byte: usize,
+    utf16: u32,
+}
+
+fn char_table(text: &str) -> (Vec<Ch>, u32) {
+    let mut out = Vec::new();
+    let mut u = 0u32;
+    for (b, c) in text.char_indices() {
+        out.push(Ch {
+            c,
+            byte: b,
+            utf16: u,
+        });
+        u += c.len_utf16() as u32;
+    }
+    (out, u)
+}
+
+fn utf16_prefix(s: &str, max: usize) -> String {
+    let mut out = String::new();
+    let mut n = 0usize;
+    for c in s.chars() {
+        let l = c.len_utf16();
+        if n + l > max {
+            break;
+        }
+        out.push(c);
+        n += l;
+    }
+    out
+}
+
+/// 硬定界符（不含 `…`/`.`，二者单独处理）
+fn is_hard_end(c: char) -> bool {
+    matches!(c, '。' | '！' | '？' | '；' | '!' | '?' | ';')
+}
+
+/// 可并入前句的收尾引号/括号
+fn is_closing(c: char) -> bool {
+    matches!(
+        c,
+        '」' | '』' | '”' | '’' | '）' | ')' | '】' | '》' | '〉' | ']' | '}' | '］' | '｝'
+            | '〕' | '〗' | '〙' | '〛' | '›' | '»'
+    )
+}
+
+/// 常见英文缩写（小写、含内部点），避免句点误切
+const ABBREVIATIONS: &[&str] = &[
+    "e.g", "i.e", "mr", "mrs", "ms", "dr", "no", "vs", "etc", "st", "jr", "sr", "prof", "inc",
+    "ltd", "co", "u.s", "a.m", "p.m", "fig", "vol", "ch", "sec", "approx", "dept", "est", "cf",
+    "al", "ed",
+];
+
+fn is_abbreviation(word: &str) -> bool {
+    if ABBREVIATIONS.contains(&word.to_ascii_lowercase().as_str()) {
+        return true;
+    }
+    // 单大写字母缩写（姓名首字母，如 `J.`）
+    let mut it = word.chars();
+    matches!((it.next(), it.next()), (Some(c), None) if c.is_ascii_uppercase())
+}
+
+/// 句点前的"词"（字母/数字/内部点）
+fn word_before(chars: &[Ch], dot: usize) -> String {
+    let mut start = dot;
+    while start > 0 {
+        let c = chars[start - 1].c;
+        if c.is_ascii_alphanumeric() || c == '.' {
+            start -= 1;
+        } else {
+            break;
+        }
+    }
+    chars[start..dot].iter().map(|c| c.c).collect()
+}
+
+fn is_ascii_period_end(chars: &[Ch], i: usize) -> bool {
+    let prev = (0..i).rev().find_map(|k| {
+        let c = chars[k].c;
+        if c.is_whitespace() {
+            None
+        } else {
+            Some(c)
+        }
+    });
+    let Some(prev) = prev else { return false };
+    if !prev.is_alphabetic() {
+        return false;
+    }
+    match chars.get(i + 1) {
+        None => {}
+        Some(n) if n.c.is_whitespace() => {}
+        _ => return false,
+    }
+    !is_abbreviation(&word_before(chars, i))
+}
+
+/// 若 `chars[i]` 是句末定界符，返回该定界整体最后一个字符的下标。
+/// `……`/`...` 整体处理；`.` 走缩写/数字判定；`\n`/`\r` 段落边界也断句。
+fn delimiter_end(chars: &[Ch], i: usize) -> Option<usize> {
+    let c = chars[i].c;
+    if c == '…' {
+        let mut j = i;
+        while j + 1 < chars.len() && chars[j + 1].c == '…' {
+            j += 1;
+        }
+        return Some(j);
+    }
+    if c == '.' {
+        if i + 1 < chars.len() && chars[i + 1].c == '.' {
+            let mut j = i;
+            while j + 1 < chars.len() && chars[j + 1].c == '.' {
+                j += 1;
+            }
+            return Some(j);
+        }
+        return is_ascii_period_end(chars, i).then_some(i);
+    }
+    (is_hard_end(c) || c == '\n' || c == '\r').then_some(i)
+}
+
+/// 求每句首个非空白字符的 (字节起点, UTF-16 起点)。
+/// 首句固定从 0 起（含前导空白），保证 `progression_0 == 0.0`（章首语义）。
+fn sentence_starts(chars: &[Ch]) -> Vec<(usize, u32)> {
+    let mut starts = Vec::new();
+    if chars.is_empty() {
+        return starts;
+    }
+    starts.push((0, 0));
+    let mut i = 0usize;
+    while i < chars.len() {
+        let Some(end) = delimiter_end(chars, i) else {
+            i += 1;
+            continue;
+        };
+        let mut j = end + 1;
+        while j < chars.len() && is_closing(chars[j].c) {
+            j += 1;
+        }
+        while j < chars.len() && chars[j].c.is_whitespace() {
+            j += 1;
+        }
+        if j < chars.len() {
+            starts.push((chars[j].byte, chars[j].utf16));
+        }
+        i = j;
+    }
+    starts
 }
 
 #[derive(Debug, thiserror::Error)]
 pub enum TtsError {
-    #[error("尚未实现（P1）")]
-    NotImplemented,
     #[error("{0}")]
     Other(String),
 }
@@ -96,9 +348,518 @@ pub enum TtsError {
 mod tests {
     use super::*;
 
+    fn bid() -> BookId {
+        BookId::from("b1")
+    }
+
+    fn seg(text: &str) -> Vec<SentenceChunk> {
+        segment(text, &bid(), "chapter_0001.xhtml").expect("切句应成功")
+    }
+
+    fn texts(chunks: &[SentenceChunk]) -> Vec<String> {
+        chunks.iter().map(|c| c.text.clone()).collect()
+    }
+
+    // ---------- US-4：切句规则 ----------
+
     #[test]
-    fn not_implemented_yet() {
-        let id = BookId::from("b1");
-        assert!(segment(&id, "chapter1.xhtml").is_err());
+    fn splits_chinese_punctuation_and_keeps_closing_quotes() {
+        let chunks = seg("“你好。”他说。下一句！还有？");
+        assert_eq!(
+            texts(&chunks),
+            vec!["“你好。”", "他说。", "下一句！", "还有？"]
+        );
+        // 引号成对保留
+        assert!(chunks[0].text.starts_with('“') && chunks[0].text.ends_with('”'));
+        // 区间连续不重叠
+        for w in chunks.windows(2) {
+            assert_eq!(w[0].char_range.1, w[1].char_range.0, "相邻区间必须连续");
+        }
+        assert_eq!(chunks.last().unwrap().char_range.1, 15);
+    }
+
+    #[test]
+    fn does_not_merge_across_paragraphs() {
+        let chunks = seg("第一段没有句号\n第二段有。\n\n第三段。");
+        assert_eq!(
+            texts(&chunks),
+            vec!["第一段没有句号", "第二段有。", "第三段。"]
+        );
+        for w in chunks.windows(2) {
+            assert_eq!(w[0].char_range.1, w[1].char_range.0);
+        }
+    }
+
+    #[test]
+    fn ellipsis_run_is_single_delimiter() {
+        let chunks = seg("他说……然后走了。");
+        assert_eq!(texts(&chunks), vec!["他说……", "然后走了。"]);
+        let ascii = seg("Wait... then go.");
+        assert_eq!(texts(&ascii), vec!["Wait...", "then go."]);
+    }
+
+    #[test]
+    fn ascii_abbreviation_not_split() {
+        let chunks = seg("Mr. Smith went home. He left.");
+        assert_eq!(texts(&chunks), vec!["Mr. Smith went home.", "He left."]);
+        let eg = seg("Use e.g. this one. Done.");
+        assert_eq!(texts(&eg), vec!["Use e.g. this one.", "Done."]);
+        let decimal = seg("圆周率是 3.14 左右。完。");
+        assert_eq!(texts(&decimal), vec!["圆周率是 3.14 左右。", "完。"]);
+    }
+
+    #[test]
+    fn empty_or_whitespace_returns_empty_vec() {
+        assert!(seg("").is_empty());
+        assert!(seg("   \n\t  ").is_empty());
+    }
+
+    #[test]
+    fn long_run_without_punctuation_is_one_sentence() {
+        let s = "啊".repeat(200);
+        let chunks = seg(&s);
+        assert_eq!(chunks.len(), 1);
+        assert_eq!(chunks[0].text.chars().count(), 200);
+    }
+
+    #[test]
+    fn char_range_uses_utf16_code_units() {
+        // 😀 占 2 个 UTF-16 code unit
+        let chunks = seg("😀你好。世界。");
+        assert_eq!(chunks[0].char_range, (0, 5));
+        assert_eq!(chunks[0].text, "😀你好。");
+        assert_eq!(chunks[1].char_range, (5, 8));
+        assert_eq!(chunks[1].text, "世界。");
+    }
+
+    // ---------- US-5：句 → Locator ----------
+
+    #[test]
+    fn locator_fields_and_monotonic_progression() {
+        let text = "第一句。第二句。第三句。";
+        let chunks = seg(text);
+        let mut last = -1.0f32;
+        for (i, c) in chunks.iter().enumerate() {
+            let loc = locator_for_sentence(text, &bid(), "chapter_0001.xhtml", i).unwrap();
+            assert_eq!(loc.book_id, "b1");
+            assert_eq!(loc.href, "chapter_0001.xhtml");
+            assert!((0.0..=1.0).contains(&loc.progression));
+            assert!(loc.progression >= last, "progression 单调不减");
+            last = loc.progression;
+            let anchor = loc.text.expect("应有文本锚");
+            assert!(c.text.starts_with(&anchor.snippet), "snippet 应为句前缀");
+            assert_eq!(anchor.start, c.char_range.0);
+            assert_eq!(anchor.end, c.char_range.1);
+        }
+        assert_eq!(chunks[0].locator.progression, 0.0);
+        assert!(chunks.last().unwrap().locator.progression < 1.0);
+    }
+
+    #[test]
+    fn locator_for_sentence_out_of_range_errors() {
+        let text = "一句。";
+        assert!(locator_for_sentence(text, &bid(), "chapter_0001.xhtml", 1).is_err());
+        assert!(locator_for_sentence(text, &bid(), "chapter_0001.xhtml", 99).is_err());
+        assert!(locator_for_sentence("", &bid(), "chapter_0001.xhtml", 0).is_err());
+    }
+
+    // ---------- US-6：Locator → 句索引 ----------
+
+    #[test]
+    fn roundtrip_index_at_locator_for_sentence() {
+        let text = "第一句。第二句！第三句？第四句；";
+        let chunks = seg(text);
+        for i in 0..chunks.len() {
+            let loc = locator_for_sentence(text, &bid(), "chapter_0001.xhtml", i).unwrap();
+            let got = sentence_index_at(text, &bid(), "chapter_0001.xhtml", &loc).unwrap();
+            assert_eq!(got, i, "往返映射应一致");
+        }
+    }
+
+    #[test]
+    fn sentence_index_at_boundaries() {
+        let text = "第一句。第二句。第三句。";
+        let chunks = seg(text);
+        let n = chunks.len();
+        let start = Locator {
+            book_id: "b1".to_string(),
+            href: "chapter_0001.xhtml".to_string(),
+            progression: 0.0,
+            total_progression: 0.0,
+            text: None,
+            cfi: None,
+            page: None,
+            rect: None,
+        };
+        assert_eq!(
+            sentence_index_at(text, &bid(), "chapter_0001.xhtml", &start).unwrap(),
+            0
+        );
+        let mut end = start.clone();
+        end.progression = 1.0;
+        assert_eq!(
+            sentence_index_at(text, &bid(), "chapter_0001.xhtml", &end).unwrap(),
+            n - 1
+        );
+        // 句间进度 → 包含该进度的句子
+        let mid = chunks[1].locator.clone();
+        assert_eq!(
+            sentence_index_at(text, &bid(), "chapter_0001.xhtml", &mid).unwrap(),
+            1
+        );
+    }
+
+    #[test]
+    fn sentence_index_at_rejects_bad_input() {
+        let text = "一句。二句。";
+        let mut loc = locator_for_sentence(text, &bid(), "chapter_0001.xhtml", 0).unwrap();
+        // href 不匹配
+        loc.href = "chapter_9999.xhtml".to_string();
+        assert!(sentence_index_at(text, &bid(), "chapter_0001.xhtml", &loc).is_err());
+        // book_id 不匹配
+        loc.href = "chapter_0001.xhtml".to_string();
+        loc.book_id = "b2".to_string();
+        assert!(sentence_index_at(text, &bid(), "chapter_0001.xhtml", &loc).is_err());
+        // NaN / 越界
+        for p in [f32::NAN, -0.1, 1.1] {
+            let bad = Locator {
+                book_id: "b1".to_string(),
+                href: "chapter_0001.xhtml".to_string(),
+                progression: p,
+                total_progression: p,
+                text: None,
+                cfi: None,
+                page: None,
+                rect: None,
+            };
+            assert!(
+                sentence_index_at(text, &bid(), "chapter_0001.xhtml", &bad).is_err(),
+                "非法 progression 应 Err: {p}"
+            );
+        }
+        // 空文本
+        assert!(sentence_index_at("", &bid(), "chapter_0001.xhtml", &loc).is_err());
+    }
+
+    // ---------- US-8：性能预算 ----------
+
+    #[test]
+    fn segment_100k_chars_under_budget() {
+        // 约 11.25 万 UTF-16 code unit（>10 万字）
+        let text = "这是一个测试句子。".repeat(12_500);
+        assert!(text.chars().count() > 100_000);
+        let start = std::time::Instant::now();
+        let chunks = seg(&text);
+        let elapsed = start.elapsed();
+        eprintln!(
+            "[US-8 基准] segment {} 字 / {} 句耗时 {:?}",
+            text.chars().count(),
+            chunks.len(),
+            elapsed
+        );
+        assert!(chunks.len() > 1000);
+        assert!(
+            elapsed.as_millis() <= 200,
+            "segment 应 ≤200ms（CI 上限），实测 {elapsed:?}"
+        );
+    }
+
+    // ================= REQ-005-fixes 阶段4：边界/异常/防回归补测 =================
+    //
+    // 说明：以下用例同时直接覆盖内部辅助函数（同一 test 模块可访问私有项），
+    // 使变异体在"函数级语义"上也被杀死（如 is_ascii_period_end 在串尾的返回）。
+
+    fn loc(text: &str, href: &str, progression: f32) -> Locator {
+        Locator {
+            book_id: "b1".to_string(),
+            href: href.to_string(),
+            progression,
+            total_progression: progression,
+            text: None,
+            cfi: None,
+            page: None,
+            rect: None,
+        }
+    }
+
+    // ---------- 切句：空/纯空白/纯标点/换行/中英混排 ----------
+
+    #[test]
+    fn pure_punctuation_each_becomes_sentence_and_ranges_continuous() {
+        let chunks = seg("。。。！？");
+        assert_eq!(chunks.len(), 5, "每个定界符各自成句");
+        assert_eq!(
+            texts(&chunks),
+            vec!["。", "。", "。", "！", "？"]
+        );
+        for w in chunks.windows(2) {
+            assert_eq!(w[0].char_range.1, w[1].char_range.0, "区间连续");
+        }
+        assert_eq!(chunks.last().unwrap().char_range.1, 5);
+    }
+
+    #[test]
+    fn crlf_and_blank_lines_force_sentence_breaks() {
+        let chunks = seg("line one\r\nline two\n\nline three");
+        assert_eq!(texts(&chunks), vec!["line one", "line two", "line three"]);
+        for w in chunks.windows(2) {
+            assert_eq!(w[0].char_range.1, w[1].char_range.0);
+        }
+    }
+
+    #[test]
+    fn mixed_chinese_english_splits_on_both_punctuation_sets() {
+        let chunks = seg("Hello 世界。这是 test 句子！Done.");
+        assert_eq!(
+            texts(&chunks),
+            vec!["Hello 世界。", "这是 test 句子！", "Done."]
+        );
+    }
+
+    #[test]
+    fn single_ascii_period_at_end_is_a_break_not_a_merge() {
+        let chunks = seg("abc.");
+        assert_eq!(texts(&chunks), vec!["abc."]);
+        assert_eq!(chunks[0].char_range, (0, 4));
+    }
+
+    #[test]
+    fn leading_whitespace_first_chunk_starts_at_zero() {
+        let chunks = seg("   你好。世界。");
+        assert_eq!(chunks[0].char_range.0, 0, "首句固定从 0 起（章首语义）");
+        assert_eq!(chunks[0].text, "你好。");
+        assert_eq!(chunks[1].char_range, (6, 9));
+    }
+
+    #[test]
+    fn whitespace_after_delimiter_is_skipped_for_next_start() {
+        let chunks = seg("你好。  世界。");
+        assert_eq!(texts(&chunks), vec!["你好。", "世界。"]);
+        // 你0 好1 。2 空格3 空格4 世5 界6 。7
+        assert_eq!(chunks[1].char_range, (5, 8));
+    }
+
+    #[test]
+    fn snippet_truncates_to_40_utf16_units() {
+        let long = "a".repeat(50);
+        let chunks = seg(&format!("{long}。短。"));
+        let snip = chunks[0].locator.text.as_ref().unwrap().snippet.clone();
+        assert_eq!(snip.chars().count(), 40);
+        assert_eq!(snip, "a".repeat(40));
+        // 恰好 40 个 UTF-16 单元：整句作为 snippet（不提前截断）
+        let exact = seg(&format!("{}。", "b".repeat(39)));
+        assert_eq!(
+            exact[0].locator.text.as_ref().unwrap().snippet,
+            format!("{}。", "b".repeat(39))
+        );
+    }
+
+    #[test]
+    fn snippet_never_splits_surrogate_pair() {
+        let text = format!("{}😀。", "a".repeat(39));
+        let chunks = seg(&text);
+        let snip = chunks[0].locator.text.as_ref().unwrap().snippet.clone();
+        assert_eq!(snip, "a".repeat(39));
+        assert!(!snip.contains('😀'), "代理对不得被截半");
+    }
+
+    #[test]
+    fn utf16_ranges_with_emoji_in_middle_and_at_end() {
+        // 😀(2) 你(1) 好(1) 。(1) 世(1) 界(1) 😀(2)
+        let chunks = seg("😀你好。世界😀");
+        assert_eq!(chunks[0].char_range, (0, 5));
+        assert_eq!(chunks[0].text, "😀你好。");
+        assert_eq!(chunks[1].char_range, (5, 9));
+        assert_eq!(chunks[1].text, "世界😀");
+    }
+
+    // ---------- 缩写/数字小数/连续省略号 ----------
+
+    #[test]
+    fn single_capital_initial_and_dotted_acronym_not_split() {
+        let chunks = seg("J. K. Rowling wrote it.");
+        assert_eq!(texts(&chunks), vec!["J. K. Rowling wrote it."]);
+        let us = seg("The U.S. Army left.");
+        assert_eq!(texts(&us), vec!["The U.S. Army left."]);
+    }
+
+    #[test]
+    fn decimal_and_version_numbers_not_split() {
+        let chunks = seg("version 1.2 is out.");
+        assert_eq!(texts(&chunks), vec!["version 1.2 is out."]);
+        let ip = seg("地址是 192.168.1.1 请访问。完。");
+        assert_eq!(texts(&ip), vec!["地址是 192.168.1.1 请访问。", "完。"]);
+    }
+
+    #[test]
+    fn long_ellipsis_runs_are_single_delimiter() {
+        let cn = seg("他沉默…………然后说。");
+        assert_eq!(texts(&cn), vec!["他沉默…………", "然后说。"]);
+        let en = seg("Wait..... then go.");
+        assert_eq!(texts(&en), vec!["Wait.....", "then go."]);
+        // 省略号在串尾（触发 ellipsis 循环的边界分支）
+        let tail = seg("他沉默……");
+        assert_eq!(texts(&tail), vec!["他沉默……"]);
+    }
+
+    // ---------- sentence_index_at 边界/异常 ----------
+
+    #[test]
+    fn sentence_index_at_exact_boundary_and_epsilon() {
+        let text = "第一句。第二句。第三句。";
+        let chunks = seg(text);
+        // 恰好落在某句 progression 上 → 该句
+        for (i, c) in chunks.iter().enumerate() {
+            assert_eq!(
+                sentence_index_at(text, &bid(), "chapter_0001.xhtml", &c.locator).unwrap(),
+                i
+            );
+        }
+        // 略小于首句（0 - 1e-3）仍落在首句（章首语义），不小于 0
+        let before = loc(text, "chapter_0001.xhtml", -0.001);
+        assert!(sentence_index_at(text, &bid(), "chapter_0001.xhtml", &before).is_err());
+        // 首句之前但 >= 0 → 0
+        let zero = loc(text, "chapter_0001.xhtml", 0.0);
+        assert_eq!(
+            sentence_index_at(text, &bid(), "chapter_0001.xhtml", &zero).unwrap(),
+            0
+        );
+    }
+
+    #[test]
+    fn sentence_index_at_rejects_non_finite_and_out_of_range() {
+        let text = "一句。二句。";
+        for p in [f32::NAN, f32::INFINITY, f32::NEG_INFINITY, -0.0001, 1.0001] {
+            let bad = loc(text, "chapter_0001.xhtml", p);
+            assert!(
+                sentence_index_at(text, &bid(), "chapter_0001.xhtml", &bad).is_err(),
+                "非法 progression 应 Err: {p}"
+            );
+        }
+    }
+
+    #[test]
+    fn sentence_index_at_rejects_whitespace_only_text() {
+        let l = loc(" ", "chapter_0001.xhtml", 0.0);
+        assert!(sentence_index_at("   ", &bid(), "chapter_0001.xhtml", &l).is_err());
+        assert!(sentence_index_at("", &bid(), "chapter_0001.xhtml", &l).is_err());
+    }
+
+    // ---------- 内部辅助函数（函数级语义，直接杀死变异体） ----------
+
+    #[test]
+    fn helper_is_hard_end_exhaustive() {
+        for c in ['。', '！', '？', '；', '!', '?', ';'] {
+            assert!(is_hard_end(c), "应为硬定界: {c:?}");
+        }
+        for c in ['.', '…', '，', ',', 'a', '\n', '\r', ' '] {
+            assert!(!is_hard_end(c), "不应为硬定界: {c:?}");
+        }
+    }
+
+    #[test]
+    fn helper_is_closing_exhaustive() {
+        for c in [
+            '」', '』', '”', '’', '）', ')', '】', '》', '〉', ']', '}', '］', '｝', '〕', '〗',
+            '〙', '〛', '›', '»',
+        ] {
+            assert!(is_closing(c), "应并入前句: {c:?}");
+        }
+        for c in ['“', '（', '【', '《', 'a', '。', ' '] {
+            assert!(!is_closing(c), "不应并入前句: {c:?}");
+        }
+    }
+
+    #[test]
+    fn helper_is_abbreviation_cases() {
+        for w in [
+            "Mr", "mrs", "Dr", "e.g", "i.e", "U.S", "a.m", "etc", "no", "vs", "J", "K",
+        ] {
+            assert!(is_abbreviation(w), "缩写应识别: {w}");
+        }
+        for w in ["home", "Hello", "jk", "", "ab", "3"] {
+            assert!(!is_abbreviation(w), "非缩写不应识别: {w:?}");
+        }
+    }
+
+    #[test]
+    fn helper_word_before_extracts_dotted_word() {
+        let (chars, _) = char_table("Use e.g. this");
+        // U0 s1 e2 ' '3 e4 .5 g6 .7
+        assert_eq!(word_before(&chars, 7), "e.g");
+        assert_eq!(word_before(&chars, 5), "e");
+        assert_eq!(word_before(&chars, 2), "Us");
+    }
+
+    #[test]
+    fn helper_is_ascii_period_end_cases() {
+        let (ok, _) = char_table("He left. Now");
+        assert!(is_ascii_period_end(&ok, 7), "词后句点 + 空白 → 断句");
+        let (abbr, _) = char_table("Mr. Smith");
+        assert!(!is_ascii_period_end(&abbr, 2), "缩写 → 不断");
+        let (num, _) = char_table("3.14");
+        assert!(!is_ascii_period_end(&num, 1), "数字间 → 不断");
+        let (mid, _) = char_table("a.b");
+        assert!(!is_ascii_period_end(&mid, 1), "句点后非空白 → 不断");
+        let (end, _) = char_table("Hello.");
+        assert!(is_ascii_period_end(&end, 5), "串尾句点 → 断");
+        // 句点前有空白：回溯跳过空白直到字母（覆盖 find_map 的 None 分支）
+        let (sp, _) = char_table("a . b");
+        assert!(is_ascii_period_end(&sp, 2), "句点前空白 → 回溯到字母后断句");
+    }
+
+    #[test]
+    fn helper_delimiter_end_cases() {
+        let (cn, _) = char_table("他说……然后");
+        assert_eq!(delimiter_end(&cn, 2), Some(3), "…… 整体");
+        let (cn_tail, _) = char_table("他说……");
+        assert_eq!(delimiter_end(&cn_tail, 2), Some(3), "串尾 …… 不越界");
+        let (single, _) = char_table("他说…然后");
+        assert_eq!(delimiter_end(&single, 2), Some(2), "单 … 只吃一个");
+        let (en, _) = char_table("Wait... then");
+        assert_eq!(delimiter_end(&en, 4), Some(6), "... 整体");
+        let (en_tail, _) = char_table("Wait...");
+        assert_eq!(delimiter_end(&en_tail, 4), Some(6), "串尾 ... 不越界");
+        let (hard, _) = char_table("你好。世界");
+        assert_eq!(delimiter_end(&hard, 2), Some(2));
+        let (dot_end, _) = char_table("abc.");
+        assert_eq!(delimiter_end(&dot_end, 3), Some(3), "串尾单点");
+        let (num, _) = char_table("3.14");
+        assert_eq!(delimiter_end(&num, 1), None);
+        let (nl, _) = char_table("a\nb");
+        assert_eq!(delimiter_end(&nl, 1), Some(1));
+        let (cr, _) = char_table("a\rb");
+        assert_eq!(delimiter_end(&cr, 1), Some(1));
+        let (plain, _) = char_table("abc");
+        assert_eq!(delimiter_end(&plain, 0), None);
+    }
+
+    #[test]
+    fn helper_sentence_starts_positions() {
+        let (c, _) = char_table("你好。  世界。");
+        // 你0 好1 。2 空格3 空格4 世5；字节：你3 好3 。3 空格1 空格1 → 世 起点 11
+        assert_eq!(sentence_starts(&c), vec![(0, 0), (11, 5)]);
+        let (lead, _) = char_table("  你好。世界。");
+        assert_eq!(sentence_starts(&lead), vec![(0, 0), (11, 5)]);
+        assert!(sentence_starts(&[]).is_empty());
+    }
+
+    #[test]
+    fn helper_char_table_counts_utf16() {
+        let (chars, total) = char_table("a😀。");
+        assert_eq!(chars.len(), 3);
+        assert_eq!(total, 4, "a=1 + 😀=2 + 。=1");
+        assert_eq!((chars[0].byte, chars[0].utf16), (0, 0));
+        assert_eq!((chars[1].byte, chars[1].utf16), (1, 1));
+        assert_eq!((chars[2].byte, chars[2].utf16), (5, 3));
+    }
+
+    #[test]
+    fn helper_utf16_prefix_boundary() {
+        assert_eq!(utf16_prefix("abcdef", 3), "abc");
+        assert_eq!(utf16_prefix("abc", 3), "abc");
+        assert_eq!(utf16_prefix("abc", 0), "");
+        assert_eq!(utf16_prefix("abc😀d", 4), "abc", "代理对超限则整体丢弃");
+        assert_eq!(utf16_prefix("ab😀", 4), "ab😀", "恰好占满则保留");
     }
 }

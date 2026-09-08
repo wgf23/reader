@@ -13,6 +13,21 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:reader_app/src/rust/api.dart' as rust;
 import 'package:reader_app/src/rust/frb_generated.dart';
 
+/// 定位中文语料：优先 `READER_CORPUS`，否则按仓库相对路径推导（可移植，无硬编码绝对路径）。
+String? _findCorpus() {
+  final env = Platform.environment['READER_CORPUS'];
+  if (env != null && File(env).existsSync()) return env;
+  final candidates = <String>[
+    '../core/tests/corpus/src/hongloumeng.epub',
+    'core/tests/corpus/src/hongloumeng.epub',
+    '${Directory.current.path}/../core/tests/corpus/src/hongloumeng.epub',
+  ];
+  for (final c in candidates) {
+    if (File(c).existsSync()) return c;
+  }
+  return null;
+}
+
 void main() {
   const env = String.fromEnvironment('READER_CORE_SO');
   final soPath = env.isNotEmpty
@@ -31,8 +46,11 @@ void main() {
     final dataDir = Directory.systemTemp.createTempSync('reader_ffi_test');
     await rust.libraryOpen(dataDir: dataDir.path);
 
-    final corpus = Platform.environment['READER_CORPUS'] ??
-        '/home/heiwa/workspace/reader/core/tests/corpus/src/hongloumeng.epub';
+    final corpus = _findCorpus();
+    if (corpus == null) {
+      markTestSkipped('未找到中文语料（可用 READER_CORPUS=... 指定）');
+      return;
+    }
     final book = await rust.libraryImport(path: corpus);
     expect(book.title, contains('樓夢'));
     expect(book.format, 'epub');

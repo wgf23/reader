@@ -6,7 +6,8 @@
 import 'frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These functions are ignored because they are not marked as `pub`: `_unused_result_type`, `dict_service`, `err_msg`, `service`, `to_summary`, `translation_service`
+// These functions are ignored because they are not marked as `pub`: `_unused_result_type`, `chapter_text`, `dict_service`, `err_msg`, `service`, `to_locator_view`, `to_summary`, `translation_service`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
 /// 打开（或创建）书库，指定数据目录。应用启动时调用一次。
 /// 装配：SERVICE（既有）+ DICT/TRANSLATION 双单例（REQ-003 02-design §4.1）。
@@ -80,6 +81,33 @@ Future<void> translateSetConfig(
         {required String provider, required String key}) =>
     RustLib.instance.api
         .crateApiTranslateSetConfig(provider: provider, key: key);
+
+/// 章文本 → 句列表（US-4/US-7；index 为章内句序号）
+Future<List<SentenceChunkView>> ttsSegment(
+        {required String bookId, required String href}) =>
+    RustLib.instance.api.crateApiTtsSegment(bookId: bookId, href: href);
+
+/// 句索引 → Locator（US-5；越界/章节不存在 → Err）
+Future<LocatorView> ttsLocatorForSentence(
+        {required String bookId, required String href, required int idx}) =>
+    RustLib.instance.api
+        .crateApiTtsLocatorForSentence(bookId: bookId, href: href, idx: idx);
+
+/// Locator → 句索引（US-6；api 层重建 domain `Locator` 后调用 domain 函数）
+Future<int> ttsSentenceIndexAt(
+        {required String bookId,
+        required String href,
+        required LocatorView locator}) =>
+    RustLib.instance.api.crateApiTtsSentenceIndexAt(
+        bookId: bookId, href: href, locator: locator);
+
+/// 读取听书设置（缺省 `system_male/1.0/true`；speed clamp `[0.5,3.0]`）
+Future<ListenSettingsView> ttsListenSettingsGet() =>
+    RustLib.instance.api.crateApiTtsListenSettingsGet();
+
+/// 写入听书设置（speed 落库前 clamp `[0.5,3.0]`）
+Future<void> ttsListenSettingsSet({required ListenSettingsView settings}) =>
+    RustLib.instance.api.crateApiTtsListenSettingsSet(settings: settings);
 
 /// 书架条目
 class BookSummary {
@@ -229,6 +257,75 @@ class DictInfoView {
           path == other.path;
 }
 
+/// 听书设置视图（settings 表三键的类型化投影）
+class ListenSettingsView {
+  final String voiceId;
+
+  /// 0.5..=3.0
+  final double speed;
+  final bool autoNext;
+
+  const ListenSettingsView({
+    required this.voiceId,
+    required this.speed,
+    required this.autoNext,
+  });
+
+  @override
+  int get hashCode => voiceId.hashCode ^ speed.hashCode ^ autoNext.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ListenSettingsView &&
+          runtimeType == other.runtimeType &&
+          voiceId == other.voiceId &&
+          speed == other.speed &&
+          autoNext == other.autoNext;
+}
+
+/// 句级位置视图（不暴露领域 `Locator` 的 `Rect/cfi/page`）
+class LocatorView {
+  final String bookId;
+  final String href;
+
+  /// 章内进度 0..=1
+  final double progression;
+
+  /// 全书进度 0..=1（本期=章内近似，仅展示）
+  final double totalProgression;
+
+  /// 文本锚片段（`TextAnchor.snippet`；无文本锚为 None）
+  final String? snippet;
+
+  const LocatorView({
+    required this.bookId,
+    required this.href,
+    required this.progression,
+    required this.totalProgression,
+    this.snippet,
+  });
+
+  @override
+  int get hashCode =>
+      bookId.hashCode ^
+      href.hashCode ^
+      progression.hashCode ^
+      totalProgression.hashCode ^
+      snippet.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LocatorView &&
+          runtimeType == other.runtimeType &&
+          bookId == other.bookId &&
+          href == other.href &&
+          progression == other.progression &&
+          totalProgression == other.totalProgression &&
+          snippet == other.snippet;
+}
+
 /// 阅读进度视图（桥接）
 class ProgressView {
   final String href;
@@ -249,6 +346,45 @@ class ProgressView {
           runtimeType == other.runtimeType &&
           href == other.href &&
           progression == other.progression;
+}
+
+/// 朗读句子块视图（字段与 Dart `SentenceChunk` 一一对应）
+class SentenceChunkView {
+  /// 章内句序号（0 起，供 `TtsSentenceDone(index)` 回传）
+  final int index;
+  final String text;
+
+  /// UTF-16 code unit，半开区间 `[start, end)`
+  final int charStart;
+  final int charEnd;
+  final LocatorView locator;
+
+  const SentenceChunkView({
+    required this.index,
+    required this.text,
+    required this.charStart,
+    required this.charEnd,
+    required this.locator,
+  });
+
+  @override
+  int get hashCode =>
+      index.hashCode ^
+      text.hashCode ^
+      charStart.hashCode ^
+      charEnd.hashCode ^
+      locator.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SentenceChunkView &&
+          runtimeType == other.runtimeType &&
+          index == other.index &&
+          text == other.text &&
+          charStart == other.charStart &&
+          charEnd == other.charEnd &&
+          locator == other.locator;
 }
 
 /// 译文视图（from_cache 标注缓存命中，US-10/13）

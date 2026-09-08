@@ -14,6 +14,21 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 import '../services/library_backend.dart';
 
+/// 分页 WebView 的 `InAppWebViewSettings` 工厂（REQ-005 · ADR 决策点2，US-19）。
+///
+/// `build()` 与 widget 测试共用同一工厂，避免"测的常量与用的常量漂移"：
+/// - `disableContextMenu: true` 仅抑制 Android 系统 `ActionMode` 浮动菜单（插件 `return actionMode`），
+///   不禁用文本选择，选区仍经 `selectionchange` 回传（US-20）；
+/// - `disableContextMenu` 可选参数为将来桌面/iOS 差异化留口（默认同开）。
+InAppWebViewSettings buildPagedWebViewSettings({
+  bool disableContextMenu = true,
+}) =>
+    InAppWebViewSettings(
+      useShouldInterceptRequest: true,
+      transparentBackground: false,
+      disableContextMenu: disableContextMenu,
+    );
+
 /// 分页 WebView 控件
 class PagedWebView extends StatefulWidget {
   const PagedWebView({
@@ -146,10 +161,7 @@ class PagedWebViewState extends State<PagedWebView> {
         data: widget.html,
         baseUrl: WebUri('$_scheme${widget.bookId}/'),
       ),
-      initialSettings: InAppWebViewSettings(
-        useShouldInterceptRequest: true,
-        transparentBackground: false,
-      ),
+      initialSettings: buildPagedWebViewSettings(),
       onWebViewCreated: (c) {
         _controller = c;
         _registerJsHandlers(c);

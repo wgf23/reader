@@ -39,7 +39,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.13.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1705086797;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 953425062;
 
 // Section: executor
 
@@ -602,6 +602,194 @@ fn wire__crate__api__translate_set_config_impl(
         },
     )
 }
+fn wire__crate__api__tts_listen_settings_get_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "tts_listen_settings_get",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, String>(
+                    (move || async move {
+                        let output_ok = crate::api::tts_listen_settings_get().await?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__tts_listen_settings_set_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "tts_listen_settings_set",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_settings = <crate::api::ListenSettingsView>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, String>(
+                    (move || async move {
+                        let output_ok = crate::api::tts_listen_settings_set(api_settings).await?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__tts_locator_for_sentence_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "tts_locator_for_sentence",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_book_id = <String>::sse_decode(&mut deserializer);
+            let api_href = <String>::sse_decode(&mut deserializer);
+            let api_idx = <u32>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, String>(
+                    (move || async move {
+                        let output_ok =
+                            crate::api::tts_locator_for_sentence(api_book_id, api_href, api_idx)
+                                .await?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__tts_segment_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "tts_segment",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_book_id = <String>::sse_decode(&mut deserializer);
+            let api_href = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, String>(
+                    (move || async move {
+                        let output_ok = crate::api::tts_segment(api_book_id, api_href).await?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__tts_sentence_index_at_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "tts_sentence_index_at",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_book_id = <String>::sse_decode(&mut deserializer);
+            let api_href = <String>::sse_decode(&mut deserializer);
+            let api_locator = <crate::api::LocatorView>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, String>(
+                    (move || async move {
+                        let output_ok =
+                            crate::api::tts_sentence_index_at(api_book_id, api_href, api_locator)
+                                .await?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
 
 // Section: dart2rust
 
@@ -765,6 +953,50 @@ impl SseDecode for Vec<u8> {
     }
 }
 
+impl SseDecode for Vec<crate::api::SentenceChunkView> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::SentenceChunkView>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for crate::api::ListenSettingsView {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_voiceId = <String>::sse_decode(deserializer);
+        let mut var_speed = <f32>::sse_decode(deserializer);
+        let mut var_autoNext = <bool>::sse_decode(deserializer);
+        return crate::api::ListenSettingsView {
+            voice_id: var_voiceId,
+            speed: var_speed,
+            auto_next: var_autoNext,
+        };
+    }
+}
+
+impl SseDecode for crate::api::LocatorView {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_bookId = <String>::sse_decode(deserializer);
+        let mut var_href = <String>::sse_decode(deserializer);
+        let mut var_progression = <f32>::sse_decode(deserializer);
+        let mut var_totalProgression = <f32>::sse_decode(deserializer);
+        let mut var_snippet = <Option<String>>::sse_decode(deserializer);
+        return crate::api::LocatorView {
+            book_id: var_bookId,
+            href: var_href,
+            progression: var_progression,
+            total_progression: var_totalProgression,
+            snippet: var_snippet,
+        };
+    }
+}
+
 impl SseDecode for Option<String> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -810,6 +1042,24 @@ impl SseDecode for crate::api::ProgressView {
     }
 }
 
+impl SseDecode for crate::api::SentenceChunkView {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_index = <u32>::sse_decode(deserializer);
+        let mut var_text = <String>::sse_decode(deserializer);
+        let mut var_charStart = <u32>::sse_decode(deserializer);
+        let mut var_charEnd = <u32>::sse_decode(deserializer);
+        let mut var_locator = <crate::api::LocatorView>::sse_decode(deserializer);
+        return crate::api::SentenceChunkView {
+            index: var_index,
+            text: var_text,
+            char_start: var_charStart,
+            char_end: var_charEnd,
+            locator: var_locator,
+        };
+    }
+}
+
 impl SseDecode for crate::api::TranslationView {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -825,6 +1075,13 @@ impl SseDecode for crate::api::TranslationView {
             provider: var_provider,
             from_cache: var_fromCache,
         };
+    }
+}
+
+impl SseDecode for u32 {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        deserializer.cursor.read_u32::<NativeEndian>().unwrap()
     }
 }
 
@@ -879,6 +1136,11 @@ fn pde_ffi_dispatcher_primary_impl(
         14 => wire__crate__api__translate_impl(port, ptr, rust_vec_len, data_len),
         15 => wire__crate__api__translate_cache_clear_impl(port, ptr, rust_vec_len, data_len),
         16 => wire__crate__api__translate_set_config_impl(port, ptr, rust_vec_len, data_len),
+        17 => wire__crate__api__tts_listen_settings_get_impl(port, ptr, rust_vec_len, data_len),
+        18 => wire__crate__api__tts_listen_settings_set_impl(port, ptr, rust_vec_len, data_len),
+        19 => wire__crate__api__tts_locator_for_sentence_impl(port, ptr, rust_vec_len, data_len),
+        20 => wire__crate__api__tts_segment_impl(port, ptr, rust_vec_len, data_len),
+        21 => wire__crate__api__tts_sentence_index_at_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -987,6 +1249,47 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::DictInfoView> for crate::api:
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::ListenSettingsView {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.voice_id.into_into_dart().into_dart(),
+            self.speed.into_into_dart().into_dart(),
+            self.auto_next.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::ListenSettingsView
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::ListenSettingsView>
+    for crate::api::ListenSettingsView
+{
+    fn into_into_dart(self) -> crate::api::ListenSettingsView {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::LocatorView {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.book_id.into_into_dart().into_dart(),
+            self.href.into_into_dart().into_dart(),
+            self.progression.into_into_dart().into_dart(),
+            self.total_progression.into_into_dart().into_dart(),
+            self.snippet.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::LocatorView {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::LocatorView> for crate::api::LocatorView {
+    fn into_into_dart(self) -> crate::api::LocatorView {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::ProgressView {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
@@ -999,6 +1302,27 @@ impl flutter_rust_bridge::IntoDart for crate::api::ProgressView {
 impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::ProgressView {}
 impl flutter_rust_bridge::IntoIntoDart<crate::api::ProgressView> for crate::api::ProgressView {
     fn into_into_dart(self) -> crate::api::ProgressView {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::SentenceChunkView {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.index.into_into_dart().into_dart(),
+            self.text.into_into_dart().into_dart(),
+            self.char_start.into_into_dart().into_dart(),
+            self.char_end.into_into_dart().into_dart(),
+            self.locator.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::SentenceChunkView {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::SentenceChunkView>
+    for crate::api::SentenceChunkView
+{
+    fn into_into_dart(self) -> crate::api::SentenceChunkView {
         self
     }
 }
@@ -1144,6 +1468,36 @@ impl SseEncode for Vec<u8> {
     }
 }
 
+impl SseEncode for Vec<crate::api::SentenceChunkView> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::SentenceChunkView>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for crate::api::ListenSettingsView {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.voice_id, serializer);
+        <f32>::sse_encode(self.speed, serializer);
+        <bool>::sse_encode(self.auto_next, serializer);
+    }
+}
+
+impl SseEncode for crate::api::LocatorView {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.book_id, serializer);
+        <String>::sse_encode(self.href, serializer);
+        <f32>::sse_encode(self.progression, serializer);
+        <f32>::sse_encode(self.total_progression, serializer);
+        <Option<String>>::sse_encode(self.snippet, serializer);
+    }
+}
+
 impl SseEncode for Option<String> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -1182,6 +1536,17 @@ impl SseEncode for crate::api::ProgressView {
     }
 }
 
+impl SseEncode for crate::api::SentenceChunkView {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <u32>::sse_encode(self.index, serializer);
+        <String>::sse_encode(self.text, serializer);
+        <u32>::sse_encode(self.char_start, serializer);
+        <u32>::sse_encode(self.char_end, serializer);
+        <crate::api::LocatorView>::sse_encode(self.locator, serializer);
+    }
+}
+
 impl SseEncode for crate::api::TranslationView {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -1190,6 +1555,13 @@ impl SseEncode for crate::api::TranslationView {
         <String>::sse_encode(self.to, serializer);
         <String>::sse_encode(self.provider, serializer);
         <bool>::sse_encode(self.from_cache, serializer);
+    }
+}
+
+impl SseEncode for u32 {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        serializer.cursor.write_u32::<NativeEndian>(self).unwrap();
     }
 }
 

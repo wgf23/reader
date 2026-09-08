@@ -9,7 +9,7 @@ pub use translation::TranslationRepo;
 
 use std::path::Path;
 
-use rusqlite::Connection;
+use rusqlite::{Connection, OptionalExtension};
 
 use crate::error::{Error, Result};
 
@@ -207,6 +207,30 @@ impl Store {
         Ok(())
     }
 
+    /// 读取设置项（无记录返回 None）。REQ-005 决策点6：听书设置 `listen.*` 键。
+    pub fn get_setting(&self, key: &str) -> Result<Option<String>> {
+        self.conn
+            .query_row(
+                "SELECT value FROM settings WHERE key = ?1",
+                rusqlite::params![key],
+                |r| r.get(0),
+            )
+            .optional()
+            .map_err(Error::from)
+    }
+
+    /// 写入设置项（UPSERT，复用既有 settings 表，零迁移）。
+    pub fn set_setting(&mut self, key: &str, value: &str) -> Result<()> {
+        self.conn
+            .execute(
+                "INSERT INTO settings (key, value) VALUES (?1, ?2)
+                 ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+                rusqlite::params![key, value],
+            )
+            .map_err(Error::from)?;
+        Ok(())
+    }
+
     pub fn integrity_check(&self) -> Result<bool> {
         let ok: String = self
             .conn
@@ -346,6 +370,25 @@ mod tests {
         store.insert_book(&sample_record()).unwrap();
         store.remove_book("b1").unwrap();
         assert!(store.get_book("b1").is_err());
+    }
+
+    #[test]
+    fn setting_roundtrip_and_upsert() {
+        // US-11（持久化侧）：无记录 → None；写入/覆盖读回；复用 settings 表零迁移
+        let dir = tempfile::tempdir().unwrap();
+        let mut store = Store::open(dir.path()).unwrap();
+        assert!(store.get_setting("listen.speed").unwrap().is_none());
+        store.set_setting("listen.speed", "1.5").unwrap();
+        assert_eq!(store.get_setting("listen.speed").unwrap().as_deref(), Some("1.5"));
+        store.set_setting("listen.speed", "2.0").unwrap();
+        assert_eq!(store.get_setting("listen.speed").unwrap().as_deref(), Some("2.0"));
+        store.set_setting("listen.voice_id", "system_female").unwrap();
+        store.set_setting("listen.auto_next", "0").unwrap();
+        assert_eq!(
+            store.get_setting("listen.voice_id").unwrap().as_deref(),
+            Some("system_female")
+        );
+        assert_eq!(store.get_setting("listen.auto_next").unwrap().as_deref(), Some("0"));
     }
 
     #[test]

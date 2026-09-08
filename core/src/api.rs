@@ -14,7 +14,8 @@ use crate::error::{Error, Result};
 use crate::library::LibraryService;
 use crate::store::TranslationRepo;
 use crate::store::{BookRecord, Store};
-use crate::types::{Lang, ProviderConfig, TranslationCacheRepository};
+use crate::tts;
+use crate::types::{Lang, Locator, ProviderConfig, TextAnchor, TranslationCacheRepository};
 
 // ---------- 桥接数据结构 ----------
 
@@ -69,6 +70,42 @@ pub struct TranslationView {
     pub to: String,
     pub provider: String,
     pub from_cache: bool,
+}
+
+// ---------- REQ-005 听书桥接数据结构（FRB 生成面；ADR 决策点1b/6） ----------
+
+/// 句级位置视图（不暴露领域 `Locator` 的 `Rect/cfi/page`）
+#[derive(Debug, Clone)]
+pub struct LocatorView {
+    pub book_id: String,
+    pub href: String,
+    /// 章内进度 0..=1
+    pub progression: f32,
+    /// 全书进度 0..=1（本期=章内近似，仅展示）
+    pub total_progression: f32,
+    /// 文本锚片段（`TextAnchor.snippet`；无文本锚为 None）
+    pub snippet: Option<String>,
+}
+
+/// 朗读句子块视图（字段与 Dart `SentenceChunk` 一一对应）
+#[derive(Debug, Clone)]
+pub struct SentenceChunkView {
+    /// 章内句序号（0 起，供 `TtsSentenceDone(index)` 回传）
+    pub index: u32,
+    pub text: String,
+    /// UTF-16 code unit，半开区间 `[start, end)`
+    pub char_start: u32,
+    pub char_end: u32,
+    pub locator: LocatorView,
+}
+
+/// 听书设置视图（settings 表三键的类型化投影）
+#[derive(Debug, Clone)]
+pub struct ListenSettingsView {
+    pub voice_id: String,
+    /// 0.5..=3.0
+    pub speed: f32,
+    pub auto_next: bool,
 }
 
 // ---------- 全局服务（进程内单例） ----------
@@ -307,6 +344,142 @@ pub async fn translate_set_config(
         .lock()
         .map_err(|_| "服务锁错误".to_string())?;
     svc.set_config(&provider, &key).map_err(err_msg)
+}
+
+// ---------- REQ-005 听书桥接（全部 async；FRB 池线程执行，UI 不阻塞） ----------
+
+/// 经 `LibraryService::open_book` 按 href 取章节纯文本（interface 层可 `use crate::library`）。
+fn chapter_text(id: &str, href: &str) -> std::result::Result<String, String> {
+    let svc = service()?.lock().map_err(|_| "服务锁错误".to_string())?;
+    let opened = svc.open_book(id).map_err(err_msg)?;
+    opened
+        .chapters
+        .into_iter()
+        .find(|c| c.href == href)
+        .map(|c| c.text)
+        .ok_or_else(|| format!("章节不存在: {href}"))
+}
+
+fn to_locator_view(loc: &Locator) -> LocatorView {
+    LocatorView {
+        book_id: loc.book_id.clone(),
+        href: loc.href.clone(),
+        progression: loc.progression,
+        total_progression: loc.total_progression,
+        snippet: loc.text.as_ref().map(|t| t.snippet.clone()),
+    }
+}
+
+/// 章文本 → 句列表（US-4/US-7；index 为章内句序号）
+pub async fn tts_segment(
+    book_id: String,
+    href: String,
+) -> std::result::Result<Vec<SentenceChunkView>, String> {
+    let text = chapter_text(&book_id, &href)?;
+    let chunks = tts::segment(&text, &book_id, &href).map_err(err_msg)?;
+    Ok(chunks
+        .iter()
+        .enumerate()
+        .map(|(i, c)| SentenceChunkView {
+            index: i as u32,
+            text: c.text.clone(),
+            char_start: c.char_range.0,
+            char_end: c.char_range.1,
+            locator: to_locator_view(&c.locator),
+        })
+        .collect())
+}
+
+/// 句索引 → Locator（US-5；越界/章节不存在 → Err）
+pub async fn tts_locator_for_sentence(
+    book_id: String,
+    href: String,
+    idx: u32,
+) -> std::result::Result<LocatorView, String> {
+    let text = chapter_text(&book_id, &href)?;
+    let loc =
+        tts::locator_for_sentence(&text, &book_id, &href, idx as usize).map_err(err_msg)?;
+    Ok(to_locator_view(&loc))
+}
+
+/// Locator → 句索引（US-6；api 层重建 domain `Locator` 后调用 domain 函数）
+pub async fn tts_sentence_index_at(
+    book_id: String,
+    href: String,
+    locator: LocatorView,
+) -> std::result::Result<u32, String> {
+    let text = chapter_text(&book_id, &href)?;
+    let loc = Locator {
+        book_id: locator.book_id,
+        href: locator.href,
+        progression: locator.progression,
+        total_progression: locator.total_progression,
+        text: locator.snippet.map(|snippet| TextAnchor {
+            snippet,
+            start: 0,
+            end: 0,
+        }),
+        cfi: None,
+        page: None,
+        rect: None,
+    };
+    let idx = tts::sentence_index_at(&text, &book_id, &href, &loc).map_err(err_msg)?;
+    Ok(idx as u32)
+}
+
+/// 听书设置键与默认值（ADR 决策点6）
+const KEY_VOICE_ID: &str = "listen.voice_id";
+const KEY_SPEED: &str = "listen.speed";
+const KEY_AUTO_NEXT: &str = "listen.auto_next";
+const DEFAULT_VOICE_ID: &str = "system_male";
+const DEFAULT_SPEED: f32 = 1.0;
+
+/// 读取听书设置（缺省 `system_male/1.0/true`；speed clamp `[0.5,3.0]`）
+pub async fn tts_listen_settings_get() -> std::result::Result<ListenSettingsView, String> {
+    let svc = service()?.lock().map_err(|_| "服务锁错误".to_string())?;
+    let voice_id = svc
+        .get_setting(KEY_VOICE_ID)
+        .map_err(err_msg)?
+        .filter(|s| !s.trim().is_empty())
+        .unwrap_or_else(|| DEFAULT_VOICE_ID.to_string());
+    let speed = svc
+        .get_setting(KEY_SPEED)
+        .map_err(err_msg)?
+        .and_then(|s| s.parse::<f32>().ok())
+        .unwrap_or(DEFAULT_SPEED)
+        .clamp(0.5, 3.0);
+    let auto_next = svc
+        .get_setting(KEY_AUTO_NEXT)
+        .map_err(err_msg)?
+        .map(|s| s == "1")
+        .unwrap_or(true);
+    Ok(ListenSettingsView {
+        voice_id,
+        speed,
+        auto_next,
+    })
+}
+
+/// 写入听书设置（speed 落库前 clamp `[0.5,3.0]`）
+pub async fn tts_listen_settings_set(
+    settings: ListenSettingsView,
+) -> std::result::Result<(), String> {
+    let mut svc = service()?.lock().map_err(|_| "服务锁错误".to_string())?;
+    let voice_id = if settings.voice_id.trim().is_empty() {
+        DEFAULT_VOICE_ID.to_string()
+    } else {
+        settings.voice_id
+    };
+    svc.set_setting(KEY_VOICE_ID, &voice_id).map_err(err_msg)?;
+    let speed = if settings.speed.is_finite() {
+        settings.speed.clamp(0.5, 3.0)
+    } else {
+        DEFAULT_SPEED
+    };
+    svc.set_setting(KEY_SPEED, &speed.to_string()).map_err(err_msg)?;
+    svc.set_setting(KEY_AUTO_NEXT, if settings.auto_next { "1" } else { "0" })
+        .map_err(err_msg)?;
+    Ok(())
 }
 
 // 供 Rust 侧测试引用（避免 dead_code 告警）
