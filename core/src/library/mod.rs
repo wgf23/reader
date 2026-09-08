@@ -108,6 +108,16 @@ impl LibraryService {
         self.store.load_progress(id)
     }
 
+    /// 读取设置项（REQ-005 决策点6：听书设置 `listen.*`；薄转发至 store）。
+    pub fn get_setting(&self, key: &str) -> Result<Option<String>> {
+        self.store.get_setting(key)
+    }
+
+    /// 写入设置项（UPSERT；薄转发至 store）。
+    pub fn set_setting(&mut self, key: &str, value: &str) -> Result<()> {
+        self.store.set_setting(key, value)
+    }
+
     fn canonical_path(&self, id: &str) -> Result<std::path::PathBuf> {
         let record = self.store.get_book(id)?;
         record

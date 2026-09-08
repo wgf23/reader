@@ -68,7 +68,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => -1705086797;
+  int get rustContentHash => 953425062;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -117,6 +117,22 @@ abstract class RustLibApi extends BaseApi {
 
   Future<void> crateApiTranslateSetConfig(
       {required String provider, required String key});
+
+  Future<ListenSettingsView> crateApiTtsListenSettingsGet();
+
+  Future<void> crateApiTtsListenSettingsSet(
+      {required ListenSettingsView settings});
+
+  Future<LocatorView> crateApiTtsLocatorForSentence(
+      {required String bookId, required String href, required int idx});
+
+  Future<List<SentenceChunkView>> crateApiTtsSegment(
+      {required String bookId, required String href});
+
+  Future<int> crateApiTtsSentenceIndexAt(
+      {required String bookId,
+      required String href,
+      required LocatorView locator});
 }
 
 class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
@@ -523,6 +539,139 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         argNames: ["provider", "key"],
       );
 
+  @override
+  Future<ListenSettingsView> crateApiTtsListenSettingsGet() {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 17, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_listen_settings_view,
+        decodeErrorData: sse_decode_String,
+      ),
+      constMeta: kCrateApiTtsListenSettingsGetConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiTtsListenSettingsGetConstMeta =>
+      const TaskConstMeta(
+        debugName: "tts_listen_settings_get",
+        argNames: [],
+      );
+
+  @override
+  Future<void> crateApiTtsListenSettingsSet(
+      {required ListenSettingsView settings}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_box_autoadd_listen_settings_view(settings, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 18, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_unit,
+        decodeErrorData: sse_decode_String,
+      ),
+      constMeta: kCrateApiTtsListenSettingsSetConstMeta,
+      argValues: [settings],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiTtsListenSettingsSetConstMeta =>
+      const TaskConstMeta(
+        debugName: "tts_listen_settings_set",
+        argNames: ["settings"],
+      );
+
+  @override
+  Future<LocatorView> crateApiTtsLocatorForSentence(
+      {required String bookId, required String href, required int idx}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(bookId, serializer);
+        sse_encode_String(href, serializer);
+        sse_encode_u_32(idx, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 19, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_locator_view,
+        decodeErrorData: sse_decode_String,
+      ),
+      constMeta: kCrateApiTtsLocatorForSentenceConstMeta,
+      argValues: [bookId, href, idx],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiTtsLocatorForSentenceConstMeta =>
+      const TaskConstMeta(
+        debugName: "tts_locator_for_sentence",
+        argNames: ["bookId", "href", "idx"],
+      );
+
+  @override
+  Future<List<SentenceChunkView>> crateApiTtsSegment(
+      {required String bookId, required String href}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(bookId, serializer);
+        sse_encode_String(href, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 20, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_list_sentence_chunk_view,
+        decodeErrorData: sse_decode_String,
+      ),
+      constMeta: kCrateApiTtsSegmentConstMeta,
+      argValues: [bookId, href],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiTtsSegmentConstMeta => const TaskConstMeta(
+        debugName: "tts_segment",
+        argNames: ["bookId", "href"],
+      );
+
+  @override
+  Future<int> crateApiTtsSentenceIndexAt(
+      {required String bookId,
+      required String href,
+      required LocatorView locator}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(bookId, serializer);
+        sse_encode_String(href, serializer);
+        sse_encode_box_autoadd_locator_view(locator, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 21, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_u_32,
+        decodeErrorData: sse_decode_String,
+      ),
+      constMeta: kCrateApiTtsSentenceIndexAtConstMeta,
+      argValues: [bookId, href, locator],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiTtsSentenceIndexAtConstMeta => const TaskConstMeta(
+        debugName: "tts_sentence_index_at",
+        argNames: ["bookId", "href", "locator"],
+      );
+
   @protected
   String dco_decode_String(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
@@ -567,6 +716,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   DictEntryView dco_decode_box_autoadd_dict_entry_view(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_dict_entry_view(raw);
+  }
+
+  @protected
+  ListenSettingsView dco_decode_box_autoadd_listen_settings_view(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_listen_settings_view(raw);
+  }
+
+  @protected
+  LocatorView dco_decode_box_autoadd_locator_view(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_locator_view(raw);
   }
 
   @protected
@@ -653,6 +814,40 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<SentenceChunkView> dco_decode_list_sentence_chunk_view(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_sentence_chunk_view).toList();
+  }
+
+  @protected
+  ListenSettingsView dco_decode_listen_settings_view(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return ListenSettingsView(
+      voiceId: dco_decode_String(arr[0]),
+      speed: dco_decode_f_32(arr[1]),
+      autoNext: dco_decode_bool(arr[2]),
+    );
+  }
+
+  @protected
+  LocatorView dco_decode_locator_view(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    return LocatorView(
+      bookId: dco_decode_String(arr[0]),
+      href: dco_decode_String(arr[1]),
+      progression: dco_decode_f_32(arr[2]),
+      totalProgression: dco_decode_f_32(arr[3]),
+      snippet: dco_decode_opt_String(arr[4]),
+    );
+  }
+
+  @protected
   String? dco_decode_opt_String(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_String(raw);
@@ -683,6 +878,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  SentenceChunkView dco_decode_sentence_chunk_view(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    return SentenceChunkView(
+      index: dco_decode_u_32(arr[0]),
+      text: dco_decode_String(arr[1]),
+      charStart: dco_decode_u_32(arr[2]),
+      charEnd: dco_decode_u_32(arr[3]),
+      locator: dco_decode_locator_view(arr[4]),
+    );
+  }
+
+  @protected
   TranslationView dco_decode_translation_view(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
@@ -695,6 +905,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       provider: dco_decode_String(arr[3]),
       fromCache: dco_decode_bool(arr[4]),
     );
+  }
+
+  @protected
+  int dco_decode_u_32(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as int;
   }
 
   @protected
@@ -758,6 +974,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_dict_entry_view(deserializer));
+  }
+
+  @protected
+  ListenSettingsView sse_decode_box_autoadd_listen_settings_view(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_listen_settings_view(deserializer));
+  }
+
+  @protected
+  LocatorView sse_decode_box_autoadd_locator_view(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_locator_view(deserializer));
   }
 
   @protected
@@ -865,6 +1095,46 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<SentenceChunkView> sse_decode_list_sentence_chunk_view(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <SentenceChunkView>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_sentence_chunk_view(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  ListenSettingsView sse_decode_listen_settings_view(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_voiceId = sse_decode_String(deserializer);
+    var var_speed = sse_decode_f_32(deserializer);
+    var var_autoNext = sse_decode_bool(deserializer);
+    return ListenSettingsView(
+        voiceId: var_voiceId, speed: var_speed, autoNext: var_autoNext);
+  }
+
+  @protected
+  LocatorView sse_decode_locator_view(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_bookId = sse_decode_String(deserializer);
+    var var_href = sse_decode_String(deserializer);
+    var var_progression = sse_decode_f_32(deserializer);
+    var var_totalProgression = sse_decode_f_32(deserializer);
+    var var_snippet = sse_decode_opt_String(deserializer);
+    return LocatorView(
+        bookId: var_bookId,
+        href: var_href,
+        progression: var_progression,
+        totalProgression: var_totalProgression,
+        snippet: var_snippet);
+  }
+
+  @protected
   String? sse_decode_opt_String(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -908,6 +1178,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  SentenceChunkView sse_decode_sentence_chunk_view(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_index = sse_decode_u_32(deserializer);
+    var var_text = sse_decode_String(deserializer);
+    var var_charStart = sse_decode_u_32(deserializer);
+    var var_charEnd = sse_decode_u_32(deserializer);
+    var var_locator = sse_decode_locator_view(deserializer);
+    return SentenceChunkView(
+        index: var_index,
+        text: var_text,
+        charStart: var_charStart,
+        charEnd: var_charEnd,
+        locator: var_locator);
+  }
+
+  @protected
   TranslationView sse_decode_translation_view(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_text = sse_decode_String(deserializer);
@@ -921,6 +1208,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         to: var_to,
         provider: var_provider,
         fromCache: var_fromCache);
+  }
+
+  @protected
+  int sse_decode_u_32(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getUint32();
   }
 
   @protected
@@ -981,6 +1274,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       DictEntryView self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_dict_entry_view(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_listen_settings_view(
+      ListenSettingsView self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_listen_settings_view(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_locator_view(
+      LocatorView self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_locator_view(self, serializer);
   }
 
   @protected
@@ -1071,6 +1378,35 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_list_sentence_chunk_view(
+      List<SentenceChunkView> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_sentence_chunk_view(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_listen_settings_view(
+      ListenSettingsView self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.voiceId, serializer);
+    sse_encode_f_32(self.speed, serializer);
+    sse_encode_bool(self.autoNext, serializer);
+  }
+
+  @protected
+  void sse_encode_locator_view(LocatorView self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.bookId, serializer);
+    sse_encode_String(self.href, serializer);
+    sse_encode_f_32(self.progression, serializer);
+    sse_encode_f_32(self.totalProgression, serializer);
+    sse_encode_opt_String(self.snippet, serializer);
+  }
+
+  @protected
   void sse_encode_opt_String(String? self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -1110,6 +1446,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_sentence_chunk_view(
+      SentenceChunkView self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_u_32(self.index, serializer);
+    sse_encode_String(self.text, serializer);
+    sse_encode_u_32(self.charStart, serializer);
+    sse_encode_u_32(self.charEnd, serializer);
+    sse_encode_locator_view(self.locator, serializer);
+  }
+
+  @protected
   void sse_encode_translation_view(
       TranslationView self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
@@ -1118,6 +1465,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_String(self.to, serializer);
     sse_encode_String(self.provider, serializer);
     sse_encode_bool(self.fromCache, serializer);
+  }
+
+  @protected
+  void sse_encode_u_32(int self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putUint32(self);
   }
 
   @protected

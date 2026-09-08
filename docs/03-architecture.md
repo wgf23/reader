@@ -149,6 +149,10 @@ fn search(query: &str, scope: SearchScope) -> Result<Vec<SearchHit>>;
 fn settings_get() -> Result<Settings>;
 fn settings_set(patch: SettingsPatch) -> Result<()>;
 ```
+> REQ-005 已实现**听书专用类型化通道**（通用 settings_get/set 留待后续设置 REQ）：
+> `async fn tts_listen_settings_get() -> Result<ListenSettingsView>` /
+> `async fn tts_listen_settings_set(settings: ListenSettingsView) -> Result<()>`，
+> 键 `listen.voice_id` / `listen.speed` / `listen.auto_next`（默认 `system_male` / `1.0` / `true`，speed clamp `[0.5,3.0]`）。
 
 **dict / translate（REQ-003 已实现，async 桥接）**
 ```rust
@@ -314,13 +318,29 @@ abstract class TtsEngine {
   Stream<TtsEvent> get events;               // 句完成 / 失败 / 中断
 }
 ```
+> REQ-005 落地：`SentenceChunk{index,text,charStart,charEnd,locator}` +
+> `SentenceLocator{bookId,href,progression,totalProgression,snippet?}`（与桥接 DTO 一一对应）；
+> 具体实现 `SystemTtsEngine`（flutter_tts，离线）。`index` 是 `TtsSentenceDone` 的唯一依据。
 
 ### 13.3 桥接 API 增补（Rust 侧，对齐 docs/04 §9）
 
+> REQ-005 落地：全部 **async**（取章文本有 IO）；`idx: usize → u32`、`loc: &Locator → LocatorView`
+> 为桥接适配（不暴露领域 `Locator` 的 `Rect/cfi/page`）；domain `core/src/tts` 改为**文本入参**
+> 纯函数（`segment(text, book_id, href)` 等），由 `api.rs` 经 `LibraryService::open_book` 按 href
+> 取 `Chapter.text` 后调用。`char_start/char_end`/`TextAnchor.start/end` 均为 UTF-16 code unit 半开区间。
+
 ```rust
-fn tts_segment(book_id: BookId, href: &str) -> Result<Vec<SentenceChunk>>;
-fn tts_locator_for_sentence(book_id: BookId, href: &str, idx: usize) -> Result<Locator>;
-fn tts_sentence_index_at(book_id: BookId, href: &str, loc: &Locator) -> Result<usize>;
+pub struct LocatorView { book_id: String, href: String, progression: f32,
+                         total_progression: f32, snippet: Option<String> }
+pub struct SentenceChunkView { index: u32, text: String,
+                               char_start: u32, char_end: u32, locator: LocatorView }
+pub struct ListenSettingsView { voice_id: String, speed: f32, auto_next: bool }
+
+async fn tts_segment(book_id: String, href: String) -> Result<Vec<SentenceChunkView>>;
+async fn tts_locator_for_sentence(book_id: String, href: String, idx: u32) -> Result<LocatorView>;
+async fn tts_sentence_index_at(book_id: String, href: String, locator: LocatorView) -> Result<u32>;
+async fn tts_listen_settings_get() -> Result<ListenSettingsView>;
+async fn tts_listen_settings_set(settings: ListenSettingsView) -> Result<()>;
 ```
 
 ### 13.4 听书启动时序
