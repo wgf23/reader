@@ -22,6 +22,9 @@ class FakeFlutterTts extends FlutterTts {
   bool throwAwaitCompletion = false;
   bool throwSetLanguage = false;
 
+  /// setVoice 返回值（0/false 模拟平台拒绝该音色；默认 null=成功）。
+  dynamic setVoiceResult;
+
   /// 覆盖 getVoices 返回值（可为非 List 以覆盖类型分支）。
   dynamic voicesOverride;
 
@@ -57,6 +60,7 @@ class FakeFlutterTts extends FlutterTts {
     calls.add('setVoice');
     args.add(voice);
     if (throwSetVoice) throw StateError('setVoice failed');
+    return setVoiceResult;
   }
 
   @override
@@ -278,6 +282,22 @@ void main() {
     expect(events.whereType<TtsVoiceFallback>(), hasLength(1));
     await engine.speak(_chunk(0, '一句。'));
     expect(tts.calls.last, 'speak');
+    await engine.dispose();
+  });
+
+  test('US-21 setVoice 返回 0 → clearVoice + TtsVoiceFallback 不阻断', () async {
+    // 覆盖 _applyVoice 中 setVoice 成功返回但平台拒绝该音色（返回 0）的分支
+    final tts = FakeFlutterTts()..setVoiceResult = 0;
+    final engine = SystemTtsEngine(tts: tts);
+    final events = <TtsEvent>[];
+    engine.events.listen(events.add);
+    await engine.configure(voiceId: 'system_male', speed: 1.0);
+    expect(tts.calls, contains('setVoice'), reason: '先尝试真实音色名');
+    expect(tts.calls, contains('clearVoice'), reason: '平台拒绝 → 恢复默认音色');
+    await Future<void>.delayed(Duration.zero);
+    expect(events.whereType<TtsVoiceFallback>(), hasLength(1));
+    await engine.speak(_chunk(0, '一句。'));
+    expect(tts.calls.last, 'speak', reason: '音色回退不得阻断朗读');
     await engine.dispose();
   });
 

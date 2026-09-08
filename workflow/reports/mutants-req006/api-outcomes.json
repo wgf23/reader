@@ -1,0 +1,217 @@
+{
+  "outcomes": [
+    {
+      "scenario": "Baseline",
+      "summary": "Success",
+      "log_path": "log/baseline.log",
+      "diff_path": null,
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 21.775800928,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 8.02680413,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/api.rs:326:5: replace translate -> std::result::Result<TranslationView, String> with Ok(Default::default())",
+          "package": "reader_core",
+          "file": "src/api.rs",
+          "function": {
+            "function_name": "translate",
+            "return_type": "-> std::result::Result<TranslationView, String>",
+            "span": {
+              "start": {
+                "line": 320,
+                "column": 1
+              },
+              "end": {
+                "line": 344,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 326,
+              "column": 5
+            },
+            "end": {
+              "line": 343,
+              "column": 7
+            }
+          },
+          "replacement": "Ok(Default::default())",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__api.rs_line_326_col_5.log",
+      "diff_path": "diff/src__api.rs_line_326_col_5.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 1.005388404,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/api.rs:348:5: replace translate_get_config -> std::result::Result<TranslateConfigView, String> with Ok(Default::default())",
+          "package": "reader_core",
+          "file": "src/api.rs",
+          "function": {
+            "function_name": "translate_get_config",
+            "return_type": "-> std::result::Result<TranslateConfigView, String>",
+            "span": {
+              "start": {
+                "line": 346,
+                "column": 1
+              },
+              "end": {
+                "line": 362,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 348,
+              "column": 5
+            },
+            "end": {
+              "line": 361,
+              "column": 7
+            }
+          },
+          "replacement": "Ok(Default::default())",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__api.rs_line_348_col_5.log",
+      "diff_path": "diff/src__api.rs_line_348_col_5.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 27.954820495,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/api.rs:366:5: replace translate_set_strategy -> std::result::Result<(), String> with Ok(())",
+          "package": "reader_core",
+          "file": "src/api.rs",
+          "function": {
+            "function_name": "translate_set_strategy",
+            "return_type": "-> std::result::Result<(), String>",
+            "span": {
+              "start": {
+                "line": 364,
+                "column": 1
+              },
+              "end": {
+                "line": 370,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 366,
+              "column": 5
+            },
+            "end": {
+              "line": 369,
+              "column": 49
+            }
+          },
+          "replacement": "Ok(())",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__api.rs_line_366_col_5.log",
+      "diff_path": "diff/src__api.rs_line_366_col_5.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 37.93331461,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 5.371321434,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        }
+      ]
+    }
+  ],
+  "total_mutants": 3,
+  "missed": 0,
+  "caught": 1,
+  "timeout": 0,
+  "unviable": 2,
+  "success": 0,
+  "start_time": "2026-09-08T16:44:28.028694352Z",
+  "end_time": "2026-09-08T16:45:41.394699592Z",
+  "cargo_mutants_version": "27.1.0"
+}

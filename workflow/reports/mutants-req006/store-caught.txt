@@ -1,0 +1,3 @@
+src/store/translation.rs:130:9: replace <impl ProviderConfig for TranslationRepo>::default_provider -> Result<String> with Ok(String::new())
+src/store/translation.rs:130:9: replace <impl ProviderConfig for TranslationRepo>::default_provider -> Result<String> with Ok("xyzzy".into())
+src/store/translation.rs:158:9: replace <impl ProviderConfig for TranslationRepo>::set_default_provider -> Result<()> with Ok(())

@@ -1,0 +1,3 @@
+src/dict/provider.rs:35:9: replace <impl TranslationProvider for DeepLProvider>::translate -> Result<Translation> with Ok(Default::default())
+src/dict/provider.rs:84:9: replace <impl TranslationProvider for EchoProvider>::translate -> Result<Translation> with Ok(Default::default())
+src/dict/provider.rs:118:9: replace <impl TranslationProvider for OfflineProvider>::translate -> Result<Translation> with Ok(Default::default())

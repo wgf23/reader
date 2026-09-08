@@ -1825,4 +1825,83 @@ mod tests {
             Some(FALLBACK_REASON_ONLINE_FAILED)
         );
     }
+
+    #[test]
+    fn translate_explicit_unknown_provider_is_error() {
+        // 覆盖 translate_explicit 未知 provider 防御分支（配置被外部写脏时）
+        let mut svc = svc_with(
+            MemCache::default(),
+            MemConfig::with_default("nope"),
+            vec![Box::new(OfflineStub)],
+        );
+        let err = svc.translate_routed("hi", Lang::En, Lang::Zh).unwrap_err();
+        assert!(err.to_string().contains("未知翻译 Provider"), "{err}");
+    }
+
+    #[test]
+    fn translate_explicit_missing_key_falls_back_offline_unconfigured_reason() {
+        // 显式 deepl 无 key + offline 可用 → 回退原因应为"未配置…"（missing 分支）
+        let mut svc = svc_with(
+            MemCache::default(),
+            MemConfig::with_default("deepl"),
+            vec![Box::new(DeepLStub), Box::new(OfflineStub)],
+        );
+        let r = svc.translate_routed("book", Lang::En, Lang::Zh).unwrap();
+        assert_eq!(r.translation.provider, "offline");
+        assert!(!r.from_cache);
+        assert_eq!(
+            r.fallback_reason.as_deref(),
+            Some(FALLBACK_REASON_ONLINE_UNCONFIGURED)
+        );
+    }
+
+    #[test]
+    fn translate_explicit_missing_key_offline_cache_hit_with_reason() {
+        // 预置 offline 缓存 → 显式 deepl 无 key 回退时命中 offline 缓存并带原因
+        let mut cache = MemCache::default();
+        cache
+            .cache_put(&CacheEntry {
+                key: CacheKey {
+                    source_text: "book".into(),
+                    from_lang: Lang::En,
+                    to_lang: Lang::Zh,
+                    provider: "offline".into(),
+                },
+                result: Translation {
+                    text: "OFF-CACHED".into(),
+                    from: Lang::En,
+                    to: Lang::Zh,
+                    provider: "offline".into(),
+                },
+                created_at: 1,
+                hit_count: 1,
+            })
+            .unwrap();
+        let mut svc = svc_with(
+            cache,
+            MemConfig::with_default("deepl"),
+            vec![Box::new(DeepLStub), Box::new(OfflineStub)],
+        );
+        let r = svc.translate_routed("book", Lang::En, Lang::Zh).unwrap();
+        assert_eq!(r.translation.text, "OFF-CACHED");
+        assert!(r.from_cache);
+        assert_eq!(
+            r.fallback_reason.as_deref(),
+            Some(FALLBACK_REASON_ONLINE_UNCONFIGURED)
+        );
+    }
+
+    #[test]
+    fn config_view_without_deepl_provider_uses_key_fallback() {
+        // 未注册 deepl provider → has_deepl_key 走 key 非空兜底闭包（空白=false/非空=true）
+        let mut config = MemConfig::with_default(AUTO_PROVIDER);
+        config.set_provider_key("deepl", "   ").unwrap();
+        let svc = svc_with(MemCache::default(), config, vec![Box::new(OfflineStub)]);
+        assert!(!svc.config_view().unwrap().has_deepl_key, "空白 key=false");
+
+        let mut config2 = MemConfig::with_default(AUTO_PROVIDER);
+        config2.set_provider_key("deepl", "k").unwrap();
+        let svc2 = svc_with(MemCache::default(), config2, vec![Box::new(OfflineStub)]);
+        assert!(svc2.config_view().unwrap().has_deepl_key, "非空 key=true");
+    }
 }

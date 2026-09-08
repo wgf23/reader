@@ -1,0 +1,98 @@
+[
+  {
+    "diff": "--- src/store/translation.rs\n+++ replace <impl ProviderConfig for TranslationRepo>::default_provider -> Result<String> with Ok(String::new())\n@@ -122,26 +122,17 @@\n             .query_row(\"SELECT COUNT(*) FROM translation_cache\", [], |r| r.get(0))\n             .map_err(Error::from)?;\n         Ok(n as u64)\n     }\n }\n \n impl ProviderConfig for TranslationRepo {\n     fn default_provider(&self) -> Result<String> {\n-        let v: Option<String> = self\n-            .conn\n-            .query_row(\n-                \"SELECT value FROM settings WHERE key=?1\",\n-                params![KEY_DEFAULT_PROVIDER],\n-                |r| r.get(0),\n-            )\n-            .optional()\n-            .map_err(Error::from)?;\n-        Ok(v.unwrap_or_else(|| DEFAULT_PROVIDER.to_string()))\n+        Ok(String::new()) /* ~ changed by cargo-mutants ~ */\n     }\n \n     fn provider_key(&self, provider: &str) -> Result<Option<String>> {\n         self.conn\n             .query_row(\n                 \"SELECT value FROM settings WHERE key=?1\",\n                 params![Self::provider_key_setting(provider)],\n                 |r| r.get(0),\n",
+    "file": "src/store/translation.rs",
+    "function": {
+      "function_name": "<impl ProviderConfig for TranslationRepo>::default_provider",
+      "return_type": "-> Result<String>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 140
+        },
+        "start": {
+          "column": 5,
+          "line": 129
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/store/translation.rs:130:9: replace <impl ProviderConfig for TranslationRepo>::default_provider -> Result<String> with Ok(String::new())",
+    "package": "reader_core",
+    "replacement": "Ok(String::new())",
+    "span": {
+      "end": {
+        "column": 62,
+        "line": 139
+      },
+      "start": {
+        "column": 9,
+        "line": 130
+      }
+    }
+  },
+  {
+    "diff": "--- src/store/translation.rs\n+++ replace <impl ProviderConfig for TranslationRepo>::default_provider -> Result<String> with Ok(\"xyzzy\".into())\n@@ -122,26 +122,17 @@\n             .query_row(\"SELECT COUNT(*) FROM translation_cache\", [], |r| r.get(0))\n             .map_err(Error::from)?;\n         Ok(n as u64)\n     }\n }\n \n impl ProviderConfig for TranslationRepo {\n     fn default_provider(&self) -> Result<String> {\n-        let v: Option<String> = self\n-            .conn\n-            .query_row(\n-                \"SELECT value FROM settings WHERE key=?1\",\n-                params![KEY_DEFAULT_PROVIDER],\n-                |r| r.get(0),\n-            )\n-            .optional()\n-            .map_err(Error::from)?;\n-        Ok(v.unwrap_or_else(|| DEFAULT_PROVIDER.to_string()))\n+        Ok(\"xyzzy\".into()) /* ~ changed by cargo-mutants ~ */\n     }\n \n     fn provider_key(&self, provider: &str) -> Result<Option<String>> {\n         self.conn\n             .query_row(\n                 \"SELECT value FROM settings WHERE key=?1\",\n                 params![Self::provider_key_setting(provider)],\n                 |r| r.get(0),\n",
+    "file": "src/store/translation.rs",
+    "function": {
+      "function_name": "<impl ProviderConfig for TranslationRepo>::default_provider",
+      "return_type": "-> Result<String>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 140
+        },
+        "start": {
+          "column": 5,
+          "line": 129
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/store/translation.rs:130:9: replace <impl ProviderConfig for TranslationRepo>::default_provider -> Result<String> with Ok(\"xyzzy\".into())",
+    "package": "reader_core",
+    "replacement": "Ok(\"xyzzy\".into())",
+    "span": {
+      "end": {
+        "column": 62,
+        "line": 139
+      },
+      "start": {
+        "column": 9,
+        "line": 130
+      }
+    }
+  },
+  {
+    "diff": "--- src/store/translation.rs\n+++ replace <impl ProviderConfig for TranslationRepo>::set_default_provider -> Result<()> with Ok(())\n@@ -150,17 +150,17 @@\n             .map_err(Error::from)\n     }\n \n     fn set_provider_key(&mut self, provider: &str, key: &str) -> Result<()> {\n         upsert_setting(&self.conn, &Self::provider_key_setting(provider), key)\n     }\n \n     fn set_default_provider(&mut self, provider: &str) -> Result<()> {\n-        upsert_setting(&self.conn, KEY_DEFAULT_PROVIDER, provider)\n+        Ok(()) /* ~ changed by cargo-mutants ~ */\n     }\n }\n \n fn upsert_setting(conn: &Connection, key: &str, value: &str) -> Result<()> {\n     conn.execute(\n         \"INSERT INTO settings(key,value) VALUES(?1,?2)\n          ON CONFLICT(key) DO UPDATE SET value=excluded.value\",\n         params![key, value],\n",
+    "file": "src/store/translation.rs",
+    "function": {
+      "function_name": "<impl ProviderConfig for TranslationRepo>::set_default_provider",
+      "return_type": "-> Result<()>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 159
+        },
+        "start": {
+          "column": 5,
+          "line": 157
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/store/translation.rs:158:9: replace <impl ProviderConfig for TranslationRepo>::set_default_provider -> Result<()> with Ok(())",
+    "package": "reader_core",
+    "replacement": "Ok(())",
+    "span": {
+      "end": {
+        "column": 67,
+        "line": 158
+      },
+      "start": {
+        "column": 9,
+        "line": 158
+      }
+    }
+  }
+]

@@ -1,0 +1,1 @@
+src/dict/translation.rs:351:16: replace > with >= in sanitize_id
