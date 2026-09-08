@@ -10,6 +10,7 @@
 | [architect](architect.md) | 2 架构 | 设计 + ADR + 计划拆分 + 冲突检查 | 02-adr/02-design/02-plan.md |
 | [developer](developer.md) | 3 开发 | 前置审查 + 按原型实现 + 自检 | 代码 + 03-review.md |
 | [test-engineer](test-engineer.md) | 4 测试 | 测试补强 + 变异 + 覆盖分析 | 04-mutation/04-coverage.md |
+| [product-reviewer](product-reviewer.md) | 5 交付前 | 产品视角验收：设计稿↔实现逐屏对照 | 05b-product-preview.md/.html |
 | [release-manager](release-manager.md) | 5 交付 | 回归 + 发布 + 追溯矩阵 | 05-delivery.md |
 
 ## 通用 agent 契约

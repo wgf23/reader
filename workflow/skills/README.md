@@ -13,3 +13,4 @@
 | [prototype-conformance](prototype-conformance.md) | UI 原型一致性 | 逐屏对照 wireframes |
 | [build-android](build-android.md) | Android APK | `bash scripts/build-android.sh` |
 | [build-platform](build-platform.md) | macOS/Windows 构建 | `bash scripts/build.sh` / `scripts/build-windows.ps1` |
+| [product-preview](product-preview.md) | 产品预览：设计稿↔实现截图对照报告 | `python3 scripts/product-preview.py --sample` |

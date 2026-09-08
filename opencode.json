@@ -1,0 +1,47 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "agent": {
+    "orchestrator": {
+      "description": "多智能体研发工作流编排者：唯一写 workflow/STATE.md；按 agents/*.md 逐阶段派单；独立执行闸门并复验；调度 rework（REWORK-REQ-XXX-<类型>.md）；子代理停滞则接管。",
+      "mode": "primary",
+      "model": "deepseek/deepseek-v4.1-flash-expires-on-0910",
+      "prompt": "{file:./workflow/agents/orchestrator.md}"
+    },
+    "req-analyst": {
+      "description": "阶段1 需求分析：把用户诉求写成可测需求规格 01-req.md（背景/目标/用户故事/验收标准 Given-When-Then/影响面/风险）；涉 UI 须标注对应交互原型图。",
+      "mode": "subagent",
+      "model": "deepseek/deepseek-v4.1-flash-expires-on-0910",
+      "prompt": "{file:./workflow/agents/req-analyst.md}"
+    },
+    "architect": {
+      "description": "阶段2 架构设计：产出 02-adr/02-design/02-plan.md（ADR 每决策点≥2备选+理由、逐屏映射原型图、依赖无环任务计划、冲突检查）。",
+      "mode": "subagent",
+      "model": "deepseek/deepseek-v4.1-flash-expires-on-0910",
+      "prompt": "{file:./workflow/agents/architect.md}"
+    },
+    "developer": {
+      "description": "阶段3 开发：前置审查（对照 docs/03、04 与交互原型图，禁止自创布局）→ 按 plan 实现 → 自检循环（单测/CRAP/DDD）→ 产出 03-review.md + 提交代码。",
+      "mode": "subagent",
+      "model": "deepseek/deepseek-v4.1-flash-expires-on-0910",
+      "prompt": "{file:./workflow/agents/developer.md}"
+    },
+    "test-engineer": {
+      "description": "阶段4 测试：补单元/集成测试、变异测试（cargo-mutants ≥80%）、覆盖率（≥85%）；存活变异体逐一给结论；缺陷写 rework-REQ-XXX-D.md 回开发。",
+      "mode": "subagent",
+      "model": "deepseek/deepseek-v4.1-flash-expires-on-0910",
+      "prompt": "{file:./workflow/agents/test-engineer.md}"
+    },
+    "product-reviewer": {
+      "description": "阶段5a 产品验收：以产品/用户视角，用 skills/product-preview 生成「设计稿↔实现截图」逐屏对照报告；逐屏判定偏差；05b-product-preview.md；deviation=0 否则 rework-B。解决真机效果与设计稿不符（尤其竖屏真机 vs 横屏设计稿）。",
+      "mode": "subagent",
+      "model": "deepseek/deepseek-v4.1-flash-expires-on-0910",
+      "prompt": "{file:./workflow/agents/product-reviewer.md}"
+    },
+    "release-manager": {
+      "description": "阶段5b 交付：全量回归（cargo/flutter/FFI）、变更说明、语义化版本、发布产物清单、追溯矩阵全闭合（05-delivery.md）。",
+      "mode": "subagent",
+      "model": "deepseek/deepseek-v4.1-flash-expires-on-0910",
+      "prompt": "{file:./workflow/agents/release-manager.md}"
+    }
+  }
+}

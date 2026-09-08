@@ -9,8 +9,9 @@
 ### 1. 要复制的内容
 ```
 <new-ws>/
-├── workflow/      ← 本目录（agents/skills/schemas/rules/templates/STATE）
-├── scripts/       ← 工具（wf-meta-check.py、crap/、ddd-lint/、mutants.sh、cov-summary.py、build-*.sh）
+├── opencode.json  ← 工作流角色→opencode agent 映射（随根配置搬；无 opencode 可不搬）
+├── workflow/      ← 本目录（agents/skills/schemas/rules/templates/STATE，含 product-reviewer）
+├── scripts/       ← 工具（wf-meta-check.py、product-preview.py、crap/、ddd-lint/、mutants.sh、cov-summary.py、build-*.sh）
 ├── docs/          ← docs/07、docs/08（工作流文档）与 docs/wireframes/**（UI 权威）
 ├── core/          ← Rust 核心（cargo test 目标）
 └── app/           ← Flutter 应用（flutter test / analyze / build 目标）

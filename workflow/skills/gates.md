@@ -30,3 +30,6 @@ scripts/ddd-lint/... check <root> --rules workflow/rules/ddd-rules.toml  # 违�
 
 ## 闸门5（交付）
 - `05-delivery.md` 追溯矩阵全闭合；全量回归绿；发布产物齐全。
+- （涉 UI 的 REQ）`05b-product-preview.md` 产品预览 `deviation=0`（`skills/product-preview`）；
+  有未授权偏差 → rework-B 回开发，重跑闸门3-5。
+- 注：产品验收在交付合并前引入（`agents/product-reviewer`），避免"贴合设计稿"由开发自评。

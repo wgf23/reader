@@ -9,11 +9,11 @@
 ## 1. 流水线一览（一图速览）
 
 ```
-REQ-XXX ─▶ (1)需求分析 ─▶ (2)架构设计 ─▶ (3)开发 ─▶ (4)测试 ─▶ (5)交付 ─▶ 合并 main
-             agent=req-analyst   architect        developer   test-engineer  release-manager
-             产物=01-req.md      02-adr/design/   03-review+   04-mutation/   05-delivery.md
-                                 plan.md          代码+报告     coverage.md     (含追溯矩阵)
-             闸门1               闸门2             闸门3        闸门4           闸门5
+REQ-XXX ─▶ (1)需求分析 ─▶ (2)架构设计 ─▶ (3)开发 ─▶ (4)测试 ─▶ (5a)产品验收 ─▶ (5b)交付 ─▶ 合并 main
+             agent=req-analyst   architect        developer   test-engineer  product-reviewer  release-manager
+             产物=01-req.md      02-adr/design/   03-review+   04-mutation/   05b-product-      05-delivery.md
+                                 plan.md          代码+报告     coverage.md    preview.md/.html  (含追溯矩阵)
+             闸门1               闸门2             闸门3        闸门4          闸门5 前置          闸门5
 ```
 
 - 编排者 = 主 Agent（orchestrator），唯一写 `workflow/STATE.md`。
@@ -28,8 +28,8 @@ REQ-XXX ─▶ (1)需求分析 ─▶ (2)架构设计 ─▶ (3)开发 ─▶ (4
 
 | 目录 | 内容 |
 |---|---|
-| `workflow/agents/` | 每个角色一个定义（orchestrator + req-analyst/architect/developer/test-engineer/release-manager）：阶段/职责/读写产物/闸门/派单模板 |
-| `workflow/skills/` | 每个可复用能力：gates、crap、ddd-lint、mutants、coverage、wf-meta-check、prototype-conformance、build-android、build-platform |
+| `workflow/agents/` | 每个角色一个定义（orchestrator + req-analyst/architect/developer/test-engineer/product-reviewer/release-manager）：阶段/职责/读写产物/闸门/派单模板 |
+| `workflow/skills/` | 每个可复用能力：gates、crap、ddd-lint、mutants、coverage、wf-meta-check、prototype-conformance、product-preview、build-android、build-platform |
 | `workflow/schemas/` | JSON Schema 契约：wf-meta 头、各 phase 必备产物与要素、追溯矩阵行 |
 | `workflow/rules/` | 阈值（crap-config.toml / ddd-rules.toml，评审后冻结） |
 | `workflow/templates/` | 各阶段 Markdown 产物模板 |

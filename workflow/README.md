@@ -32,6 +32,10 @@ workflow/
 - 测试/构建指向项目自身：Rust `core/`（`cargo test`）、Flutter `app/`（`flutter test` / `flutter analyze` / `flutter build`）。
 - 原型权威与设计约定：`docs/`（docs/07、docs/08、docs/wireframes/**）。
 
+## 用 opencode 驱动
+> 本五阶段流水线可映射为 opencode 自定义 agent（orchestrator + 6 个阶段 subagent，含产品验收 product-reviewer），
+> 见根 `opencode.json` 与 `workflow/opencode-runbook.md`。prompt 直接引用 `workflow/agents/*.md`，单一事实源。
+
 ## 结论（能否搬到别处用）
 - 只要新 workspace **保留相同结构**（`workflow/` + `scripts/` + `docs/`，且是 Rust+Flutter 项目），
   复制这四者即可跑通，`workflow/` 是驱动、`scripts/` 是工具、`docs/` 是权威。

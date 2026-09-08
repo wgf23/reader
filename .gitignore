@@ -34,3 +34,6 @@ core/mutants.out.old/
 # 发布产物
 app/dist/
 dist/
+
+# opencode 运行时产物（插件依赖等，勿提交）
+.opencode/
