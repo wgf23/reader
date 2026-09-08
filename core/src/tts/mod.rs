@@ -563,4 +563,303 @@ mod tests {
             "segment 应 ≤200ms（CI 上限），实测 {elapsed:?}"
         );
     }
+
+    // ================= REQ-005-fixes 阶段4：边界/异常/防回归补测 =================
+    //
+    // 说明：以下用例同时直接覆盖内部辅助函数（同一 test 模块可访问私有项），
+    // 使变异体在"函数级语义"上也被杀死（如 is_ascii_period_end 在串尾的返回）。
+
+    fn loc(text: &str, href: &str, progression: f32) -> Locator {
+        Locator {
+            book_id: "b1".to_string(),
+            href: href.to_string(),
+            progression,
+            total_progression: progression,
+            text: None,
+            cfi: None,
+            page: None,
+            rect: None,
+        }
+    }
+
+    // ---------- 切句：空/纯空白/纯标点/换行/中英混排 ----------
+
+    #[test]
+    fn pure_punctuation_each_becomes_sentence_and_ranges_continuous() {
+        let chunks = seg("。。。！？");
+        assert_eq!(chunks.len(), 5, "每个定界符各自成句");
+        assert_eq!(
+            texts(&chunks),
+            vec!["。", "。", "。", "！", "？"]
+        );
+        for w in chunks.windows(2) {
+            assert_eq!(w[0].char_range.1, w[1].char_range.0, "区间连续");
+        }
+        assert_eq!(chunks.last().unwrap().char_range.1, 5);
+    }
+
+    #[test]
+    fn crlf_and_blank_lines_force_sentence_breaks() {
+        let chunks = seg("line one\r\nline two\n\nline three");
+        assert_eq!(texts(&chunks), vec!["line one", "line two", "line three"]);
+        for w in chunks.windows(2) {
+            assert_eq!(w[0].char_range.1, w[1].char_range.0);
+        }
+    }
+
+    #[test]
+    fn mixed_chinese_english_splits_on_both_punctuation_sets() {
+        let chunks = seg("Hello 世界。这是 test 句子！Done.");
+        assert_eq!(
+            texts(&chunks),
+            vec!["Hello 世界。", "这是 test 句子！", "Done."]
+        );
+    }
+
+    #[test]
+    fn single_ascii_period_at_end_is_a_break_not_a_merge() {
+        let chunks = seg("abc.");
+        assert_eq!(texts(&chunks), vec!["abc."]);
+        assert_eq!(chunks[0].char_range, (0, 4));
+    }
+
+    #[test]
+    fn leading_whitespace_first_chunk_starts_at_zero() {
+        let chunks = seg("   你好。世界。");
+        assert_eq!(chunks[0].char_range.0, 0, "首句固定从 0 起（章首语义）");
+        assert_eq!(chunks[0].text, "你好。");
+        assert_eq!(chunks[1].char_range, (6, 9));
+    }
+
+    #[test]
+    fn whitespace_after_delimiter_is_skipped_for_next_start() {
+        let chunks = seg("你好。  世界。");
+        assert_eq!(texts(&chunks), vec!["你好。", "世界。"]);
+        // 你0 好1 。2 空格3 空格4 世5 界6 。7
+        assert_eq!(chunks[1].char_range, (5, 8));
+    }
+
+    #[test]
+    fn snippet_truncates_to_40_utf16_units() {
+        let long = "a".repeat(50);
+        let chunks = seg(&format!("{long}。短。"));
+        let snip = chunks[0].locator.text.as_ref().unwrap().snippet.clone();
+        assert_eq!(snip.chars().count(), 40);
+        assert_eq!(snip, "a".repeat(40));
+        // 恰好 40 个 UTF-16 单元：整句作为 snippet（不提前截断）
+        let exact = seg(&format!("{}。", "b".repeat(39)));
+        assert_eq!(
+            exact[0].locator.text.as_ref().unwrap().snippet,
+            format!("{}。", "b".repeat(39))
+        );
+    }
+
+    #[test]
+    fn snippet_never_splits_surrogate_pair() {
+        let text = format!("{}😀。", "a".repeat(39));
+        let chunks = seg(&text);
+        let snip = chunks[0].locator.text.as_ref().unwrap().snippet.clone();
+        assert_eq!(snip, "a".repeat(39));
+        assert!(!snip.contains('😀'), "代理对不得被截半");
+    }
+
+    #[test]
+    fn utf16_ranges_with_emoji_in_middle_and_at_end() {
+        // 😀(2) 你(1) 好(1) 。(1) 世(1) 界(1) 😀(2)
+        let chunks = seg("😀你好。世界😀");
+        assert_eq!(chunks[0].char_range, (0, 5));
+        assert_eq!(chunks[0].text, "😀你好。");
+        assert_eq!(chunks[1].char_range, (5, 9));
+        assert_eq!(chunks[1].text, "世界😀");
+    }
+
+    // ---------- 缩写/数字小数/连续省略号 ----------
+
+    #[test]
+    fn single_capital_initial_and_dotted_acronym_not_split() {
+        let chunks = seg("J. K. Rowling wrote it.");
+        assert_eq!(texts(&chunks), vec!["J. K. Rowling wrote it."]);
+        let us = seg("The U.S. Army left.");
+        assert_eq!(texts(&us), vec!["The U.S. Army left."]);
+    }
+
+    #[test]
+    fn decimal_and_version_numbers_not_split() {
+        let chunks = seg("version 1.2 is out.");
+        assert_eq!(texts(&chunks), vec!["version 1.2 is out."]);
+        let ip = seg("地址是 192.168.1.1 请访问。完。");
+        assert_eq!(texts(&ip), vec!["地址是 192.168.1.1 请访问。", "完。"]);
+    }
+
+    #[test]
+    fn long_ellipsis_runs_are_single_delimiter() {
+        let cn = seg("他沉默…………然后说。");
+        assert_eq!(texts(&cn), vec!["他沉默…………", "然后说。"]);
+        let en = seg("Wait..... then go.");
+        assert_eq!(texts(&en), vec!["Wait.....", "then go."]);
+        // 省略号在串尾（触发 ellipsis 循环的边界分支）
+        let tail = seg("他沉默……");
+        assert_eq!(texts(&tail), vec!["他沉默……"]);
+    }
+
+    // ---------- sentence_index_at 边界/异常 ----------
+
+    #[test]
+    fn sentence_index_at_exact_boundary_and_epsilon() {
+        let text = "第一句。第二句。第三句。";
+        let chunks = seg(text);
+        // 恰好落在某句 progression 上 → 该句
+        for (i, c) in chunks.iter().enumerate() {
+            assert_eq!(
+                sentence_index_at(text, &bid(), "chapter_0001.xhtml", &c.locator).unwrap(),
+                i
+            );
+        }
+        // 略小于首句（0 - 1e-3）仍落在首句（章首语义），不小于 0
+        let before = loc(text, "chapter_0001.xhtml", -0.001);
+        assert!(sentence_index_at(text, &bid(), "chapter_0001.xhtml", &before).is_err());
+        // 首句之前但 >= 0 → 0
+        let zero = loc(text, "chapter_0001.xhtml", 0.0);
+        assert_eq!(
+            sentence_index_at(text, &bid(), "chapter_0001.xhtml", &zero).unwrap(),
+            0
+        );
+    }
+
+    #[test]
+    fn sentence_index_at_rejects_non_finite_and_out_of_range() {
+        let text = "一句。二句。";
+        for p in [f32::NAN, f32::INFINITY, f32::NEG_INFINITY, -0.0001, 1.0001] {
+            let bad = loc(text, "chapter_0001.xhtml", p);
+            assert!(
+                sentence_index_at(text, &bid(), "chapter_0001.xhtml", &bad).is_err(),
+                "非法 progression 应 Err: {p}"
+            );
+        }
+    }
+
+    #[test]
+    fn sentence_index_at_rejects_whitespace_only_text() {
+        let l = loc(" ", "chapter_0001.xhtml", 0.0);
+        assert!(sentence_index_at("   ", &bid(), "chapter_0001.xhtml", &l).is_err());
+        assert!(sentence_index_at("", &bid(), "chapter_0001.xhtml", &l).is_err());
+    }
+
+    // ---------- 内部辅助函数（函数级语义，直接杀死变异体） ----------
+
+    #[test]
+    fn helper_is_hard_end_exhaustive() {
+        for c in ['。', '！', '？', '；', '!', '?', ';'] {
+            assert!(is_hard_end(c), "应为硬定界: {c:?}");
+        }
+        for c in ['.', '…', '，', ',', 'a', '\n', '\r', ' '] {
+            assert!(!is_hard_end(c), "不应为硬定界: {c:?}");
+        }
+    }
+
+    #[test]
+    fn helper_is_closing_exhaustive() {
+        for c in [
+            '」', '』', '”', '’', '）', ')', '】', '》', '〉', ']', '}', '］', '｝', '〕', '〗',
+            '〙', '〛', '›', '»',
+        ] {
+            assert!(is_closing(c), "应并入前句: {c:?}");
+        }
+        for c in ['“', '（', '【', '《', 'a', '。', ' '] {
+            assert!(!is_closing(c), "不应并入前句: {c:?}");
+        }
+    }
+
+    #[test]
+    fn helper_is_abbreviation_cases() {
+        for w in [
+            "Mr", "mrs", "Dr", "e.g", "i.e", "U.S", "a.m", "etc", "no", "vs", "J", "K",
+        ] {
+            assert!(is_abbreviation(w), "缩写应识别: {w}");
+        }
+        for w in ["home", "Hello", "jk", "", "ab", "3"] {
+            assert!(!is_abbreviation(w), "非缩写不应识别: {w:?}");
+        }
+    }
+
+    #[test]
+    fn helper_word_before_extracts_dotted_word() {
+        let (chars, _) = char_table("Use e.g. this");
+        // U0 s1 e2 ' '3 e4 .5 g6 .7
+        assert_eq!(word_before(&chars, 7), "e.g");
+        assert_eq!(word_before(&chars, 5), "e");
+        assert_eq!(word_before(&chars, 2), "Us");
+    }
+
+    #[test]
+    fn helper_is_ascii_period_end_cases() {
+        let (ok, _) = char_table("He left. Now");
+        assert!(is_ascii_period_end(&ok, 7), "词后句点 + 空白 → 断句");
+        let (abbr, _) = char_table("Mr. Smith");
+        assert!(!is_ascii_period_end(&abbr, 2), "缩写 → 不断");
+        let (num, _) = char_table("3.14");
+        assert!(!is_ascii_period_end(&num, 1), "数字间 → 不断");
+        let (mid, _) = char_table("a.b");
+        assert!(!is_ascii_period_end(&mid, 1), "句点后非空白 → 不断");
+        let (end, _) = char_table("Hello.");
+        assert!(is_ascii_period_end(&end, 5), "串尾句点 → 断");
+        // 句点前有空白：回溯跳过空白直到字母（覆盖 find_map 的 None 分支）
+        let (sp, _) = char_table("a . b");
+        assert!(is_ascii_period_end(&sp, 2), "句点前空白 → 回溯到字母后断句");
+    }
+
+    #[test]
+    fn helper_delimiter_end_cases() {
+        let (cn, _) = char_table("他说……然后");
+        assert_eq!(delimiter_end(&cn, 2), Some(3), "…… 整体");
+        let (cn_tail, _) = char_table("他说……");
+        assert_eq!(delimiter_end(&cn_tail, 2), Some(3), "串尾 …… 不越界");
+        let (single, _) = char_table("他说…然后");
+        assert_eq!(delimiter_end(&single, 2), Some(2), "单 … 只吃一个");
+        let (en, _) = char_table("Wait... then");
+        assert_eq!(delimiter_end(&en, 4), Some(6), "... 整体");
+        let (en_tail, _) = char_table("Wait...");
+        assert_eq!(delimiter_end(&en_tail, 4), Some(6), "串尾 ... 不越界");
+        let (hard, _) = char_table("你好。世界");
+        assert_eq!(delimiter_end(&hard, 2), Some(2));
+        let (dot_end, _) = char_table("abc.");
+        assert_eq!(delimiter_end(&dot_end, 3), Some(3), "串尾单点");
+        let (num, _) = char_table("3.14");
+        assert_eq!(delimiter_end(&num, 1), None);
+        let (nl, _) = char_table("a\nb");
+        assert_eq!(delimiter_end(&nl, 1), Some(1));
+        let (cr, _) = char_table("a\rb");
+        assert_eq!(delimiter_end(&cr, 1), Some(1));
+        let (plain, _) = char_table("abc");
+        assert_eq!(delimiter_end(&plain, 0), None);
+    }
+
+    #[test]
+    fn helper_sentence_starts_positions() {
+        let (c, _) = char_table("你好。  世界。");
+        // 你0 好1 。2 空格3 空格4 世5；字节：你3 好3 。3 空格1 空格1 → 世 起点 11
+        assert_eq!(sentence_starts(&c), vec![(0, 0), (11, 5)]);
+        let (lead, _) = char_table("  你好。世界。");
+        assert_eq!(sentence_starts(&lead), vec![(0, 0), (11, 5)]);
+        assert!(sentence_starts(&[]).is_empty());
+    }
+
+    #[test]
+    fn helper_char_table_counts_utf16() {
+        let (chars, total) = char_table("a😀。");
+        assert_eq!(chars.len(), 3);
+        assert_eq!(total, 4, "a=1 + 😀=2 + 。=1");
+        assert_eq!((chars[0].byte, chars[0].utf16), (0, 0));
+        assert_eq!((chars[1].byte, chars[1].utf16), (1, 1));
+        assert_eq!((chars[2].byte, chars[2].utf16), (5, 3));
+    }
+
+    #[test]
+    fn helper_utf16_prefix_boundary() {
+        assert_eq!(utf16_prefix("abcdef", 3), "abc");
+        assert_eq!(utf16_prefix("abc", 3), "abc");
+        assert_eq!(utf16_prefix("abc", 0), "");
+        assert_eq!(utf16_prefix("abc😀d", 4), "abc", "代理对超限则整体丢弃");
+        assert_eq!(utf16_prefix("ab😀", 4), "ab😀", "恰好占满则保留");
+    }
 }

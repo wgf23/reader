@@ -279,4 +279,28 @@ mod tests {
         assert_eq!(p2.href, "chapter_0001.xhtml");
         assert!((p2.progression - 0.9).abs() < 1e-4);
     }
+
+    #[test]
+    fn settings_forwarded_to_store_roundtrip() {
+        // REQ-005：LibraryService::get_setting/set_setting 薄转发必须真实落库
+        let dir = tempfile::tempdir().unwrap();
+        let store = Store::open(&dir.path().join("data")).unwrap();
+        let mut svc = LibraryService::new(store);
+        assert!(svc.get_setting("listen.speed").unwrap().is_none());
+        svc.set_setting("listen.speed", "1.5").unwrap();
+        assert_eq!(
+            svc.get_setting("listen.speed").unwrap().as_deref(),
+            Some("1.5")
+        );
+        svc.set_setting("listen.speed", "2.0").unwrap();
+        assert_eq!(
+            svc.get_setting("listen.speed").unwrap().as_deref(),
+            Some("2.0")
+        );
+        svc.set_setting("listen.auto_next", "0").unwrap();
+        assert_eq!(
+            svc.get_setting("listen.auto_next").unwrap().as_deref(),
+            Some("0")
+        );
+    }
 }

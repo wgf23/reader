@@ -9,6 +9,8 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart'
     as frb;
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:reader_app/services/rust_tts_backend.dart';
+import 'package:reader_app/services/tts_backend.dart';
 import 'package:reader_app/src/rust/api.dart' as rust;
 import 'package:reader_app/src/rust/frb_generated.dart';
 
@@ -108,5 +110,33 @@ void main() {
     );
     final clamped = await rust.ttsListenSettingsGet();
     expect(clamped.speed, 3.0, reason: 'speed 读回应 clamp 到 3.0');
+
+    // ---------- RustTtsBackend 适配层（DTO ↔ domain 映射） ----------
+    final backend = RustTtsBackend();
+    final viaBackend = await backend.segment(book.id, href);
+    expect(viaBackend.length, chunks.length, reason: '适配层与直接调用结果一致');
+    expect(viaBackend.first.text, chunks.first.text);
+    expect(viaBackend.first.charStart, chunks.first.charStart);
+    expect(viaBackend.first.charEnd, chunks.first.charEnd);
+    expect(viaBackend.first.locator.bookId, book.id);
+    expect(viaBackend.first.locator.href, href);
+
+    final loc0 = await backend.locatorForSentence(book.id, href, 0);
+    expect(loc0.bookId, book.id);
+    expect(loc0.href, href);
+    expect(loc0.snippet, isNotNull);
+    expect(await backend.sentenceIndexAt(book.id, href, loc0), 0);
+
+    await backend.saveListenSettings(
+      const ListenSettingsData(
+        voiceId: 'system_female',
+        speed: 1.25,
+        autoNext: false,
+      ),
+    );
+    final readBack = await backend.loadListenSettings();
+    expect(readBack.voiceId, 'system_female');
+    expect(readBack.speed, closeTo(1.25, 1e-6));
+    expect(readBack.autoNext, isFalse);
   });
 }
