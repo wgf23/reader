@@ -1,0 +1,97 @@
+{
+  "req": "REQ-005-fixes",
+  "product": "听书链路贯通 + 分页禁原生选择菜单（真实渲染截图对照）",
+  "screens": [
+    {
+      "id": "S1",
+      "name": "听书模式 · 跟读",
+      "device": "mobile",
+      "design": {
+        "svg": "docs/wireframes/09-listen-player.svg",
+        "viewport": "900x640",
+        "label": "设计稿 v1 · 听书跟读（线框 09）"
+      },
+      "impl": {
+        "png": "app/screenshots/listen_player.png",
+        "viewport": "1170x2532",
+        "label": "真实渲染 · 听书跟读"
+      },
+      "intent": [
+        "正文区 + 当前朗读句蓝色半透明高亮 + 「朗读中」徽标",
+        "底部听书控制条恰好含：章节名 / ⏮上一句 / ⏸播放暂停 / ⏭下一句 / 句级 Slider / 语速文本",
+        "控制条右侧定时（⏱）与音色（🎙）为 P2 禁用占位",
+        "顶部标题为「听书」，设置入口在顶栏（ADR 关联裁定1）"
+      ],
+      "acceptance": [
+        "章节名可见（如「第三章 · 起风了」）",
+        "⏮ / ⏸ / ⏭ 三键齐全",
+        "句级进度条 Slider 可见",
+        "语速文本 1.0x 可见",
+        "定时按钮存在且禁用灰置",
+        "音色按钮存在且禁用灰置（显示当前系统音色）",
+        "当前句高亮可见",
+        "「朗读中」徽标可见",
+        "无 ReaderSelectionToolbar 混入"
+      ]
+    },
+    {
+      "id": "S2",
+      "name": "听书设置面板",
+      "device": "mobile",
+      "design": {
+        "svg": "docs/wireframes/10-listen-settings.svg",
+        "viewport": "900x640",
+        "label": "设计稿 v1 · 听书设置（线框 10）"
+      },
+      "impl": {
+        "png": "app/screenshots/listen_settings.png",
+        "viewport": "1170x2532",
+        "label": "真实渲染 · 听书设置"
+      },
+      "intent": [
+        "音色分组：系统男声/系统女声可选（选中态圆点）",
+        "AI 音色 · 在线 / 本地神经音色 Piper / 声音克隆 禁用灰置 + 线框文案",
+        "语速 0.5x–3.0x 滑块 + 当前值",
+        "定时关闭分组全禁用灰置",
+        "后台播放开关禁用灰置",
+        "面板外隐私说明文案"
+      ],
+      "acceptance": [
+        "系统男声可选（选中态）",
+        "系统女声可选",
+        "AI 音色灰置且文案「需网络（P2）」",
+        "Piper 灰置且文案「下载 52MB（P2）」",
+        "声音克隆灰置且文案「评估中」",
+        "语速滑块 0.5x–3.0x + 当前值 1.0x",
+        "定时关闭 5 项（关闭/15/30/60/本章结束）全禁用",
+        "后台播放开关禁用",
+        "隐私文案含「离线音色不联网」"
+      ]
+    },
+    {
+      "id": "S3",
+      "name": "阅读器 · 长按选词工具条（回归守护）",
+      "device": "mobile",
+      "design": {
+        "svg": "docs/wireframes/reader-ui-v2/04-selection.svg",
+        "viewport": "900x640",
+        "label": "设计稿 v2 · 选词工具条（04-selection）"
+      },
+      "impl": {
+        "png": "app/screenshots/reader_selected.png",
+        "viewport": "1170x2532",
+        "label": "真实渲染 · 选词工具条"
+      },
+      "intent": [
+        "选中文本浮出自定义工具条（划重点/笔记/颜色/翻译/查词/复制）",
+        "工具条随选中区浮动、两端选柄可见",
+        "分页/滚动模式均不出现系统原生选择菜单"
+      ],
+      "acceptance": [
+        "自定义工具条出现且五入口齐全",
+        "无系统原生 ActionMode/工具条",
+        "选中文本有高亮"
+      ]
+    }
+  ]
+}
