@@ -29,7 +29,7 @@
 | 5 | DDD 分层 | `scripts/ddd-lint/target/release/ddd-lint check /root/reader --rules workflow/rules/ddd-rules.toml --out workflow/reports/ddd-req006-delivery.md` | **违规总数：0** | ✅ 0 |
 | 6 | CRAP | `scripts/crap/target/release/crap scan core/src --cov workflow/reports/coverage-req006.json --config workflow/rules/crap-config.toml --out workflow/reports/crap-req006-delivery.md` | **FAIL=0，WARN=7，PASS=249** | ✅ FAIL=0 |
 | 7 | Linux 发布构建 | `cd app && flutter build linux --release` | **✓ Built bundle**（`build/linux/x64/release/bundle/`，39 MB / 19 文件，`version.json = 0.7.0+11`） | ✅ 可构建 |
-| 8 | Android APK 构建 | `bash scripts/build-android-local.sh` | 见 §4 / §6（本次执行，结果回填） | 见 §4 |
+| 8 | Android APK 构建 | `bash scripts/build-android-local.sh` | **✓ 成功**：`dist/reader-android-arm64-v0.7.0.apk`，**48,055,665 B（46 MB）**；release manifest 合并含 `INTERNET` + `TTS_SERVICE`（保留 `PROCESS_TEXT`），native-code `arm64-v8a/armeabi-v7a/x86_64`；`aapt2 dump badging` → `versionCode=11 versionName=0.7.0` | ✅ 已构建（详见 §6） |
 
 **与阶段3/4 数字一致性**：cargo 由阶段3 的 217 → 阶段4/本次 **221**（阶段4 新增 4 个测试模块用例，
 `04-coverage.md §8` 已说明，本次一致）；flutter 普通口径 100→106→本次 **106**（阶段4/5a 新增
@@ -162,7 +162,7 @@
 | **版本号** | `0.7.0+11`（`app/pubspec.yaml`） | ✅ |
 | **源码** | 分支 `wf/REQ-006-tts-online-translate`；`e2e5798`（feat）、`6b91de7`（test）、`0eb667c`（chore 清理）、`4b3c49c`（test 产品验收）、本交付提交 | ✅ |
 | **Linux 可执行产物** | `app/build/linux/x64/release/bundle/`：`reader_app` + `lib/libapp.so` + `lib/libflutter_linux_gtk.so` + `data/`，**39 MB / 19 文件**，`data/flutter_assets/version.json = {"version":"0.7.0","build_number":"11"}`（**不入库**：`app/.gitignore` `/build/`） | ✅ 已构建 |
-| **Android APK** | `dist/reader-android-arm64-v0.7.0.apk`（`dist/` 已 gitignore，`git check-ignore` 确认；仅登记路径不入库） | 见 §6 回填 |
+| **Android APK** | `dist/reader-android-arm64-v0.7.0.apk`，**48,055,665 B（46 MB）**，`versionName=0.7.0 / versionCode=11`；`dist/` 已 gitignore（`git check-ignore` 确认），仅登记路径不入库 | ✅ 已构建 |
 | **质量报告** | `workflow/reports/ddd-req006-delivery.md`（违规=0）、`workflow/reports/crap-req006-delivery.md`（FAIL=0/WARN=7/PASS=249）、`workflow/reports/coverage-req006.json`、`04-mutation.md` 原始结果 `/tmp/opencode/mutants-req006-*` | ✅ |
 | **产品验收** | `workflow/backlog/REQ-006-tts-online-translate/05b-product-preview.md` + `product-preview.manifest.json` + `app/screenshots/*.png` | ✅ |
 
@@ -177,7 +177,17 @@
 - 命令：`bash scripts/build-android-local.sh`（本机适配：JDK21 `/usr/lib/jvm/java-21-openjdk-amd64`、
   Android SDK `/root/android-sdk`、NDK r27；交叉编译 3 ABI → jniLibs → `flutter build apk --release
   --target-platform android-arm64` → 归档 `dist/reader-android-arm64-v${VER}.apk`）。
-- 结果：_（构建中，成功/失败与产物路径、大小在本节回填后二次提交）_
+- 结果：**✓ 成功**。
+  - 产物：`/root/reader/dist/reader-android-arm64-v0.7.0.apk`，**48,055,665 B（46 MB）**（构建日志 `48.1MB`）。
+  - 实际 NDK：`/root/android-sdk/ndk/28.2.13676358`（脚本按 `sort -V` 取最新；r27 亦具备同一套 clang 工具）。
+    Rust 三目标 `aarch64/armv7/x86_64-linux-android` std 均在位（`rustup target add` 因文件冲突回滚，
+    但 std 已存在、交叉编译成功，见日志 `Finished release`）。
+  - 产物校验（`aapt2`，build-tools 36.0.0）：
+    - `package: com.reader.reader_app versionCode='11' versionName='0.7.0' compileSdkVersion='36'`；
+    - `uses-permission: android.permission.INTERNET`（release 合并生效，US-2）；
+    - `queries` 含 `android.intent.action.TTS_SERVICE` 且保留 `PROCESS_TEXT`（release 合并生效，US-1）；
+    - `native-code: 'arm64-v8a' 'armeabi-v7a' 'x86_64'`（三 ABI `.so` 均打包；arm64 为 7,128,520 B）。
+  - 日志：`/tmp/opencode/build-android-req006.log`。
 
 ---
 
