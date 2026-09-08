@@ -596,7 +596,7 @@ impl TranslationService {
             .find(|p| p.name() == name)
             .map(|p| p.key_is_missing(key.as_deref()))
             .unwrap_or(key.is_none());
-        let mut primary_error: Option<Error>;
+        let primary_error: Option<Error>;
         if missing {
             primary_error = Some(Error::NotConfigured(format!(
                 "{name} 未配置 API Key，请先在设置中配置"
