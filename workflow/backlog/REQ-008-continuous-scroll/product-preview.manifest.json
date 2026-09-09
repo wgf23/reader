@@ -1,0 +1,86 @@
+{
+  "req": "REQ-008",
+  "product": "滚动模式连续滚动阅读（章节无缝衔接）—— 真实渲染截图对照",
+  "screens": [
+    {
+      "id": "S1",
+      "name": "阅读器 · 沉浸态（连续流）",
+      "device": "mobile",
+      "design": {
+        "svg": "docs/wireframes/reader-ui-v2/01-immersive.svg",
+        "viewport": "900x640",
+        "label": "设计稿 v2 · 沉浸阅读态（线框 01-immersive）"
+      },
+      "impl": {
+        "png": "app/screenshots/reader_immersive.png",
+        "viewport": "390x844",
+        "label": "真实渲染 · 沉浸态（无 Chrome 全屏正文）"
+      },
+      "intent": [
+        "沉浸阅读态默认无任何常驻 Chrome（无 AppBar/底栏），正文全屏",
+        "REQ-008：正文改为 CustomScrollView + SliverList.builder 按章懒构建的连续流；单章排版与既有逐字一致（SliverPadding 等价原 padding，无章间距）",
+        "中部 1/3 点击呼出/隐藏顶底栏；左右 15% 边缘热区仅分页模式翻页；长按/选中出工具条（均零改动）"
+      ],
+      "acceptance": [
+        "无常驻顶栏/底栏（沉浸态）",
+        "正文全屏铺满视口，单章视觉与改版前一致（golden 零 diff）",
+        "无新增控件/颜色/字号（连续流不引入新视觉元素）",
+        "中部点击/长按/边缘热区语义保留"
+      ]
+    },
+    {
+      "id": "S2",
+      "name": "阅读器 · 呼出顶底栏",
+      "device": "mobile",
+      "design": {
+        "svg": "docs/wireframes/reader-ui-v2/02-menus.svg",
+        "viewport": "900x640",
+        "label": "设计稿 v2 · 呼出工具栏态（线框 02-menus）"
+      },
+      "impl": {
+        "png": "app/screenshots/reader_chrome.png",
+        "viewport": "390x844",
+        "label": "真实渲染 · 真实 ReaderPage 点击正文文字呼出（非合成页）"
+      },
+      "intent": [
+        "顶栏：← 返回 / 书名 · 章节名 / ⋯ 更多",
+        "底栏：上一章 · ☰目录 · 可拖进度条 · 书签 · Aa · 下一章",
+        "REQ-008：顶栏章节名与底栏进度条随「可见章」更新（顶部锚点 + 8px 迟滞 + 触底锁）；上一章/下一章/目录改为滚动定位到目标章",
+        "布局零改动（控件集合/位置/尺寸不变，仅数据随可见章刷新）"
+      ],
+      "acceptance": [
+        "顶栏返回 / 书名·章节 / 更多可见",
+        "底栏上一章 / 目录 / 进度条 / 书签 / Aa / 下一章齐全",
+        "章节名/进度条反映当前可见章（widget 测试 US-5 佐证）",
+        "无自创布局（控件集合与线框一致）"
+      ]
+    },
+    {
+      "id": "S3",
+      "name": "阅读器 · 连续滚动到第二章（REQ-008 核心）",
+      "device": "mobile",
+      "design": {
+        "svg": "docs/wireframes/reader-ui-v2/01-immersive.svg",
+        "viewport": "900x640",
+        "label": "设计稿 v2 · 沉浸阅读态（连续滚动沿用同一正文排版）"
+      },
+      "impl": {
+        "png": "app/screenshots/reader_continuous_scroll_chapter2.png",
+        "viewport": "390x844",
+        "label": "真实渲染 · 真实 ReaderPage 反复 drag 滚到第二章（未点「下一章」）"
+      },
+      "intent": [
+        "滚动模式一章到底自动接续下一章：第二章标题随滚动进入视口，无需点底栏「下一章」",
+        "全程真实 ReaderPage + 真实 drag/fling（integration_test/reader_continuous_scroll_test.dart US-1；禁止合成页，no_synthetic_chrome_test 守卫）",
+        "最后一章自然停止（US-2）；进度写入可见章 href + 章内 progression（US-3）；重开跨章恢复（US-4）；听书跨章返回定位一致（US-8）",
+        "零新增视觉元素：唯一行为性增量 = 章与章之间 32px 间距（复用正文留白节奏）"
+      ],
+      "acceptance": [
+        "第二章标题/正文进入视口（findsOneWidget）",
+        "期间未点击「下一章」（顶底栏仍隐藏，由集成测试断言）",
+        "无新增控件/颜色/字号（仅 32px 章间距）",
+        "连续滚动由真实集成测试验证（非合成页）"
+      ]
+    }
+  ]
+}

@@ -42,6 +42,52 @@ class _LongFakeBackend extends FakeBackend {
       );
 }
 
+/// REQ-008：连续滚动截图语料（第一章足够长 → 第二章靠真实滚动进入视口）。
+const String _continuousCh1 = '第一章的正文从这里开始。'
+    '他沿着河岸慢慢走着，看水面上浮起的薄雾，听远处传来的钟声。'
+    '这样的清晨他已经经历过无数次，可每一次都像第一次那样新鲜。'
+    '他想起年轻时读过的那些书，想起书里写过的人和事，'
+    '想起自己曾经以为永远不会忘记的名字，如今也只剩一个模糊的轮廓。'
+    '河水向东流去，不曾回头，就像时间一样，把一切都带向远方。';
+
+const String _continuousCh2Title = '第二章 · 起风了';
+const String _continuousCh2 = '风从山谷里吹来，带着青草与泥土的气息。'
+    '他站在窗前，望着远处起伏的山脊，忽然觉得，'
+    '故事其实才刚刚开始。';
+
+final String _continuousCh1Long = List<String>.generate(
+  40,
+  (i) => '第${i + 1}段：$_continuousCh1',
+).join();
+
+/// 两章长文本后端：第一章很长，真实滚动后才能看到第二章。
+class _ContinuousScrollShotBackend extends FakeBackend {
+  @override
+  Future<BookViewData> openBook(String id) async => BookViewData(
+        id: 'b1',
+        title: '测试书',
+        chapters: [
+          ChapterData(title: '第一章', text: _continuousCh1Long),
+          const ChapterData(title: _continuousCh2Title, text: _continuousCh2),
+        ],
+      );
+}
+
+/// 真实 drag 直到目标进入视口（REQ-008 连续滚动截图用）。
+Future<void> _scrollUntilVisible(WidgetTester tester, Finder finder) async {
+  final viewportHeight =
+      tester.view.physicalSize.height / tester.view.devicePixelRatio;
+  for (var i = 0; i < 200; i++) {
+    if (finder.evaluate().isNotEmpty) {
+      final dy = tester.getTopLeft(finder).dy;
+      if (dy >= 0 && dy < viewportHeight) return;
+    }
+    await tester.drag(find.byType(CustomScrollView), const Offset(0, -400));
+    await tester.pump();
+  }
+  fail('真实滚动未能使目标进入视口');
+}
+
 /// 听书页截图语料：与 [FakeTtsBackend] 句表一致，标题/文风贴合线框 09。
 const Map<String, List<String>> _listenSentences = {
   'chapter_0001.xhtml': [
@@ -144,6 +190,19 @@ void main() {
     _setPhone(tester);
     await tester.pumpWidget(reader());
     await _shot(tester, 'reader_immersive');
+  });
+
+  testWidgets('screenshot 阅读器·连续滚动到第二章（REQ-008）', (tester) async {
+    _setPhone(tester);
+    await tester.pumpWidget(_pack(ReaderPage(
+      bookId: 'b1',
+      bookTitle: '测试书',
+      backend: _ContinuousScrollShotBackend(),
+    )));
+    await tester.pumpAndSettle();
+    // 真实 drag 滚到第二章（无需点"下一章"），第二章标题进入视口后截图。
+    await _scrollUntilVisible(tester, find.text(_continuousCh2Title));
+    await _shot(tester, 'reader_continuous_scroll_chapter2');
   });
 
   testWidgets('screenshot 阅读器·呼出顶底栏（真实点击正文文字）', (tester) async {

@@ -136,7 +136,7 @@ void main() {
     await tester.pumpWidget(_reader(backend: _VeryLongBackend()));
     await _settle(tester);
 
-    final scrollable = find.byType(SingleChildScrollView);
+    final scrollable = find.byType(CustomScrollView);
     expect(scrollable, findsOneWidget);
     await tester.drag(scrollable, const Offset(0, -200));
     await _settle(tester);
