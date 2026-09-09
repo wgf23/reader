@@ -336,4 +336,35 @@ mod tests {
         store.remove_book("b1").unwrap();
         assert!(repo.list("b1").unwrap().is_empty(), "删书应级联清笔记");
     }
+
+    #[test]
+    fn delete_existing_row_is_removed() {
+        let dir = tempfile::tempdir().unwrap();
+        let (mut repo, _conn) = repo_with_book(dir.path());
+        repo.insert(&sample("a1", "b1", "h1", NoteKind::Highlight, 1)).unwrap();
+        assert!(repo.get("a1").unwrap().is_some());
+        repo.delete("a1").unwrap();
+        assert!(repo.get("a1").unwrap().is_none(), "delete 应真正删除已存在行");
+        assert!(repo.list("b1").unwrap().is_empty());
+    }
+
+    #[test]
+    fn delete_all_with_kind_filter_returns_actual_count() {
+        let dir = tempfile::tempdir().unwrap();
+        let (mut repo, _conn) = repo_with_book(dir.path());
+        repo.insert(&sample("a1", "b1", "h1", NoteKind::Highlight, 1)).unwrap();
+        repo.insert(&sample("a2", "b1", "h1", NoteKind::Underline, 2)).unwrap();
+        repo.insert(&sample("a3", "b1", "h1", NoteKind::Note, 3)).unwrap();
+        assert_eq!(
+            repo.delete_all("b1", Some(&[NoteKind::Highlight])).unwrap(),
+            1
+        );
+        assert_eq!(repo.list("b1").unwrap().len(), 2);
+        assert_eq!(
+            repo.delete_all("b1", Some(&[NoteKind::Note, NoteKind::Underline]))
+                .unwrap(),
+            2
+        );
+        assert!(repo.list("b1").unwrap().is_empty());
+    }
 }

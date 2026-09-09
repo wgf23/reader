@@ -341,4 +341,99 @@ mod tests {
         };
         assert!(LocatorResolver::text_at("abc", &loc).is_err());
     }
+
+    #[test]
+    fn text_at_rejects_inverted_anchor() {
+        let loc = Locator {
+            book_id: "b1".to_string(),
+            href: "c1.xhtml".to_string(),
+            progression: 0.0,
+            total_progression: 0.0,
+            text: Some(TextAnchor {
+                snippet: "x".to_string(),
+                start: 5,
+                end: 2,
+            }),
+            cfi: None,
+            page: None,
+            rect: None,
+        };
+        assert!(LocatorResolver::text_at("abcdefgh", &loc).is_err());
+    }
+
+    #[test]
+    fn text_at_zero_width_anchor_returns_empty() {
+        let loc = Locator {
+            book_id: "b1".to_string(),
+            href: "c1.xhtml".to_string(),
+            progression: 0.0,
+            total_progression: 0.0,
+            text: Some(TextAnchor {
+                snippet: String::new(),
+                start: 3,
+                end: 3,
+            }),
+            cfi: None,
+            page: None,
+            rect: None,
+        };
+        assert_eq!(LocatorResolver::text_at("abcdefgh", &loc).unwrap(), "");
+    }
+
+    #[test]
+    fn progression_is_start_over_total() {
+        // 很(0)久(1)以(2)前(3)，(4)有(5)… total=10，start=5 → progression=0.5
+        let loc = LocatorResolver::from_selection(
+            "很久以前，有一座山。",
+            &"b1".to_string(),
+            "c1.xhtml",
+            &sel("有一座山", 0.5),
+        )
+        .unwrap();
+        assert!((loc.progression - 0.5).abs() < 1e-6, "progression=start/total");
+        assert_eq!(loc.text.unwrap().start, 5);
+    }
+
+    #[test]
+    fn tie_prefers_earliest_occurrence() {
+        // 两处“城市”起点 0 与 6，total=8；目标取中点使两处得分相等 → 应取最早
+        let text = "城市AAAA城市";
+        let total = utf16_len(text) as f32;
+        let target = 6.0 / (2.0 * total);
+        let loc = LocatorResolver::from_selection(
+            text,
+            &"b1".to_string(),
+            "c1.xhtml",
+            &sel("城市", target),
+        )
+        .unwrap();
+        assert_eq!(loc.text.unwrap().start, 0, "并列时应取最早出现位置");
+    }
+
+    #[test]
+    fn needle_longer_than_text_no_match_no_panic() {
+        let loc = LocatorResolver::from_selection(
+            "ab",
+            &"b1".to_string(),
+            "c1.xhtml",
+            &sel("abcdef", 0.5),
+        )
+        .unwrap();
+        assert!(loc.text.is_none());
+        assert!((loc.progression - 0.5).abs() < 1e-6);
+    }
+
+    #[test]
+    fn needle_equals_text_length_matches() {
+        let loc = LocatorResolver::from_selection(
+            "城市",
+            &"b1".to_string(),
+            "c1.xhtml",
+            &sel("城市", 0.0),
+        )
+        .unwrap();
+        let a = loc.text.clone().expect("等长文本应命中");
+        assert_eq!((a.start, a.end), (0, 2));
+        assert_eq!(LocatorResolver::text_at("城市", &loc).unwrap(), "城市");
+    }
 }

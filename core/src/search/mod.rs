@@ -235,15 +235,18 @@ mod tests {
         rows: Vec<SearchRow>,
         last_expr: Option<String>,
         last_needle: Option<String>,
+        indexed: bool,
+        replace_calls: usize,
     }
 
     struct Shared(Arc<Mutex<MemSearch>>);
     impl SearchIndexRepository for Shared {
         fn replace_book(&mut self, _b: &str, _c: &[IndexedChapter]) -> Result<()> {
+            self.0.lock().unwrap().replace_calls += 1;
             Ok(())
         }
         fn is_indexed(&self, _b: &str) -> Result<bool> {
-            Ok(true)
+            Ok(self.0.lock().unwrap().indexed)
         }
         fn remove_book(&mut self, _b: &str) -> Result<()> {
             Ok(())
@@ -368,5 +371,57 @@ mod tests {
         mem.lock().unwrap().last_expr = None;
         assert!(svc.query("   ", &SearchScope::default()).unwrap().is_empty());
         assert!(mem.lock().unwrap().last_expr.is_none());
+    }
+
+    #[test]
+    fn service_index_book_and_is_indexed_delegate_to_repo() {
+        let mem = Arc::new(Mutex::new(MemSearch::default()));
+        let mut svc = SearchService::new(Box::new(Shared(mem.clone())));
+        assert!(!svc.is_indexed("b1").unwrap(), "未索引应为 false");
+        svc.index_book("b1", &[]).unwrap();
+        assert_eq!(mem.lock().unwrap().replace_calls, 1, "应委托 replace_book");
+        mem.lock().unwrap().indexed = true;
+        assert!(svc.is_indexed("b1").unwrap(), "已索引应为 true");
+    }
+
+    #[test]
+    fn extract_snippet_case_insensitive_ascii_but_not_other_letters() {
+        // 大小写不同 → 命中
+        let (_s, r) = extract_snippet("Hello", "hello", 0);
+        assert_eq!(r.len(), 1);
+        // 不同 ASCII 字母 → 不命中（eq_ci 第二个 && 不可退化为 ||）
+        let (_s2, r2) = extract_snippet("aX", "aY", 0);
+        assert!(r2.is_empty(), "不同字母不应判等");
+        // ASCII 与非 ASCII 混排不误判
+        let (_s3, r3) = extract_snippet("a城", "aX", 0);
+        assert!(r3.is_empty());
+    }
+
+    #[test]
+    fn extract_snippet_empty_needle_and_length_edges() {
+        // 空 query → 无命中区间（find_ci 空 needle 短路）
+        let (snip, r) = extract_snippet("abc", "", 2);
+        assert_eq!(snip, "ab");
+        assert!(r.is_empty(), "空 needle 不应匹配任意位置");
+        // needle 比正文长 → 无命中且不 panic
+        let (snip2, r2) = extract_snippet("ab", "abcdef", 1);
+        assert_eq!(snip2, "a");
+        assert!(r2.is_empty());
+        // needle 与正文等长且命中 → 区间覆盖全文
+        let (snip3, r3) = extract_snippet("ab", "ab", 0);
+        assert_eq!(snip3, "ab");
+        assert_eq!(r3.len(), 1);
+        assert_eq!((r3[0].start, r3[0].end), (0, 2));
+    }
+
+    #[test]
+    fn extract_snippet_multi_term_query_and_partial_occurrence() {
+        // 多词查询：空格分词后每个词独立给区间
+        let (_s, r) = extract_snippet("城市与记忆", "城市 记忆", 10);
+        assert_eq!(r.len(), 2, "两个词应各给一个区间");
+        // 窗口外/半开区间的命中不应被纳入（&& 不可退化为 ||）
+        let (snip, r2) = extract_snippet("城市x城市", "城市", 1);
+        assert_eq!(snip, "城市x");
+        assert_eq!(r2.len(), 1, "部分落在窗口外的命中应被排除");
     }
 }

@@ -598,6 +598,118 @@ mod tests {
     }
 
     #[test]
+    fn format_unix_reference_dates_across_centuries() {
+        // 覆盖闰年/世纪边界/负时间戳，约束 civil_from_days 的漂移修正项
+        for (ts, want) in [
+            (-2_208_988_800_i64, "1900-01-01 00:00:00"),
+            (-86_400, "1969-12-31 00:00:00"),
+            (0, "1970-01-01 00:00:00"),
+            (5_097_600, "1970-03-01 00:00:00"),
+            (946_684_800, "2000-01-01 00:00:00"),
+            (951_782_400, "2000-02-29 00:00:00"),
+            (1_000_000_000, "2001-09-09 01:46:40"),
+            (1_234_567_890, "2009-02-13 23:31:30"),
+            (1_600_000_000, "2020-09-13 12:26:40"),
+            (2_000_000_000, "2033-05-18 03:33:20"),
+            (2_147_483_647, "2038-01-19 03:14:07"),
+            (3_000_000_000, "2065-01-24 05:20:00"),
+            (4_000_000_000, "2096-10-02 07:06:40"),
+            (4_102_444_800, "2100-01-01 00:00:00"),
+            (253_402_300_799, "9999-12-31 23:59:59"),
+            // 早期日期约束 civil_from_days 的漂移修正项（`+`/`-` 不可等价替换）
+            (-62_035_891_200, "0004-02-29 00:00:00"),
+            (-59_006_361_600, "0100-03-01 00:00:00"),
+            (-62_135_596_800, "0001-01-01 00:00:00"),
+        ] {
+            assert_eq!(format_unix(ts), want, "unix {ts} 格式化不一致");
+        }
+    }
+
+    #[test]
+    fn create_trims_color_and_sets_real_timestamp() {
+        let (mut svc, _repo) = service();
+        let blank = svc
+            .create(
+                "b1",
+                locator("c1.xhtml", 0.1, "x"),
+                NoteKind::Highlight,
+                Some("   ".to_string()),
+                None,
+            )
+            .unwrap();
+        assert_eq!(blank.color, None, "空白颜色应视为 None");
+        let valid = svc
+            .create(
+                "b1",
+                locator("c1.xhtml", 0.2, "y"),
+                NoteKind::Highlight,
+                Some("#FBC02D".to_string()),
+                None,
+            )
+            .unwrap();
+        assert_eq!(valid.color.as_deref(), Some("#FBC02D"));
+        assert!(
+            valid.created_at > 1_600_000_000,
+            "created_at 应为真实 unix 秒，实际 {}",
+            valid.created_at
+        );
+        assert!(valid.updated_at >= valid.created_at);
+    }
+
+    #[test]
+    fn delete_many_and_delete_all_return_actual_counts() {
+        let (mut svc, _repo) = service();
+        let a = svc
+            .create("b1", locator("c1.xhtml", 0.1, "a"), NoteKind::Highlight, Some("#FBC02D".to_string()), None)
+            .unwrap();
+        svc.create("b1", locator("c1.xhtml", 0.2, "b"), NoteKind::Underline, Some("#1A73E8".to_string()), None)
+            .unwrap();
+        svc.create("b1", locator("c2.xhtml", 0.3, "c"), NoteKind::Note, None, Some("批注".to_string()))
+            .unwrap();
+        assert_eq!(svc.delete_many(&[a.id.clone()]).unwrap(), 1);
+        assert_eq!(svc.delete_many(&[a.id.clone()]).unwrap(), 0, "重复删除为 0");
+        assert_eq!(svc.delete_all("b1").unwrap(), 2);
+        assert_eq!(svc.delete_all("b1").unwrap(), 0);
+    }
+
+    #[test]
+    fn toggle_bookmark_builds_anchor_from_snippet_when_missing() {
+        let (mut svc, repo) = service();
+        let no_text = Locator {
+            book_id: "b1".to_string(),
+            href: "c1.xhtml".to_string(),
+            progression: 0.4,
+            total_progression: 0.4,
+            text: None,
+            cfi: None,
+            page: None,
+            rect: None,
+        };
+        let (on, id) = svc
+            .toggle_bookmark("b1", no_text, Some("  位置  ".to_string()))
+            .unwrap();
+        assert!(on);
+        let stored = repo.lock().unwrap().get(&id.unwrap()).unwrap().unwrap();
+        let anchor = stored.locator.text.expect("应据 snippet 补文本锚");
+        assert_eq!(anchor.snippet, "位置");
+        assert_eq!(anchor.start, 0);
+        assert_eq!(anchor.end, 2);
+        // 无 snippet 且无文本锚 → 仍可建书签（text 保持 None）
+        let no_text2 = Locator {
+            book_id: "b1".to_string(),
+            href: "c2.xhtml".to_string(),
+            progression: 0.5,
+            total_progression: 0.5,
+            text: None,
+            cfi: None,
+            page: None,
+            rect: None,
+        };
+        let (on2, _) = svc.toggle_bookmark("b1", no_text2, None).unwrap();
+        assert!(on2);
+    }
+
+    #[test]
     fn text_range_serde_roundtrip() {
         let r = TextRange { start: 3, end: 7 };
         let s = serde_json::to_string(&r).unwrap();

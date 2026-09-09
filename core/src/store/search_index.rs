@@ -253,6 +253,57 @@ mod tests {
     }
 
     #[test]
+    fn query_scope_with_book_and_format_combined() {
+        let (_dir, mut repo) = setup();
+        repo.replace_book("b1", &[chapter("c1.xhtml", "城市", "看不见的城市。")])
+            .unwrap();
+        repo.replace_book("b2", &[chapter("c1.xhtml", "城市", "马可瓦尔多里也有城市。")])
+            .unwrap();
+        let expr = crate::search::build_match_expr("城市").unwrap();
+
+        // book_id + formats 同时给出：占位符递增不得冲突
+        let both = repo
+            .query_fts(
+                &expr,
+                &SearchScope {
+                    book_id: Some("b1".to_string()),
+                    formats: vec!["epub".to_string()],
+                },
+                10,
+            )
+            .unwrap();
+        assert_eq!(both.len(), 1, "b1(epub) 命中");
+        assert_eq!(both[0].book_id, "b1");
+
+        // 书匹配但格式不匹配 → 空
+        let none = repo
+            .query_fts(
+                &expr,
+                &SearchScope {
+                    book_id: Some("b1".to_string()),
+                    formats: vec!["mobi".to_string()],
+                },
+                10,
+            )
+            .unwrap();
+        assert!(none.is_empty(), "b1 不是 mobi，应无命中");
+
+        // 子串回退路径同样组合
+        let sub = repo
+            .query_substring(
+                "城",
+                &SearchScope {
+                    book_id: Some("b1".to_string()),
+                    formats: vec!["epub".to_string()],
+                },
+                10,
+            )
+            .unwrap();
+        assert_eq!(sub.len(), 1);
+        assert_eq!(sub[0].book_id, "b1");
+    }
+
+    #[test]
     fn query_substring_single_char_and_special_chars_safe() {
         let (_dir, mut repo) = setup();
         repo.replace_book("b1", &[chapter("c1.xhtml", "城市", "看不见的城市，卡尔维诺写道。")])

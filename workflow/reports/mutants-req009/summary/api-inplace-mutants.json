@@ -1,0 +1,1250 @@
+[
+  {
+    "diff": "--- src/api.rs\n+++ replace notes_service -> std::result::Result<&'static Mutex<AnnotationService>, String> with Ok(Box::leak(Box::new(Mutex::new(Default::default()))))\n@@ -229,19 +229,17 @@\n \n fn translation_service() -> std::result::Result<&'static Mutex<TranslationService>, String> {\n     TRANSLATION\n         .get()\n         .ok_or_else(|| \"翻译未初始化：请先调用 library_open\".to_string())\n }\n \n fn notes_service() -> std::result::Result<&'static Mutex<AnnotationService>, String> {\n-    NOTES\n-        .get()\n-        .ok_or_else(|| \"笔记未初始化：请先调用 library_open\".to_string())\n+    Ok(Box::leak(Box::new(Mutex::new(Default::default())))) /* ~ changed by cargo-mutants ~ */\n }\n \n fn search_service() -> std::result::Result<&'static Mutex<SearchService>, String> {\n     SEARCH\n         .get()\n         .ok_or_else(|| \"搜索未初始化：请先调用 library_open\".to_string())\n }\n \n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "notes_service",
+      "return_type": "-> std::result::Result<&'static Mutex<AnnotationService>, String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 240
+        },
+        "start": {
+          "column": 1,
+          "line": 236
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:237:5: replace notes_service -> std::result::Result<&'static Mutex<AnnotationService>, String> with Ok(Box::leak(Box::new(Mutex::new(Default::default()))))",
+    "package": "reader_core",
+    "replacement": "Ok(Box::leak(Box::new(Mutex::new(Default::default()))))",
+    "span": {
+      "end": {
+        "column": 63,
+        "line": 239
+      },
+      "start": {
+        "column": 5,
+        "line": 237
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace search_service -> std::result::Result<&'static Mutex<SearchService>, String> with Ok(Box::leak(Box::new(Mutex::new(Default::default()))))\n@@ -235,19 +235,17 @@\n \n fn notes_service() -> std::result::Result<&'static Mutex<AnnotationService>, String> {\n     NOTES\n         .get()\n         .ok_or_else(|| \"笔记未初始化：请先调用 library_open\".to_string())\n }\n \n fn search_service() -> std::result::Result<&'static Mutex<SearchService>, String> {\n-    SEARCH\n-        .get()\n-        .ok_or_else(|| \"搜索未初始化：请先调用 library_open\".to_string())\n+    Ok(Box::leak(Box::new(Mutex::new(Default::default())))) /* ~ changed by cargo-mutants ~ */\n }\n \n fn err_msg<E: std::fmt::Display>(e: E) -> String {\n     e.to_string()\n }\n \n // ---------- 书库 API ----------\n \n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "search_service",
+      "return_type": "-> std::result::Result<&'static Mutex<SearchService>, String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 246
+        },
+        "start": {
+          "column": 1,
+          "line": 242
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:243:5: replace search_service -> std::result::Result<&'static Mutex<SearchService>, String> with Ok(Box::leak(Box::new(Mutex::new(Default::default()))))",
+    "package": "reader_core",
+    "replacement": "Ok(Box::leak(Box::new(Mutex::new(Default::default()))))",
+    "span": {
+      "end": {
+        "column": 63,
+        "line": 245
+      },
+      "start": {
+        "column": 5,
+        "line": 243
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace library_open -> std::result::Result<(), String> with Ok(())\n@@ -249,51 +249,17 @@\n     e.to_string()\n }\n \n // ---------- 书库 API ----------\n \n /// 打开（或创建）书库，指定数据目录。应用启动时调用一次。\n /// 装配：SERVICE（既有）+ DICT/TRANSLATION 双单例（REQ-003 02-design §4.1）。\n pub fn library_open(data_dir: String) -> std::result::Result<(), String> {\n-    let store = Store::open(Path::new(&data_dir)).map_err(err_msg)?;\n-    let _ = SERVICE.set(Mutex::new(LibraryService::new(store)));\n-\n-    let cache_repo =\n-        Box::new(TranslationRepo::open(Path::new(&data_dir)).map_err(err_msg)?)\n-            as Box<dyn TranslationCacheRepository + Send>;\n-    let config_repo = Box::new(TranslationRepo::open(Path::new(&data_dir)).map_err(err_msg)?)\n-        as Box<dyn ProviderConfig + Send>;\n-    let _ = DICT.set(Mutex::new(DictService::new(Path::new(&data_dir)).map_err(err_msg)?));\n-    // 离线翻译 Provider：查词闭包锁定 DICT 静态（避免 domain→interface 依赖）\n-    let offline = OfflineProvider::new(Box::new(|word, dict_id| {\n-        let svc = dict_service().map_err(Error::Other)?;\n-        let svc = svc\n-            .lock()\n-            .map_err(|_| Error::Other(\"词典锁错误\".to_string()))?;\n-        svc.lookup(word, dict_id)\n-    }));\n-    let _ = TRANSLATION.set(Mutex::new(TranslationService::new(\n-        cache_repo,\n-        config_repo,\n-        vec![\n-            Box::new(offline),          // 默认（内置词库离线翻译，开箱即用）\n-            Box::new(DeepLProvider::new()),\n-            Box::new(EchoProvider),\n-        ],\n-    )));\n-\n-    // REQ-009：笔记/搜索单例（各自第二连接；契约在 types，实现在 store）。\n-    let ann_repo = Box::new(AnnotationRepo::open(Path::new(&data_dir)).map_err(err_msg)?)\n-        as Box<dyn AnnotationRepository + Send>;\n-    let idx_repo = Box::new(SearchIndexRepo::open(Path::new(&data_dir)).map_err(err_msg)?)\n-        as Box<dyn SearchIndexRepository + Send>;\n-    let _ = NOTES.set(Mutex::new(AnnotationService::new(ann_repo)));\n-    let _ = SEARCH.set(Mutex::new(SearchService::new(idx_repo)));\n-    Ok(())\n+    Ok(()) /* ~ changed by cargo-mutants ~ */\n }\n \n /// 导入一个书籍文件（解析 → 规范 EPUB 缓存 → 入库 + 建搜索索引），返回书库条目。\n pub fn library_import(path: String) -> std::result::Result<BookSummary, String> {\n     let rec = {\n         let mut svc = service()?.lock().map_err(|_| \"服务锁错误\".to_string())?;\n         svc.import_file(Path::new(&path)).map_err(err_msg)?\n     };\n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "library_open",
+      "return_type": "-> std::result::Result<(), String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 292
+        },
+        "start": {
+          "column": 1,
+          "line": 254
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:257:5: replace library_open -> std::result::Result<(), String> with Ok(())",
+    "package": "reader_core",
+    "replacement": "Ok(())",
+    "span": {
+      "end": {
+        "column": 11,
+        "line": 291
+      },
+      "start": {
+        "column": 5,
+        "line": 257
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace library_import -> std::result::Result<BookSummary, String> with Ok(Default::default())\n@@ -288,23 +288,17 @@\n         as Box<dyn SearchIndexRepository + Send>;\n     let _ = NOTES.set(Mutex::new(AnnotationService::new(ann_repo)));\n     let _ = SEARCH.set(Mutex::new(SearchService::new(idx_repo)));\n     Ok(())\n }\n \n /// 导入一个书籍文件（解析 → 规范 EPUB 缓存 → 入库 + 建搜索索引），返回书库条目。\n pub fn library_import(path: String) -> std::result::Result<BookSummary, String> {\n-    let rec = {\n-        let mut svc = service()?.lock().map_err(|_| \"服务锁错误\".to_string())?;\n-        svc.import_file(Path::new(&path)).map_err(err_msg)?\n-    };\n-    // REQ-009 D5：导入即索引（US-21）；失败不阻断导入，搜索时懒回填。\n-    let _ = ensure_indexed(&rec.id);\n-    Ok(to_summary(&rec))\n+    Ok(Default::default()) /* ~ changed by cargo-mutants ~ */\n }\n \n /// 书架列表（按添加时间倒序）\n pub fn library_list() -> std::result::Result<Vec<BookSummary>, String> {\n     let svc = service()?.lock().map_err(|_| \"服务锁错误\".to_string())?;\n     let books = svc.list().map_err(err_msg)?;\n     Ok(books.iter().map(to_summary).collect())\n }\n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "library_import",
+      "return_type": "-> std::result::Result<BookSummary, String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 303
+        },
+        "start": {
+          "column": 1,
+          "line": 294
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:296:5: replace library_import -> std::result::Result<BookSummary, String> with Ok(Default::default())",
+    "package": "reader_core",
+    "replacement": "Ok(Default::default())",
+    "span": {
+      "end": {
+        "column": 25,
+        "line": 302
+      },
+      "start": {
+        "column": 5,
+        "line": 296
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace book_open -> std::result::Result<BookView, String> with Ok(Default::default())\n@@ -312,31 +312,17 @@\n /// 删除书籍\n pub fn library_remove(id: String) -> std::result::Result<(), String> {\n     let mut svc = service()?.lock().map_err(|_| \"服务锁错误\".to_string())?;\n     svc.remove(&id).map_err(err_msg)\n }\n \n /// 打开书：返回元数据与全部章节文本（P0 滚动模式直接渲染）\n pub fn book_open(id: String) -> std::result::Result<BookView, String> {\n-    let svc = service()?.lock().map_err(|_| \"服务锁错误\".to_string())?;\n-    let opened = svc.open_book(&id).map_err(err_msg)?;\n-    Ok(BookView {\n-        id: opened.record.id.clone(),\n-        title: opened.record.title.clone(),\n-        chapters: opened\n-            .chapters\n-            .iter()\n-            .map(|c| ChapterView {\n-                title: c.title.clone(),\n-                text: c.text.clone(),\n-                href: c.href.clone(),\n-            })\n-            .collect(),\n-    })\n+    Ok(Default::default()) /* ~ changed by cargo-mutants ~ */\n }\n \n /// 取规范 EPUB 中某章节的原始 HTML（WebView 分页渲染用，REQ-001）\n pub fn book_chapter_html(id: String, href: String) -> std::result::Result<String, String> {\n     let svc = service()?.lock().map_err(|_| \"服务锁错误\".to_string())?;\n     svc.chapter_html(&id, &href).map_err(err_msg)\n }\n \n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "book_open",
+      "return_type": "-> std::result::Result<BookView, String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 335
+        },
+        "start": {
+          "column": 1,
+          "line": 318
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:320:5: replace book_open -> std::result::Result<BookView, String> with Ok(Default::default())",
+    "package": "reader_core",
+    "replacement": "Ok(Default::default())",
+    "span": {
+      "end": {
+        "column": 7,
+        "line": 334
+      },
+      "start": {
+        "column": 5,
+        "line": 320
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace to_annotation_view -> AnnotationView with Default::default()\n@@ -637,31 +637,17 @@\n     svc.set_setting(KEY_AUTO_NEXT, if settings.auto_next { \"1\" } else { \"0\" })\n         .map_err(err_msg)?;\n     Ok(())\n }\n \n // ---------- REQ-009 笔记与搜索桥接（全部 async；FRB 池线程执行，UI 不阻塞） ----------\n \n fn to_annotation_view(a: &Annotation) -> AnnotationView {\n-    AnnotationView {\n-        id: a.id.clone(),\n-        book_id: a.book_id.clone(),\n-        kind: a.kind.as_str().to_string(),\n-        color: a.color.clone(),\n-        href: a.locator.href.clone(),\n-        progression: a.locator.progression,\n-        snippet: a.snippet.clone(),\n-        note_text: a.note_text.clone(),\n-        start: a.locator.text.as_ref().map(|t| t.start),\n-        end: a.locator.text.as_ref().map(|t| t.end),\n-        created_at: a.created_at,\n-        updated_at: a.updated_at,\n-        sync_status: a.sync_status.clone(),\n-    }\n+    Default::default() /* ~ changed by cargo-mutants ~ */\n }\n \n fn to_group_view(g: &NoteGroup) -> NoteGroupView {\n     NoteGroupView {\n         chapter_title: g.chapter_title.clone(),\n         href: g.href.clone(),\n         notes: g.notes.iter().map(to_annotation_view).collect(),\n     }\n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "to_annotation_view",
+      "return_type": "-> AnnotationView",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 660
+        },
+        "start": {
+          "column": 1,
+          "line": 644
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:645:5: replace to_annotation_view -> AnnotationView with Default::default()",
+    "package": "reader_core",
+    "replacement": "Default::default()",
+    "span": {
+      "end": {
+        "column": 6,
+        "line": 659
+      },
+      "start": {
+        "column": 5,
+        "line": 645
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace to_group_view -> NoteGroupView with Default::default()\n@@ -655,21 +655,17 @@\n         end: a.locator.text.as_ref().map(|t| t.end),\n         created_at: a.created_at,\n         updated_at: a.updated_at,\n         sync_status: a.sync_status.clone(),\n     }\n }\n \n fn to_group_view(g: &NoteGroup) -> NoteGroupView {\n-    NoteGroupView {\n-        chapter_title: g.chapter_title.clone(),\n-        href: g.href.clone(),\n-        notes: g.notes.iter().map(to_annotation_view).collect(),\n-    }\n+    Default::default() /* ~ changed by cargo-mutants ~ */\n }\n \n fn to_hit_view(h: &SearchHit) -> SearchHitView {\n     SearchHitView {\n         book_id: h.book_id.clone(),\n         book_title: h.book_title.clone(),\n         href: h.href.clone(),\n         chapter_title: h.chapter_title.clone(),\n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "to_group_view",
+      "return_type": "-> NoteGroupView",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 668
+        },
+        "start": {
+          "column": 1,
+          "line": 662
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:663:5: replace to_group_view -> NoteGroupView with Default::default()",
+    "package": "reader_core",
+    "replacement": "Default::default()",
+    "span": {
+      "end": {
+        "column": 6,
+        "line": 667
+      },
+      "start": {
+        "column": 5,
+        "line": 663
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace to_hit_view -> SearchHitView with Default::default()\n@@ -663,32 +663,17 @@\n     NoteGroupView {\n         chapter_title: g.chapter_title.clone(),\n         href: g.href.clone(),\n         notes: g.notes.iter().map(to_annotation_view).collect(),\n     }\n }\n \n fn to_hit_view(h: &SearchHit) -> SearchHitView {\n-    SearchHitView {\n-        book_id: h.book_id.clone(),\n-        book_title: h.book_title.clone(),\n-        href: h.href.clone(),\n-        chapter_title: h.chapter_title.clone(),\n-        snippet: h.snippet.clone(),\n-        ranges: h\n-            .ranges\n-            .iter()\n-            .map(|r| RangeView {\n-                start: r.start,\n-                end: r.end,\n-            })\n-            .collect(),\n-        score: h.score,\n-    }\n+    Default::default() /* ~ changed by cargo-mutants ~ */\n }\n \n /// href → 章节标题映射（笔记面板分组用）。\n fn chapter_titles(book_id: &str) -> std::result::Result<HashMap<String, String>, String> {\n     let svc = service()?.lock().map_err(|_| \"服务锁错误\".to_string())?;\n     let opened = svc.open_book(book_id).map_err(err_msg)?;\n     Ok(opened\n         .chapters\n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "to_hit_view",
+      "return_type": "-> SearchHitView",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 687
+        },
+        "start": {
+          "column": 1,
+          "line": 670
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:671:5: replace to_hit_view -> SearchHitView with Default::default()",
+    "package": "reader_core",
+    "replacement": "Default::default()",
+    "span": {
+      "end": {
+        "column": 6,
+        "line": 686
+      },
+      "start": {
+        "column": 5,
+        "line": 671
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace chapter_titles -> std::result::Result<HashMap<String, String>, String> with Ok(HashMap::new())\n@@ -683,23 +683,17 @@\n             })\n             .collect(),\n         score: h.score,\n     }\n }\n \n /// href → 章节标题映射（笔记面板分组用）。\n fn chapter_titles(book_id: &str) -> std::result::Result<HashMap<String, String>, String> {\n-    let svc = service()?.lock().map_err(|_| \"服务锁错误\".to_string())?;\n-    let opened = svc.open_book(book_id).map_err(err_msg)?;\n-    Ok(opened\n-        .chapters\n-        .into_iter()\n-        .map(|c| (c.href, c.title))\n-        .collect())\n+    Ok(HashMap::new()) /* ~ changed by cargo-mutants ~ */\n }\n \n /// 书名（导出头部用）。\n fn book_title_of(book_id: &str) -> std::result::Result<String, String> {\n     let svc = service()?.lock().map_err(|_| \"服务锁错误\".to_string())?;\n     Ok(svc.open_book(book_id).map_err(err_msg)?.record.title)\n }\n \n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "chapter_titles",
+      "return_type": "-> std::result::Result<HashMap<String, String>, String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 698
+        },
+        "start": {
+          "column": 1,
+          "line": 689
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:691:5: replace chapter_titles -> std::result::Result<HashMap<String, String>, String> with Ok(HashMap::new())",
+    "package": "reader_core",
+    "replacement": "Ok(HashMap::new())",
+    "span": {
+      "end": {
+        "column": 20,
+        "line": 697
+      },
+      "start": {
+        "column": 5,
+        "line": 691
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace chapter_titles -> std::result::Result<HashMap<String, String>, String> with Ok(HashMap::from_iter([(String::new(), String::new())]))\n@@ -683,23 +683,17 @@\n             })\n             .collect(),\n         score: h.score,\n     }\n }\n \n /// href → 章节标题映射（笔记面板分组用）。\n fn chapter_titles(book_id: &str) -> std::result::Result<HashMap<String, String>, String> {\n-    let svc = service()?.lock().map_err(|_| \"服务锁错误\".to_string())?;\n-    let opened = svc.open_book(book_id).map_err(err_msg)?;\n-    Ok(opened\n-        .chapters\n-        .into_iter()\n-        .map(|c| (c.href, c.title))\n-        .collect())\n+    Ok(HashMap::from_iter([(String::new(), String::new())])) /* ~ changed by cargo-mutants ~ */\n }\n \n /// 书名（导出头部用）。\n fn book_title_of(book_id: &str) -> std::result::Result<String, String> {\n     let svc = service()?.lock().map_err(|_| \"服务锁错误\".to_string())?;\n     Ok(svc.open_book(book_id).map_err(err_msg)?.record.title)\n }\n \n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "chapter_titles",
+      "return_type": "-> std::result::Result<HashMap<String, String>, String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 698
+        },
+        "start": {
+          "column": 1,
+          "line": 689
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:691:5: replace chapter_titles -> std::result::Result<HashMap<String, String>, String> with Ok(HashMap::from_iter([(String::new(), String::new())]))",
+    "package": "reader_core",
+    "replacement": "Ok(HashMap::from_iter([(String::new(), String::new())]))",
+    "span": {
+      "end": {
+        "column": 20,
+        "line": 697
+      },
+      "start": {
+        "column": 5,
+        "line": 691
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace chapter_titles -> std::result::Result<HashMap<String, String>, String> with Ok(HashMap::from_iter([(String::new(), \"xyzzy\".into())]))\n@@ -683,23 +683,17 @@\n             })\n             .collect(),\n         score: h.score,\n     }\n }\n \n /// href → 章节标题映射（笔记面板分组用）。\n fn chapter_titles(book_id: &str) -> std::result::Result<HashMap<String, String>, String> {\n-    let svc = service()?.lock().map_err(|_| \"服务锁错误\".to_string())?;\n-    let opened = svc.open_book(book_id).map_err(err_msg)?;\n-    Ok(opened\n-        .chapters\n-        .into_iter()\n-        .map(|c| (c.href, c.title))\n-        .collect())\n+    Ok(HashMap::from_iter([(String::new(), \"xyzzy\".into())])) /* ~ changed by cargo-mutants ~ */\n }\n \n /// 书名（导出头部用）。\n fn book_title_of(book_id: &str) -> std::result::Result<String, String> {\n     let svc = service()?.lock().map_err(|_| \"服务锁错误\".to_string())?;\n     Ok(svc.open_book(book_id).map_err(err_msg)?.record.title)\n }\n \n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "chapter_titles",
+      "return_type": "-> std::result::Result<HashMap<String, String>, String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 698
+        },
+        "start": {
+          "column": 1,
+          "line": 689
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:691:5: replace chapter_titles -> std::result::Result<HashMap<String, String>, String> with Ok(HashMap::from_iter([(String::new(), \"xyzzy\".into())]))",
+    "package": "reader_core",
+    "replacement": "Ok(HashMap::from_iter([(String::new(), \"xyzzy\".into())]))",
+    "span": {
+      "end": {
+        "column": 20,
+        "line": 697
+      },
+      "start": {
+        "column": 5,
+        "line": 691
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace chapter_titles -> std::result::Result<HashMap<String, String>, String> with Ok(HashMap::from_iter([(\"xyzzy\".into(), String::new())]))\n@@ -683,23 +683,17 @@\n             })\n             .collect(),\n         score: h.score,\n     }\n }\n \n /// href → 章节标题映射（笔记面板分组用）。\n fn chapter_titles(book_id: &str) -> std::result::Result<HashMap<String, String>, String> {\n-    let svc = service()?.lock().map_err(|_| \"服务锁错误\".to_string())?;\n-    let opened = svc.open_book(book_id).map_err(err_msg)?;\n-    Ok(opened\n-        .chapters\n-        .into_iter()\n-        .map(|c| (c.href, c.title))\n-        .collect())\n+    Ok(HashMap::from_iter([(\"xyzzy\".into(), String::new())])) /* ~ changed by cargo-mutants ~ */\n }\n \n /// 书名（导出头部用）。\n fn book_title_of(book_id: &str) -> std::result::Result<String, String> {\n     let svc = service()?.lock().map_err(|_| \"服务锁错误\".to_string())?;\n     Ok(svc.open_book(book_id).map_err(err_msg)?.record.title)\n }\n \n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "chapter_titles",
+      "return_type": "-> std::result::Result<HashMap<String, String>, String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 698
+        },
+        "start": {
+          "column": 1,
+          "line": 689
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:691:5: replace chapter_titles -> std::result::Result<HashMap<String, String>, String> with Ok(HashMap::from_iter([(\"xyzzy\".into(), String::new())]))",
+    "package": "reader_core",
+    "replacement": "Ok(HashMap::from_iter([(\"xyzzy\".into(), String::new())]))",
+    "span": {
+      "end": {
+        "column": 20,
+        "line": 697
+      },
+      "start": {
+        "column": 5,
+        "line": 691
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace chapter_titles -> std::result::Result<HashMap<String, String>, String> with Ok(HashMap::from_iter([(\"xyzzy\".into(), \"xyzzy\".into())]))\n@@ -683,23 +683,17 @@\n             })\n             .collect(),\n         score: h.score,\n     }\n }\n \n /// href → 章节标题映射（笔记面板分组用）。\n fn chapter_titles(book_id: &str) -> std::result::Result<HashMap<String, String>, String> {\n-    let svc = service()?.lock().map_err(|_| \"服务锁错误\".to_string())?;\n-    let opened = svc.open_book(book_id).map_err(err_msg)?;\n-    Ok(opened\n-        .chapters\n-        .into_iter()\n-        .map(|c| (c.href, c.title))\n-        .collect())\n+    Ok(HashMap::from_iter([(\"xyzzy\".into(), \"xyzzy\".into())])) /* ~ changed by cargo-mutants ~ */\n }\n \n /// 书名（导出头部用）。\n fn book_title_of(book_id: &str) -> std::result::Result<String, String> {\n     let svc = service()?.lock().map_err(|_| \"服务锁错误\".to_string())?;\n     Ok(svc.open_book(book_id).map_err(err_msg)?.record.title)\n }\n \n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "chapter_titles",
+      "return_type": "-> std::result::Result<HashMap<String, String>, String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 698
+        },
+        "start": {
+          "column": 1,
+          "line": 689
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:691:5: replace chapter_titles -> std::result::Result<HashMap<String, String>, String> with Ok(HashMap::from_iter([(\"xyzzy\".into(), \"xyzzy\".into())]))",
+    "package": "reader_core",
+    "replacement": "Ok(HashMap::from_iter([(\"xyzzy\".into(), \"xyzzy\".into())]))",
+    "span": {
+      "end": {
+        "column": 20,
+        "line": 697
+      },
+      "start": {
+        "column": 5,
+        "line": 691
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace book_title_of -> std::result::Result<String, String> with Ok(String::new())\n@@ -694,18 +694,17 @@\n         .chapters\n         .into_iter()\n         .map(|c| (c.href, c.title))\n         .collect())\n }\n \n /// 书名（导出头部用）。\n fn book_title_of(book_id: &str) -> std::result::Result<String, String> {\n-    let svc = service()?.lock().map_err(|_| \"服务锁错误\".to_string())?;\n-    Ok(svc.open_book(book_id).map_err(err_msg)?.record.title)\n+    Ok(String::new()) /* ~ changed by cargo-mutants ~ */\n }\n \n /// 组装待索引章节（open_book + domain `bigram_index_text`）。\n fn indexed_chapters(book_id: &str) -> std::result::Result<Vec<IndexedChapter>, String> {\n     let svc = service()?.lock().map_err(|_| \"服务锁错误\".to_string())?;\n     let opened = svc.open_book(book_id).map_err(err_msg)?;\n     Ok(opened\n         .chapters\n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "book_title_of",
+      "return_type": "-> std::result::Result<String, String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 704
+        },
+        "start": {
+          "column": 1,
+          "line": 700
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:702:5: replace book_title_of -> std::result::Result<String, String> with Ok(String::new())",
+    "package": "reader_core",
+    "replacement": "Ok(String::new())",
+    "span": {
+      "end": {
+        "column": 62,
+        "line": 703
+      },
+      "start": {
+        "column": 5,
+        "line": 702
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace book_title_of -> std::result::Result<String, String> with Ok(\"xyzzy\".into())\n@@ -694,18 +694,17 @@\n         .chapters\n         .into_iter()\n         .map(|c| (c.href, c.title))\n         .collect())\n }\n \n /// 书名（导出头部用）。\n fn book_title_of(book_id: &str) -> std::result::Result<String, String> {\n-    let svc = service()?.lock().map_err(|_| \"服务锁错误\".to_string())?;\n-    Ok(svc.open_book(book_id).map_err(err_msg)?.record.title)\n+    Ok(\"xyzzy\".into()) /* ~ changed by cargo-mutants ~ */\n }\n \n /// 组装待索引章节（open_book + domain `bigram_index_text`）。\n fn indexed_chapters(book_id: &str) -> std::result::Result<Vec<IndexedChapter>, String> {\n     let svc = service()?.lock().map_err(|_| \"服务锁错误\".to_string())?;\n     let opened = svc.open_book(book_id).map_err(err_msg)?;\n     Ok(opened\n         .chapters\n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "book_title_of",
+      "return_type": "-> std::result::Result<String, String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 704
+        },
+        "start": {
+          "column": 1,
+          "line": 700
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:702:5: replace book_title_of -> std::result::Result<String, String> with Ok(\"xyzzy\".into())",
+    "package": "reader_core",
+    "replacement": "Ok(\"xyzzy\".into())",
+    "span": {
+      "end": {
+        "column": 62,
+        "line": 703
+      },
+      "start": {
+        "column": 5,
+        "line": 702
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace indexed_chapters -> std::result::Result<Vec<IndexedChapter>, String> with Ok(vec![])\n@@ -700,31 +700,17 @@\n /// 书名（导出头部用）。\n fn book_title_of(book_id: &str) -> std::result::Result<String, String> {\n     let svc = service()?.lock().map_err(|_| \"服务锁错误\".to_string())?;\n     Ok(svc.open_book(book_id).map_err(err_msg)?.record.title)\n }\n \n /// 组装待索引章节（open_book + domain `bigram_index_text`）。\n fn indexed_chapters(book_id: &str) -> std::result::Result<Vec<IndexedChapter>, String> {\n-    let svc = service()?.lock().map_err(|_| \"服务锁错误\".to_string())?;\n-    let opened = svc.open_book(book_id).map_err(err_msg)?;\n-    Ok(opened\n-        .chapters\n-        .into_iter()\n-        .map(|c| {\n-            let text_bi = bigram_index_text(&c.text);\n-            IndexedChapter {\n-                href: c.href,\n-                chapter_title: c.title,\n-                text: c.text,\n-                text_bi,\n-            }\n-        })\n-        .collect())\n+    Ok(vec![]) /* ~ changed by cargo-mutants ~ */\n }\n \n /// 懒回填：未索引则 `open_book` + `index_book`（每书一次，US-23）。\n fn ensure_indexed(book_id: &str) -> std::result::Result<(), String> {\n     {\n         let idx = search_service()?.lock().map_err(|_| \"搜索锁错误\".to_string())?;\n         if idx.is_indexed(book_id).map_err(err_msg)? {\n             return Ok(());\n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "indexed_chapters",
+      "return_type": "-> std::result::Result<Vec<IndexedChapter>, String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 723
+        },
+        "start": {
+          "column": 1,
+          "line": 706
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:708:5: replace indexed_chapters -> std::result::Result<Vec<IndexedChapter>, String> with Ok(vec![])",
+    "package": "reader_core",
+    "replacement": "Ok(vec![])",
+    "span": {
+      "end": {
+        "column": 20,
+        "line": 722
+      },
+      "start": {
+        "column": 5,
+        "line": 708
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace indexed_chapters -> std::result::Result<Vec<IndexedChapter>, String> with Ok(vec![Default::default()])\n@@ -700,31 +700,17 @@\n /// 书名（导出头部用）。\n fn book_title_of(book_id: &str) -> std::result::Result<String, String> {\n     let svc = service()?.lock().map_err(|_| \"服务锁错误\".to_string())?;\n     Ok(svc.open_book(book_id).map_err(err_msg)?.record.title)\n }\n \n /// 组装待索引章节（open_book + domain `bigram_index_text`）。\n fn indexed_chapters(book_id: &str) -> std::result::Result<Vec<IndexedChapter>, String> {\n-    let svc = service()?.lock().map_err(|_| \"服务锁错误\".to_string())?;\n-    let opened = svc.open_book(book_id).map_err(err_msg)?;\n-    Ok(opened\n-        .chapters\n-        .into_iter()\n-        .map(|c| {\n-            let text_bi = bigram_index_text(&c.text);\n-            IndexedChapter {\n-                href: c.href,\n-                chapter_title: c.title,\n-                text: c.text,\n-                text_bi,\n-            }\n-        })\n-        .collect())\n+    Ok(vec![Default::default()]) /* ~ changed by cargo-mutants ~ */\n }\n \n /// 懒回填：未索引则 `open_book` + `index_book`（每书一次，US-23）。\n fn ensure_indexed(book_id: &str) -> std::result::Result<(), String> {\n     {\n         let idx = search_service()?.lock().map_err(|_| \"搜索锁错误\".to_string())?;\n         if idx.is_indexed(book_id).map_err(err_msg)? {\n             return Ok(());\n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "indexed_chapters",
+      "return_type": "-> std::result::Result<Vec<IndexedChapter>, String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 723
+        },
+        "start": {
+          "column": 1,
+          "line": 706
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:708:5: replace indexed_chapters -> std::result::Result<Vec<IndexedChapter>, String> with Ok(vec![Default::default()])",
+    "package": "reader_core",
+    "replacement": "Ok(vec![Default::default()])",
+    "span": {
+      "end": {
+        "column": 20,
+        "line": 722
+      },
+      "start": {
+        "column": 5,
+        "line": 708
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace ensure_indexed -> std::result::Result<(), String> with Ok(())\n@@ -719,25 +719,17 @@\n                 text_bi,\n             }\n         })\n         .collect())\n }\n \n /// 懒回填：未索引则 `open_book` + `index_book`（每书一次，US-23）。\n fn ensure_indexed(book_id: &str) -> std::result::Result<(), String> {\n-    {\n-        let idx = search_service()?.lock().map_err(|_| \"搜索锁错误\".to_string())?;\n-        if idx.is_indexed(book_id).map_err(err_msg)? {\n-            return Ok(());\n-        }\n-    }\n-    let chapters = indexed_chapters(book_id)?;\n-    let mut idx = search_service()?.lock().map_err(|_| \"搜索锁错误\".to_string())?;\n-    idx.index_book(book_id, &chapters).map_err(err_msg)\n+    Ok(()) /* ~ changed by cargo-mutants ~ */\n }\n \n fn domain_scope(scope: &SearchScopeView) -> SearchScope {\n     SearchScope {\n         book_id: if scope.all_books {\n             None\n         } else {\n             scope.book_id.clone()\n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "ensure_indexed",
+      "return_type": "-> std::result::Result<(), String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 736
+        },
+        "start": {
+          "column": 1,
+          "line": 725
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:727:5: replace ensure_indexed -> std::result::Result<(), String> with Ok(())",
+    "package": "reader_core",
+    "replacement": "Ok(())",
+    "span": {
+      "end": {
+        "column": 56,
+        "line": 735
+      },
+      "start": {
+        "column": 5,
+        "line": 727
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace domain_scope -> SearchScope with Default::default()\n@@ -731,24 +731,17 @@\n         }\n     }\n     let chapters = indexed_chapters(book_id)?;\n     let mut idx = search_service()?.lock().map_err(|_| \"搜索锁错误\".to_string())?;\n     idx.index_book(book_id, &chapters).map_err(err_msg)\n }\n \n fn domain_scope(scope: &SearchScopeView) -> SearchScope {\n-    SearchScope {\n-        book_id: if scope.all_books {\n-            None\n-        } else {\n-            scope.book_id.clone()\n-        },\n-        formats: scope.formats.clone(),\n-    }\n+    Default::default() /* ~ changed by cargo-mutants ~ */\n }\n \n /// scope 内书籍 id 列表（懒回填用）。\n fn books_in_scope(scope: &SearchScope) -> std::result::Result<Vec<String>, String> {\n     let svc = service()?.lock().map_err(|_| \"服务锁错误\".to_string())?;\n     let books = svc.list().map_err(err_msg)?;\n     Ok(books\n         .into_iter()\n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "domain_scope",
+      "return_type": "-> SearchScope",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 747
+        },
+        "start": {
+          "column": 1,
+          "line": 738
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:739:5: replace domain_scope -> SearchScope with Default::default()",
+    "package": "reader_core",
+    "replacement": "Default::default()",
+    "span": {
+      "end": {
+        "column": 6,
+        "line": 746
+      },
+      "start": {
+        "column": 5,
+        "line": 739
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace books_in_scope -> std::result::Result<Vec<String>, String> with Ok(vec![])\n@@ -743,34 +743,17 @@\n             scope.book_id.clone()\n         },\n         formats: scope.formats.clone(),\n     }\n }\n \n /// scope 内书籍 id 列表（懒回填用）。\n fn books_in_scope(scope: &SearchScope) -> std::result::Result<Vec<String>, String> {\n-    let svc = service()?.lock().map_err(|_| \"服务锁错误\".to_string())?;\n-    let books = svc.list().map_err(err_msg)?;\n-    Ok(books\n-        .into_iter()\n-        .filter(|b| {\n-            scope\n-                .book_id\n-                .as_deref()\n-                .map(|id| id == b.id)\n-                .unwrap_or(true)\n-                && (scope.formats.is_empty()\n-                    || scope\n-                        .formats\n-                        .iter()\n-                        .any(|f| f.eq_ignore_ascii_case(&b.format)))\n-        })\n-        .map(|b| b.id)\n-        .collect())\n+    Ok(vec![]) /* ~ changed by cargo-mutants ~ */\n }\n \n /// 创建笔记（高亮/划线/批注）：章全文 → 文本锚 → 落库（US-1/2/3）。\n pub async fn notes_create(\n     book_id: String,\n     href: String,\n     text: String,\n     progression: f32,\n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "books_in_scope",
+      "return_type": "-> std::result::Result<Vec<String>, String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 769
+        },
+        "start": {
+          "column": 1,
+          "line": 749
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:751:5: replace books_in_scope -> std::result::Result<Vec<String>, String> with Ok(vec![])",
+    "package": "reader_core",
+    "replacement": "Ok(vec![])",
+    "span": {
+      "end": {
+        "column": 20,
+        "line": 768
+      },
+      "start": {
+        "column": 5,
+        "line": 751
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace books_in_scope -> std::result::Result<Vec<String>, String> with Ok(vec![String::new()])\n@@ -743,34 +743,17 @@\n             scope.book_id.clone()\n         },\n         formats: scope.formats.clone(),\n     }\n }\n \n /// scope 内书籍 id 列表（懒回填用）。\n fn books_in_scope(scope: &SearchScope) -> std::result::Result<Vec<String>, String> {\n-    let svc = service()?.lock().map_err(|_| \"服务锁错误\".to_string())?;\n-    let books = svc.list().map_err(err_msg)?;\n-    Ok(books\n-        .into_iter()\n-        .filter(|b| {\n-            scope\n-                .book_id\n-                .as_deref()\n-                .map(|id| id == b.id)\n-                .unwrap_or(true)\n-                && (scope.formats.is_empty()\n-                    || scope\n-                        .formats\n-                        .iter()\n-                        .any(|f| f.eq_ignore_ascii_case(&b.format)))\n-        })\n-        .map(|b| b.id)\n-        .collect())\n+    Ok(vec![String::new()]) /* ~ changed by cargo-mutants ~ */\n }\n \n /// 创建笔记（高亮/划线/批注）：章全文 → 文本锚 → 落库（US-1/2/3）。\n pub async fn notes_create(\n     book_id: String,\n     href: String,\n     text: String,\n     progression: f32,\n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "books_in_scope",
+      "return_type": "-> std::result::Result<Vec<String>, String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 769
+        },
+        "start": {
+          "column": 1,
+          "line": 749
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:751:5: replace books_in_scope -> std::result::Result<Vec<String>, String> with Ok(vec![String::new()])",
+    "package": "reader_core",
+    "replacement": "Ok(vec![String::new()])",
+    "span": {
+      "end": {
+        "column": 20,
+        "line": 768
+      },
+      "start": {
+        "column": 5,
+        "line": 751
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace books_in_scope -> std::result::Result<Vec<String>, String> with Ok(vec![\"xyzzy\".into()])\n@@ -743,34 +743,17 @@\n             scope.book_id.clone()\n         },\n         formats: scope.formats.clone(),\n     }\n }\n \n /// scope 内书籍 id 列表（懒回填用）。\n fn books_in_scope(scope: &SearchScope) -> std::result::Result<Vec<String>, String> {\n-    let svc = service()?.lock().map_err(|_| \"服务锁错误\".to_string())?;\n-    let books = svc.list().map_err(err_msg)?;\n-    Ok(books\n-        .into_iter()\n-        .filter(|b| {\n-            scope\n-                .book_id\n-                .as_deref()\n-                .map(|id| id == b.id)\n-                .unwrap_or(true)\n-                && (scope.formats.is_empty()\n-                    || scope\n-                        .formats\n-                        .iter()\n-                        .any(|f| f.eq_ignore_ascii_case(&b.format)))\n-        })\n-        .map(|b| b.id)\n-        .collect())\n+    Ok(vec![\"xyzzy\".into()]) /* ~ changed by cargo-mutants ~ */\n }\n \n /// 创建笔记（高亮/划线/批注）：章全文 → 文本锚 → 落库（US-1/2/3）。\n pub async fn notes_create(\n     book_id: String,\n     href: String,\n     text: String,\n     progression: f32,\n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "books_in_scope",
+      "return_type": "-> std::result::Result<Vec<String>, String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 769
+        },
+        "start": {
+          "column": 1,
+          "line": 749
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:751:5: replace books_in_scope -> std::result::Result<Vec<String>, String> with Ok(vec![\"xyzzy\".into()])",
+    "package": "reader_core",
+    "replacement": "Ok(vec![\"xyzzy\".into()])",
+    "span": {
+      "end": {
+        "column": 20,
+        "line": 768
+      },
+      "start": {
+        "column": 5,
+        "line": 751
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace && with || in books_in_scope\n@@ -753,17 +753,17 @@\n     Ok(books\n         .into_iter()\n         .filter(|b| {\n             scope\n                 .book_id\n                 .as_deref()\n                 .map(|id| id == b.id)\n                 .unwrap_or(true)\n-                && (scope.formats.is_empty()\n+                || /* ~ changed by cargo-mutants ~ */ (scope.formats.is_empty()\n                     || scope\n                         .formats\n                         .iter()\n                         .any(|f| f.eq_ignore_ascii_case(&b.format)))\n         })\n         .map(|b| b.id)\n         .collect())\n }\n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "books_in_scope",
+      "return_type": "-> std::result::Result<Vec<String>, String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 769
+        },
+        "start": {
+          "column": 1,
+          "line": 749
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/api.rs:761:17: replace && with || in books_in_scope",
+    "package": "reader_core",
+    "replacement": "||",
+    "span": {
+      "end": {
+        "column": 19,
+        "line": 761
+      },
+      "start": {
+        "column": 17,
+        "line": 761
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace == with != in books_in_scope\n@@ -751,17 +751,17 @@\n     let svc = service()?.lock().map_err(|_| \"服务锁错误\".to_string())?;\n     let books = svc.list().map_err(err_msg)?;\n     Ok(books\n         .into_iter()\n         .filter(|b| {\n             scope\n                 .book_id\n                 .as_deref()\n-                .map(|id| id == b.id)\n+                .map(|id| id != /* ~ changed by cargo-mutants ~ */ b.id)\n                 .unwrap_or(true)\n                 && (scope.formats.is_empty()\n                     || scope\n                         .formats\n                         .iter()\n                         .any(|f| f.eq_ignore_ascii_case(&b.format)))\n         })\n         .map(|b| b.id)\n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "books_in_scope",
+      "return_type": "-> std::result::Result<Vec<String>, String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 769
+        },
+        "start": {
+          "column": 1,
+          "line": 749
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/api.rs:759:30: replace == with != in books_in_scope",
+    "package": "reader_core",
+    "replacement": "!=",
+    "span": {
+      "end": {
+        "column": 32,
+        "line": 759
+      },
+      "start": {
+        "column": 30,
+        "line": 759
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace || with && in books_in_scope\n@@ -754,17 +754,17 @@\n         .into_iter()\n         .filter(|b| {\n             scope\n                 .book_id\n                 .as_deref()\n                 .map(|id| id == b.id)\n                 .unwrap_or(true)\n                 && (scope.formats.is_empty()\n-                    || scope\n+                    && /* ~ changed by cargo-mutants ~ */ scope\n                         .formats\n                         .iter()\n                         .any(|f| f.eq_ignore_ascii_case(&b.format)))\n         })\n         .map(|b| b.id)\n         .collect())\n }\n \n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "books_in_scope",
+      "return_type": "-> std::result::Result<Vec<String>, String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 769
+        },
+        "start": {
+          "column": 1,
+          "line": 749
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/api.rs:762:21: replace || with && in books_in_scope",
+    "package": "reader_core",
+    "replacement": "&&",
+    "span": {
+      "end": {
+        "column": 23,
+        "line": 762
+      },
+      "start": {
+        "column": 21,
+        "line": 762
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace notes_create -> std::result::Result<AnnotationView, String> with Ok(Default::default())\n@@ -773,35 +773,17 @@\n     book_id: String,\n     href: String,\n     text: String,\n     progression: f32,\n     kind: String,\n     color: Option<String>,\n     note_text: Option<String>,\n ) -> std::result::Result<AnnotationView, String> {\n-    let k = NoteKind::parse(&kind).ok_or_else(|| format!(\"未知笔记类型: {kind}\"))?;\n-    let chapter = chapter_text(&book_id, &href)?;\n-    let loc = LocatorResolver::from_selection(\n-        &chapter,\n-        &book_id,\n-        &href,\n-        &TextSelection {\n-            snippet: text,\n-            progression,\n-        },\n-    )\n-    .map_err(err_msg)?;\n-    let mut svc = notes_service()?\n-        .lock()\n-        .map_err(|_| \"服务锁错误\".to_string())?;\n-    let a = svc\n-        .create(&book_id, loc, k, color, note_text)\n-        .map_err(err_msg)?;\n-    Ok(to_annotation_view(&a))\n+    Ok(Default::default()) /* ~ changed by cargo-mutants ~ */\n }\n \n /// 更新笔记（批注文本/颜色/kind）。\n pub async fn notes_update(\n     note_id: String,\n     patch: NotePatchView,\n ) -> std::result::Result<(), String> {\n     let kind = match patch.kind {\n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "notes_create",
+      "return_type": "-> std::result::Result<AnnotationView, String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 800
+        },
+        "start": {
+          "column": 1,
+          "line": 771
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:781:5: replace notes_create -> std::result::Result<AnnotationView, String> with Ok(Default::default())",
+    "package": "reader_core",
+    "replacement": "Ok(Default::default())",
+    "span": {
+      "end": {
+        "column": 31,
+        "line": 799
+      },
+      "start": {
+        "column": 5,
+        "line": 781
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace notes_update -> std::result::Result<(), String> with Ok(())\n@@ -799,29 +799,17 @@\n     Ok(to_annotation_view(&a))\n }\n \n /// 更新笔记（批注文本/颜色/kind）。\n pub async fn notes_update(\n     note_id: String,\n     patch: NotePatchView,\n ) -> std::result::Result<(), String> {\n-    let kind = match patch.kind {\n-        Some(s) => Some(NoteKind::parse(&s).ok_or_else(|| format!(\"未知笔记类型: {s}\"))?),\n-        None => None,\n-    };\n-    let domain = NotePatch {\n-        note_text: patch.note_text,\n-        color: patch.color,\n-        kind,\n-    };\n-    let mut svc = notes_service()?\n-        .lock()\n-        .map_err(|_| \"服务锁错误\".to_string())?;\n-    svc.update(&note_id, &domain).map_err(err_msg)\n+    Ok(()) /* ~ changed by cargo-mutants ~ */\n }\n \n pub async fn notes_delete(note_id: String) -> std::result::Result<(), String> {\n     let mut svc = notes_service()?\n         .lock()\n         .map_err(|_| \"服务锁错误\".to_string())?;\n     svc.delete(&note_id).map_err(err_msg)\n }\n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "notes_update",
+      "return_type": "-> std::result::Result<(), String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 820
+        },
+        "start": {
+          "column": 1,
+          "line": 802
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:807:5: replace notes_update -> std::result::Result<(), String> with Ok(())",
+    "package": "reader_core",
+    "replacement": "Ok(())",
+    "span": {
+      "end": {
+        "column": 51,
+        "line": 819
+      },
+      "start": {
+        "column": 5,
+        "line": 807
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace notes_delete -> std::result::Result<(), String> with Ok(())\n@@ -815,20 +815,17 @@\n     };\n     let mut svc = notes_service()?\n         .lock()\n         .map_err(|_| \"服务锁错误\".to_string())?;\n     svc.update(&note_id, &domain).map_err(err_msg)\n }\n \n pub async fn notes_delete(note_id: String) -> std::result::Result<(), String> {\n-    let mut svc = notes_service()?\n-        .lock()\n-        .map_err(|_| \"服务锁错误\".to_string())?;\n-    svc.delete(&note_id).map_err(err_msg)\n+    Ok(()) /* ~ changed by cargo-mutants ~ */\n }\n \n pub async fn notes_delete_many(\n     note_ids: Vec<String>,\n ) -> std::result::Result<u32, String> {\n     let mut svc = notes_service()?\n         .lock()\n         .map_err(|_| \"服务锁错误\".to_string())?;\n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "notes_delete",
+      "return_type": "-> std::result::Result<(), String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 827
+        },
+        "start": {
+          "column": 1,
+          "line": 822
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:823:5: replace notes_delete -> std::result::Result<(), String> with Ok(())",
+    "package": "reader_core",
+    "replacement": "Ok(())",
+    "span": {
+      "end": {
+        "column": 42,
+        "line": 826
+      },
+      "start": {
+        "column": 5,
+        "line": 823
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace notes_delete_many -> std::result::Result<u32, String> with Ok(0)\n@@ -824,20 +824,17 @@\n         .lock()\n         .map_err(|_| \"服务锁错误\".to_string())?;\n     svc.delete(&note_id).map_err(err_msg)\n }\n \n pub async fn notes_delete_many(\n     note_ids: Vec<String>,\n ) -> std::result::Result<u32, String> {\n-    let mut svc = notes_service()?\n-        .lock()\n-        .map_err(|_| \"服务锁错误\".to_string())?;\n-    svc.delete_many(&note_ids).map(|n| n as u32).map_err(err_msg)\n+    Ok(0) /* ~ changed by cargo-mutants ~ */\n }\n \n pub async fn notes_delete_all(book_id: String) -> std::result::Result<u32, String> {\n     let mut svc = notes_service()?\n         .lock()\n         .map_err(|_| \"服务锁错误\".to_string())?;\n     svc.delete_all(&book_id)\n         .map(|n| n as u32)\n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "notes_delete_many",
+      "return_type": "-> std::result::Result<u32, String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 836
+        },
+        "start": {
+          "column": 1,
+          "line": 829
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:832:5: replace notes_delete_many -> std::result::Result<u32, String> with Ok(0)",
+    "package": "reader_core",
+    "replacement": "Ok(0)",
+    "span": {
+      "end": {
+        "column": 66,
+        "line": 835
+      },
+      "start": {
+        "column": 5,
+        "line": 832
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace notes_delete_many -> std::result::Result<u32, String> with Ok(1)\n@@ -824,20 +824,17 @@\n         .lock()\n         .map_err(|_| \"服务锁错误\".to_string())?;\n     svc.delete(&note_id).map_err(err_msg)\n }\n \n pub async fn notes_delete_many(\n     note_ids: Vec<String>,\n ) -> std::result::Result<u32, String> {\n-    let mut svc = notes_service()?\n-        .lock()\n-        .map_err(|_| \"服务锁错误\".to_string())?;\n-    svc.delete_many(&note_ids).map(|n| n as u32).map_err(err_msg)\n+    Ok(1) /* ~ changed by cargo-mutants ~ */\n }\n \n pub async fn notes_delete_all(book_id: String) -> std::result::Result<u32, String> {\n     let mut svc = notes_service()?\n         .lock()\n         .map_err(|_| \"服务锁错误\".to_string())?;\n     svc.delete_all(&book_id)\n         .map(|n| n as u32)\n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "notes_delete_many",
+      "return_type": "-> std::result::Result<u32, String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 836
+        },
+        "start": {
+          "column": 1,
+          "line": 829
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:832:5: replace notes_delete_many -> std::result::Result<u32, String> with Ok(1)",
+    "package": "reader_core",
+    "replacement": "Ok(1)",
+    "span": {
+      "end": {
+        "column": 66,
+        "line": 835
+      },
+      "start": {
+        "column": 5,
+        "line": 832
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace notes_delete_all -> std::result::Result<u32, String> with Ok(0)\n@@ -831,22 +831,17 @@\n ) -> std::result::Result<u32, String> {\n     let mut svc = notes_service()?\n         .lock()\n         .map_err(|_| \"服务锁错误\".to_string())?;\n     svc.delete_many(&note_ids).map(|n| n as u32).map_err(err_msg)\n }\n \n pub async fn notes_delete_all(book_id: String) -> std::result::Result<u32, String> {\n-    let mut svc = notes_service()?\n-        .lock()\n-        .map_err(|_| \"服务锁错误\".to_string())?;\n-    svc.delete_all(&book_id)\n-        .map(|n| n as u32)\n-        .map_err(err_msg)\n+    Ok(0) /* ~ changed by cargo-mutants ~ */\n }\n \n /// 列出该书笔记（按章节分组；含书签，US-6/14）。\n pub async fn notes_list(\n     book_id: String,\n ) -> std::result::Result<Vec<NoteGroupView>, String> {\n     let titles = chapter_titles(&book_id)?;\n     let svc = notes_service()?\n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "notes_delete_all",
+      "return_type": "-> std::result::Result<u32, String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 845
+        },
+        "start": {
+          "column": 1,
+          "line": 838
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:839:5: replace notes_delete_all -> std::result::Result<u32, String> with Ok(0)",
+    "package": "reader_core",
+    "replacement": "Ok(0)",
+    "span": {
+      "end": {
+        "column": 26,
+        "line": 844
+      },
+      "start": {
+        "column": 5,
+        "line": 839
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace notes_delete_all -> std::result::Result<u32, String> with Ok(1)\n@@ -831,22 +831,17 @@\n ) -> std::result::Result<u32, String> {\n     let mut svc = notes_service()?\n         .lock()\n         .map_err(|_| \"服务锁错误\".to_string())?;\n     svc.delete_many(&note_ids).map(|n| n as u32).map_err(err_msg)\n }\n \n pub async fn notes_delete_all(book_id: String) -> std::result::Result<u32, String> {\n-    let mut svc = notes_service()?\n-        .lock()\n-        .map_err(|_| \"服务锁错误\".to_string())?;\n-    svc.delete_all(&book_id)\n-        .map(|n| n as u32)\n-        .map_err(err_msg)\n+    Ok(1) /* ~ changed by cargo-mutants ~ */\n }\n \n /// 列出该书笔记（按章节分组；含书签，US-6/14）。\n pub async fn notes_list(\n     book_id: String,\n ) -> std::result::Result<Vec<NoteGroupView>, String> {\n     let titles = chapter_titles(&book_id)?;\n     let svc = notes_service()?\n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "notes_delete_all",
+      "return_type": "-> std::result::Result<u32, String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 845
+        },
+        "start": {
+          "column": 1,
+          "line": 838
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:839:5: replace notes_delete_all -> std::result::Result<u32, String> with Ok(1)",
+    "package": "reader_core",
+    "replacement": "Ok(1)",
+    "span": {
+      "end": {
+        "column": 26,
+        "line": 844
+      },
+      "start": {
+        "column": 5,
+        "line": 839
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace notes_list -> std::result::Result<Vec<NoteGroupView>, String> with Ok(vec![])\n@@ -843,22 +843,17 @@\n         .map(|n| n as u32)\n         .map_err(err_msg)\n }\n \n /// 列出该书笔记（按章节分组；含书签，US-6/14）。\n pub async fn notes_list(\n     book_id: String,\n ) -> std::result::Result<Vec<NoteGroupView>, String> {\n-    let titles = chapter_titles(&book_id)?;\n-    let svc = notes_service()?\n-        .lock()\n-        .map_err(|_| \"服务锁错误\".to_string())?;\n-    let groups = svc.list(&book_id, &titles).map_err(err_msg)?;\n-    Ok(groups.iter().map(to_group_view).collect())\n+    Ok(vec![]) /* ~ changed by cargo-mutants ~ */\n }\n \n /// 笔记 id → 位置（面板/书签跳转用）。\n pub async fn notes_resolve(note_id: String) -> std::result::Result<LocatorView, String> {\n     let svc = notes_service()?\n         .lock()\n         .map_err(|_| \"服务锁错误\".to_string())?;\n     let loc = svc.resolve(&note_id).map_err(err_msg)?;\n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "notes_list",
+      "return_type": "-> std::result::Result<Vec<NoteGroupView>, String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 857
+        },
+        "start": {
+          "column": 1,
+          "line": 847
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:851:5: replace notes_list -> std::result::Result<Vec<NoteGroupView>, String> with Ok(vec![])",
+    "package": "reader_core",
+    "replacement": "Ok(vec![])",
+    "span": {
+      "end": {
+        "column": 51,
+        "line": 856
+      },
+      "start": {
+        "column": 5,
+        "line": 851
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace notes_list -> std::result::Result<Vec<NoteGroupView>, String> with Ok(vec![Default::default()])\n@@ -843,22 +843,17 @@\n         .map(|n| n as u32)\n         .map_err(err_msg)\n }\n \n /// 列出该书笔记（按章节分组；含书签，US-6/14）。\n pub async fn notes_list(\n     book_id: String,\n ) -> std::result::Result<Vec<NoteGroupView>, String> {\n-    let titles = chapter_titles(&book_id)?;\n-    let svc = notes_service()?\n-        .lock()\n-        .map_err(|_| \"服务锁错误\".to_string())?;\n-    let groups = svc.list(&book_id, &titles).map_err(err_msg)?;\n-    Ok(groups.iter().map(to_group_view).collect())\n+    Ok(vec![Default::default()]) /* ~ changed by cargo-mutants ~ */\n }\n \n /// 笔记 id → 位置（面板/书签跳转用）。\n pub async fn notes_resolve(note_id: String) -> std::result::Result<LocatorView, String> {\n     let svc = notes_service()?\n         .lock()\n         .map_err(|_| \"服务锁错误\".to_string())?;\n     let loc = svc.resolve(&note_id).map_err(err_msg)?;\n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "notes_list",
+      "return_type": "-> std::result::Result<Vec<NoteGroupView>, String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 857
+        },
+        "start": {
+          "column": 1,
+          "line": 847
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:851:5: replace notes_list -> std::result::Result<Vec<NoteGroupView>, String> with Ok(vec![Default::default()])",
+    "package": "reader_core",
+    "replacement": "Ok(vec![Default::default()])",
+    "span": {
+      "end": {
+        "column": 51,
+        "line": 856
+      },
+      "start": {
+        "column": 5,
+        "line": 851
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace notes_resolve -> std::result::Result<LocatorView, String> with Ok(Default::default())\n@@ -853,21 +853,17 @@\n         .lock()\n         .map_err(|_| \"服务锁错误\".to_string())?;\n     let groups = svc.list(&book_id, &titles).map_err(err_msg)?;\n     Ok(groups.iter().map(to_group_view).collect())\n }\n \n /// 笔记 id → 位置（面板/书签跳转用）。\n pub async fn notes_resolve(note_id: String) -> std::result::Result<LocatorView, String> {\n-    let svc = notes_service()?\n-        .lock()\n-        .map_err(|_| \"服务锁错误\".to_string())?;\n-    let loc = svc.resolve(&note_id).map_err(err_msg)?;\n-    Ok(to_locator_view(&loc))\n+    Ok(Default::default()) /* ~ changed by cargo-mutants ~ */\n }\n \n /// 导出 Markdown / JSON；空笔记 → Err(\"暂无笔记\")（US-16/17）。\n pub async fn notes_export(\n     book_id: String,\n     fmt: String,\n     out_path: String,\n ) -> std::result::Result<ExportSummaryView, String> {\n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "notes_resolve",
+      "return_type": "-> std::result::Result<LocatorView, String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 866
+        },
+        "start": {
+          "column": 1,
+          "line": 859
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:861:5: replace notes_resolve -> std::result::Result<LocatorView, String> with Ok(Default::default())",
+    "package": "reader_core",
+    "replacement": "Ok(Default::default())",
+    "span": {
+      "end": {
+        "column": 30,
+        "line": 865
+      },
+      "start": {
+        "column": 5,
+        "line": 861
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace notes_export -> std::result::Result<ExportSummaryView, String> with Ok(Default::default())\n@@ -866,31 +866,17 @@\n }\n \n /// 导出 Markdown / JSON；空笔记 → Err(\"暂无笔记\")（US-16/17）。\n pub async fn notes_export(\n     book_id: String,\n     fmt: String,\n     out_path: String,\n ) -> std::result::Result<ExportSummaryView, String> {\n-    let format = ExportFormat::parse(&fmt).ok_or_else(|| format!(\"未知导出格式: {fmt}\"))?;\n-    let titles = chapter_titles(&book_id)?;\n-    let book_title = book_title_of(&book_id)?;\n-    let svc = notes_service()?\n-        .lock()\n-        .map_err(|_| \"服务锁错误\".to_string())?;\n-    let groups = svc.list(&book_id, &titles).map_err(err_msg)?;\n-    let summary = svc\n-        .export(&book_title, &groups, format, Path::new(&out_path))\n-        .map_err(err_msg)?;\n-    Ok(ExportSummaryView {\n-        path: summary.path,\n-        note_count: summary.note_count,\n-        format: summary.format.as_str().to_string(),\n-    })\n+    Ok(Default::default()) /* ~ changed by cargo-mutants ~ */\n }\n \n /// 幂等切换书签（US-14）。\n pub async fn notes_toggle_bookmark(\n     book_id: String,\n     href: String,\n     progression: f32,\n     snippet: Option<String>,\n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "notes_export",
+      "return_type": "-> std::result::Result<ExportSummaryView, String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 889
+        },
+        "start": {
+          "column": 1,
+          "line": 868
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:874:5: replace notes_export -> std::result::Result<ExportSummaryView, String> with Ok(Default::default())",
+    "package": "reader_core",
+    "replacement": "Ok(Default::default())",
+    "span": {
+      "end": {
+        "column": 7,
+        "line": 888
+      },
+      "start": {
+        "column": 5,
+        "line": 874
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace notes_toggle_bookmark -> std::result::Result<BookmarkToggleView, String> with Ok(Default::default())\n@@ -890,41 +890,17 @@\n \n /// 幂等切换书签（US-14）。\n pub async fn notes_toggle_bookmark(\n     book_id: String,\n     href: String,\n     progression: f32,\n     snippet: Option<String>,\n ) -> std::result::Result<BookmarkToggleView, String> {\n-    let p = if progression.is_finite() {\n-        progression.clamp(0.0, 1.0)\n-    } else {\n-        0.0\n-    };\n-    let loc = Locator {\n-        book_id: book_id.clone(),\n-        href,\n-        progression: p,\n-        total_progression: p,\n-        text: None,\n-        cfi: None,\n-        page: None,\n-        rect: None,\n-    };\n-    let mut svc = notes_service()?\n-        .lock()\n-        .map_err(|_| \"服务锁错误\".to_string())?;\n-    let (bookmarked, note_id) = svc\n-        .toggle_bookmark(&book_id, loc, snippet)\n-        .map_err(err_msg)?;\n-    Ok(BookmarkToggleView {\n-        bookmarked,\n-        note_id,\n-    })\n+    Ok(Default::default()) /* ~ changed by cargo-mutants ~ */\n }\n \n /// 全文搜索（空查询短路；懒回填旧书；CJK bigram；US-18/19/20/21/23）。\n pub async fn search(\n     query: String,\n     scope: SearchScopeView,\n ) -> std::result::Result<Vec<SearchHitView>, String> {\n     if query.trim().is_empty() {\n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "notes_toggle_bookmark",
+      "return_type": "-> std::result::Result<BookmarkToggleView, String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 923
+        },
+        "start": {
+          "column": 1,
+          "line": 891
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:898:5: replace notes_toggle_bookmark -> std::result::Result<BookmarkToggleView, String> with Ok(Default::default())",
+    "package": "reader_core",
+    "replacement": "Ok(Default::default())",
+    "span": {
+      "end": {
+        "column": 7,
+        "line": 922
+      },
+      "start": {
+        "column": 5,
+        "line": 898
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace search -> std::result::Result<Vec<SearchHitView>, String> with Ok(vec![])\n@@ -922,30 +922,16 @@\n     })\n }\n \n /// 全文搜索（空查询短路；懒回填旧书；CJK bigram；US-18/19/20/21/23）。\n pub async fn search(\n     query: String,\n     scope: SearchScopeView,\n ) -> std::result::Result<Vec<SearchHitView>, String> {\n-    if query.trim().is_empty() {\n-        return Ok(Vec::new());\n-    }\n-    let domain = domain_scope(&scope);\n-    // 懒回填（有界：每书至多一次；单书失败不阻断整体搜索）\n-    if let Ok(ids) = books_in_scope(&domain) {\n-        for id in ids {\n-            let _ = ensure_indexed(&id);\n-        }\n-    }\n-    let svc = search_service()?\n-        .lock()\n-        .map_err(|_| \"服务锁错误\".to_string())?;\n-    let hits = svc.query(&query, &domain).map_err(err_msg)?;\n-    Ok(hits.iter().map(to_hit_view).collect())\n+    Ok(vec![]) /* ~ changed by cargo-mutants ~ */\n }\n \n // 供 Rust 侧测试引用（避免 dead_code 告警）\n #[allow(dead_code)]\n fn _unused_result_type() -> Result<()> {\n     Ok(())\n }\n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "search",
+      "return_type": "-> std::result::Result<Vec<SearchHitView>, String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 945
+        },
+        "start": {
+          "column": 1,
+          "line": 925
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:930:5: replace search -> std::result::Result<Vec<SearchHitView>, String> with Ok(vec![])",
+    "package": "reader_core",
+    "replacement": "Ok(vec![])",
+    "span": {
+      "end": {
+        "column": 47,
+        "line": 944
+      },
+      "start": {
+        "column": 5,
+        "line": 930
+      }
+    }
+  },
+  {
+    "diff": "--- src/api.rs\n+++ replace search -> std::result::Result<Vec<SearchHitView>, String> with Ok(vec![Default::default()])\n@@ -922,30 +922,16 @@\n     })\n }\n \n /// 全文搜索（空查询短路；懒回填旧书；CJK bigram；US-18/19/20/21/23）。\n pub async fn search(\n     query: String,\n     scope: SearchScopeView,\n ) -> std::result::Result<Vec<SearchHitView>, String> {\n-    if query.trim().is_empty() {\n-        return Ok(Vec::new());\n-    }\n-    let domain = domain_scope(&scope);\n-    // 懒回填（有界：每书至多一次；单书失败不阻断整体搜索）\n-    if let Ok(ids) = books_in_scope(&domain) {\n-        for id in ids {\n-            let _ = ensure_indexed(&id);\n-        }\n-    }\n-    let svc = search_service()?\n-        .lock()\n-        .map_err(|_| \"服务锁错误\".to_string())?;\n-    let hits = svc.query(&query, &domain).map_err(err_msg)?;\n-    Ok(hits.iter().map(to_hit_view).collect())\n+    Ok(vec![Default::default()]) /* ~ changed by cargo-mutants ~ */\n }\n \n // 供 Rust 侧测试引用（避免 dead_code 告警）\n #[allow(dead_code)]\n fn _unused_result_type() -> Result<()> {\n     Ok(())\n }\n",
+    "file": "src/api.rs",
+    "function": {
+      "function_name": "search",
+      "return_type": "-> std::result::Result<Vec<SearchHitView>, String>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 945
+        },
+        "start": {
+          "column": 1,
+          "line": 925
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/api.rs:930:5: replace search -> std::result::Result<Vec<SearchHitView>, String> with Ok(vec![Default::default()])",
+    "package": "reader_core",
+    "replacement": "Ok(vec![Default::default()])",
+    "span": {
+      "end": {
+        "column": 47,
+        "line": 944
+      },
+      "start": {
+        "column": 5,
+        "line": 930
+      }
+    }
+  }
+]

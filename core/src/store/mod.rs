@@ -517,4 +517,19 @@ mod tests {
         assert_eq!(ver2, 4);
         assert_eq!(store2.list_books().unwrap().len(), 1);
     }
+
+    #[test]
+    fn cache_and_dicts_dirs_live_under_data_dir() {
+        let dir = tempfile::tempdir().unwrap();
+        let store = Store::open(dir.path()).unwrap();
+        assert_eq!(store.cache_dir(), dir.path().join("cache"));
+        assert_eq!(store.dicts_dir(), dir.path().join("dicts"));
+    }
+
+    #[test]
+    fn integrity_check_passes_on_fresh_db() {
+        let dir = tempfile::tempdir().unwrap();
+        let store = Store::open(dir.path()).unwrap();
+        assert!(store.integrity_check().unwrap(), "新库完整性检查应通过");
+    }
 }

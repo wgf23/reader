@@ -379,3 +379,61 @@ pub trait SearchIndexRepository {
         limit: usize,
     ) -> Result<Vec<SearchRow>>;
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn note_kind_parse_as_str_all_arms() {
+        for k in [
+            NoteKind::Highlight,
+            NoteKind::Underline,
+            NoteKind::Note,
+            NoteKind::Bookmark,
+        ] {
+            assert_eq!(NoteKind::parse(k.as_str()), Some(k));
+        }
+        assert_eq!(NoteKind::parse("highlight"), Some(NoteKind::Highlight));
+        assert_eq!(NoteKind::parse("underline"), Some(NoteKind::Underline));
+        assert_eq!(NoteKind::parse("note"), Some(NoteKind::Note));
+        assert_eq!(NoteKind::parse("bookmark"), Some(NoteKind::Bookmark));
+        assert_eq!(NoteKind::parse("Highlight"), None, "kind 解析大小写敏感");
+        assert_eq!(NoteKind::parse("nope"), None);
+    }
+
+    #[test]
+    fn export_format_parse_ext_as_str_all_arms() {
+        assert_eq!(ExportFormat::parse("markdown"), Some(ExportFormat::Markdown));
+        assert_eq!(ExportFormat::parse("md"), Some(ExportFormat::Markdown));
+        assert_eq!(ExportFormat::parse("MD"), Some(ExportFormat::Markdown));
+        assert_eq!(ExportFormat::parse("json"), Some(ExportFormat::Json));
+        assert_eq!(ExportFormat::parse("JSON"), Some(ExportFormat::Json));
+        assert_eq!(ExportFormat::parse("pdf"), None);
+        assert_eq!(ExportFormat::Markdown.ext(), "md");
+        assert_eq!(ExportFormat::Json.ext(), "json");
+        assert_eq!(ExportFormat::Markdown.as_str(), "markdown");
+        assert_eq!(ExportFormat::Json.as_str(), "json");
+    }
+
+    #[test]
+    fn lang_parse_as_str_all_arms() {
+        for l in [
+            Lang::Auto,
+            Lang::En,
+            Lang::Zh,
+            Lang::Ja,
+            Lang::Ko,
+            Lang::Fr,
+            Lang::De,
+            Lang::Es,
+            Lang::Ru,
+        ] {
+            assert_eq!(Lang::parse(l.as_str()), Some(l));
+        }
+        assert_eq!(Lang::parse("EN"), Some(Lang::En));
+        assert_eq!(Lang::parse("ZH"), Some(Lang::Zh));
+        assert_eq!(Lang::parse("xx"), None);
+        assert_eq!(Lang::Other("xx").as_str(), "xx");
+    }
+}
