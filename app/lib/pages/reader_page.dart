@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart' show SelectedContent;
+import 'package:flutter/rendering.dart'
+    show RenderAbstractViewport, RenderBox, ScrollCacheExtent, SelectedContent;
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 
 import '../engines/paged_view_controls.dart';
@@ -16,7 +19,9 @@ import '../widgets/reader_chrome.dart';
 import '../widgets/selection_toolbar.dart';
 import '../widgets/translation_popup.dart';
 import 'body_tap_policy.dart';
+import 'continuous_scroll_policy.dart';
 import 'listen_page.dart';
+import 'progress_saver.dart';
 import 'settings_page.dart';
 
 /// 分页视图构建器（测试注入 fake，避免依赖系统 WebView）。
@@ -50,6 +55,7 @@ class ReaderPage extends StatefulWidget {
     this.initialPagedMode = false,
     this.ttsBackend,
     this.ttsEngine,
+    this.chapterProvider,
   });
 
   final String bookId;
@@ -68,6 +74,9 @@ class ReaderPage extends StatefulWidget {
   final TtsBackend? ttsBackend;
   final TtsEngine? ttsEngine;
 
+  /// REQ-008 D5：章节内容出口（测试注入失败/空章；null → `view.chapters[i]`）。
+  final ChapterContentProvider? chapterProvider;
+
   @override
   State<ReaderPage> createState() => _ReaderPageState();
 }
@@ -75,6 +84,19 @@ class ReaderPage extends StatefulWidget {
 class _ReaderPageState extends State<ReaderPage> {
   final GlobalKey<PagedWebViewState> _pagedKey = GlobalKey();
   final ScrollController _scrollController = ScrollController();
+
+  /// REQ-008 D1：连续流滚动视图 + 每章 GlobalKey（几何/定位）。
+  final GlobalKey _scrollViewKey = GlobalKey();
+  List<GlobalKey> _chapterKeys = <GlobalKey>[];
+
+  /// REQ-008 D5：章节内容记忆化缓存（失败路径可注入）。
+  ChapterContentCache? _chapterCache;
+
+  /// REQ-008 D6：尾沿防抖落盘器。
+  late final ProgressSaver _progressSaver;
+
+  /// REQ-008 D2：程序化定位后锁定可见章判定，直到用户真实拖动。
+  bool _chapterLocked = false;
 
   BookViewData? _view;
   int _chapterIndex = 0;
@@ -91,7 +113,6 @@ class _ReaderPageState extends State<ReaderPage> {
   bool _bookmarked = false;
   double _chapterProgress = 0.0;
   String? _error;
-  DateTime _lastSave = DateTime.fromMillisecondsSinceEpoch(0);
 
   // REQ-003 选中/翻译/查词状态
   String? _selectedText;
@@ -113,12 +134,24 @@ class _ReaderPageState extends State<ReaderPage> {
   void initState() {
     super.initState();
     _pagedMode = widget.initialPagedMode;
+    _progressSaver = ProgressSaver(
+      save: (href, progression) =>
+          widget.backend.saveProgress(widget.bookId, href, progression),
+    );
     _load();
     _scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
+    // REQ-008 D6 降级线：退出前强刷最后一次滚动位置（不阻断返回）。
+    if (_view != null && !_pagedMode) {
+      unawaited(_progressSaver.flush(
+        _hrefForIndex(_chapterIndex),
+        _chapterProgress,
+      ));
+    }
+    _progressSaver.dispose();
     _tapTracker.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -134,10 +167,22 @@ class _ReaderPageState extends State<ReaderPage> {
         if (idx >= 0) start = idx;
         _chapterProgress = progress.progression.clamp(0.0, 1.0);
       }
-      if (mounted) {
-        setState(() {
-          _view = view;
-          _chapterIndex = start;
+      if (!mounted) return;
+      setState(() {
+        _view = view;
+        _chapterIndex = start;
+        _chapterKeys = List<GlobalKey>.generate(
+          view.chapters.length,
+          (_) => GlobalKey(),
+        );
+        _chapterCache = ChapterContentCache(
+          provider: widget.chapterProvider ?? (i) => view.chapters[i],
+        );
+      });
+      if (!_pagedMode) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          _scrollToChapter(start, _chapterProgress);
         });
       }
     } catch (e) {
@@ -156,36 +201,152 @@ class _ReaderPageState extends State<ReaderPage> {
   }
 
   void _onScroll() {
-    if (!_scrollController.hasClients) return;
-    final max = _scrollController.position.maxScrollExtent;
-    if (max > 0) {
-      _chapterProgress = (_scrollController.offset / max).clamp(0.0, 1.0);
+    final view = _view;
+    if (view == null || !_scrollController.hasClients) return;
+    final position = _scrollController.position;
+    final atEnd = position.pixels >= position.maxScrollExtent - 1.0;
+    // 程序化定位后锁定可见章；触底时强制末章（短末章兜底）。
+    if (_chapterLocked && !atEnd) return;
+    final built = _collectBuiltGeometry();
+    if (built.isEmpty) return;
+    final idx = resolveVisibleChapter(
+      built: built,
+      viewportHeight: position.viewportDimension,
+      current: _chapterIndex,
+      lastIndex: view.chapters.length - 1,
+      atEnd: atEnd,
+    );
+    final geo = _geometryFor(built, idx) ?? built.first;
+    final p = chapterProgression(top: geo.top, height: geo.height);
+    final changed = idx != _chapterIndex;
+    final pChanged = (p - _chapterProgress).abs() > 1e-9;
+    if (changed || (_chromeVisible && pChanged)) {
+      setState(() {
+        _chapterIndex = idx;
+        _chapterProgress = p;
+      });
+    } else {
+      _chapterIndex = idx;
+      _chapterProgress = p;
     }
+    _progressSaver.schedule(_hrefForIndex(idx), p);
   }
 
-  void _goChapter(int delta) {
+  /// 收集已构建章的视口几何（`top` = 章顶相对视口顶的 px）。
+  List<ChapterGeometry> _collectBuiltGeometry() {
+    final result = <ChapterGeometry>[];
+    for (var i = 0; i < _chapterKeys.length; i++) {
+      final ctx = _chapterKeys[i].currentContext;
+      if (ctx == null) continue;
+      final box = ctx.findRenderObject();
+      if (box is! RenderBox || !box.hasSize) continue;
+      final viewport = RenderAbstractViewport.maybeOf(box);
+      if (viewport == null) continue;
+      final reveal = viewport.getOffsetToReveal(box, 0.0).offset;
+      result.add(ChapterGeometry(
+        index: i,
+        top: reveal - _scrollController.offset,
+        height: box.size.height,
+      ));
+    }
+    return result;
+  }
+
+  ChapterGeometry? _geometryFor(List<ChapterGeometry> built, int index) {
+    for (final g in built) {
+      if (g.index == index) return g;
+    }
+    return null;
+  }
+
+  /// REQ-008 D4：底栏上一章/下一章 → 连续流滚动定位到目标章 + 立即落盘。
+  Future<void> _goChapter(int delta) async {
     final view = _view;
     if (view == null) return;
-    final next = (_chapterIndex + delta).clamp(0, view.chapters.length - 1);
-    if (next == _chapterIndex) return;
+    final target = (_chapterIndex + delta).clamp(0, view.chapters.length - 1);
+    if (target == _chapterIndex) return;
+    await _changeChapter(target, 0.0);
+  }
+
+  /// 切章统一入口：更新可见章/进度 → 落盘 → 定位（分页 relayout / 滚动 ensureVisible）。
+  Future<void> _changeChapter(int target, double progression) async {
+    final view = _view;
+    if (view == null) return;
+    final t = target.clamp(0, view.chapters.length - 1);
+    final p = progression.clamp(0.0, 1.0);
     setState(() {
-      _chapterIndex = next;
-      _chapterProgress = 0.0;
+      _chapterIndex = t;
+      _chapterProgress = p;
       _selectedText = null;
       _resetPopups();
     });
-    _saveProgress(0.0);
-    _jumpToProgress(0.0);
+    await _progressSaver.flush(_hrefForIndex(t), p);
+    if (_pagedMode) {
+      _pagedControls?.relayoutAfterLoad();
+    } else {
+      await _scrollToChapter(t, p);
+    }
   }
 
-  void _saveProgress(double progression) {
+  /// REQ-008 D4：目标章 `ensureVisible(alignment:0)` + `progression×章高`；
+  /// 未构建章先按章序比例估算 + 有界步进把目标带进构建范围。
+  Future<void> _scrollToChapter(int index, double progression) async {
+    final view = _view;
+    if (view == null || !_scrollController.hasClients) return;
+    final target = index.clamp(0, view.chapters.length - 1);
+    final p = progression.clamp(0.0, 1.0);
+    if (await _revealAndOffset(target, p)) return;
+
+    // 目标章未构建：先按章序比例估算，再逐帧步进（有界，防惰性列表死循环）。
+    final limit = view.chapters.length < 50 ? view.chapters.length : 50;
+    _scrollController.jumpTo(proportionalChapterOffset(
+      index: target,
+      chapterCount: view.chapters.length,
+      maxScrollExtent: _scrollController.position.maxScrollExtent,
+    ));
+    for (var i = 0; i < limit; i++) {
+      await WidgetsBinding.instance.endOfFrame;
+      if (!mounted || !_scrollController.hasClients) return;
+      if (await _revealAndOffset(target, p)) return;
+      final position = _scrollController.position;
+      final next = (position.pixels + position.viewportDimension * 0.8)
+          .clamp(0.0, position.maxScrollExtent);
+      if (next == position.pixels) break;
+      _scrollController.jumpTo(next);
+    }
+    // 兜底：仍定位不到时至少同步状态（不崩溃）。
+    _chapterIndex = target;
+    _chapterProgress = p;
+    _chapterLocked = true;
+  }
+
+  /// 若目标章已构建：对齐章顶 + 章内偏移；返回是否成功。
+  Future<bool> _revealAndOffset(int target, double progression) async {
+    final ctx = _chapterKeys[target].currentContext;
+    if (ctx == null) return false;
+    await Scrollable.ensureVisible(ctx, alignment: 0.0, duration: Duration.zero);
+    if (!mounted || !_scrollController.hasClients) return false;
+    final box = _chapterKeys[target].currentContext?.findRenderObject();
+    final height = box is RenderBox && box.hasSize ? box.size.height : 0.0;
+    // 第一章保留正文顶部留白：章顶锚点取内容起点 0（而非 padding 之后），
+    // 保证单章初始态（progression=0）与既有 golden 视觉一致。
+    final base = target == 0 ? 0.0 : _scrollController.offset;
+    final max = _scrollController.position.maxScrollExtent;
+    _scrollController.jumpTo((base + progression * height).clamp(0.0, max));
+    _chapterIndex = target;
+    _chapterProgress = progression;
+    _chapterLocked = true;
+    return true;
+  }
+
+  /// 分页模式进度回调（页切换频率低 → 立即落盘）。
+  Future<void> _saveProgress(double progression) async {
     final view = _view;
     if (view == null) return;
-    final now = DateTime.now();
-    if (now.difference(_lastSave).inMilliseconds < 300) return;
-    _lastSave = now;
-    final href = 'chapter_${(_chapterIndex + 1).toString().padLeft(4, '0')}.xhtml';
-    widget.backend.saveProgress(widget.bookId, href, progression);
+    await _progressSaver.flush(
+      _hrefForIndex(_chapterIndex),
+      progression.clamp(0.0, 1.0),
+    );
   }
 
   // ---------- 手势命中区（5 层 Stack + 不进竞技场的 Listener） ----------
@@ -223,40 +384,28 @@ class _ReaderPageState extends State<ReaderPage> {
 
   /// 进度条松手 → 跳转 + 保存（原型 reader-ui-v2 底栏：拖动实时预览、松手跳转）。
   Future<void> _onProgressSeek(double v) async {
-    setState(() => _chapterProgress = v);
-    // 分页：按 progression 精确跳页；滚动：jumpTo 比例偏移
+    final p = v.clamp(0.0, 1.0);
+    setState(() => _chapterProgress = p);
     if (_pagedMode) {
+      // 分页：按 progression 精确跳页
       final state = _pagedKey.currentState;
       if (state != null) {
         final n = await state.pageCount();
         if (n > 0) {
-          final target = (v * (n - 1)).round().clamp(0, n - 1);
+          final target = (p * (n - 1)).round().clamp(0, n - 1);
           await state.gotoPage(target);
         }
       }
-    } else if (_scrollController.hasClients) {
-      final max = _scrollController.position.maxScrollExtent;
-      if (max > 0) _scrollController.jumpTo(max * v);
+    } else {
+      // 滚动：连续流按"当前可见章 + 章内比例"定位
+      await _scrollToChapter(_chapterIndex, p);
     }
-    _saveProgress(v);
+    await _progressSaver.flush(_hrefForIndex(_chapterIndex), p);
   }
 
-  void _jumpToProgress(double v) {
-    if (_pagedMode) {
-      // REQ-007 D2：切章重载进行中时，等新文档载入完成再重排（PagedLoadGate）。
-      final controls = _pagedControls;
-      if (controls != null) controls.relayoutAfterLoad();
-    } else if (_scrollController.hasClients) {
-      final max = _scrollController.position.maxScrollExtent;
-      if (max > 0) _scrollController.jumpTo(max * v);
-    }
-  }
-
-  void _onChapterSelect(int i) {
-    setState(() => _chapterIndex = i);
-    _saveProgress(0.0);
-    _jumpToProgress(0.0);
-    Navigator.pop(context); // 关目录抽屉
+  Future<void> _onChapterSelect(int i) async {
+    await _changeChapter(i, 0.0);
+    if (mounted) Navigator.pop(context); // 关目录抽屉
   }
 
   void _openDirectory() {
@@ -277,10 +426,19 @@ class _ReaderPageState extends State<ReaderPage> {
       context: context,
       builder: (_) => ReaderSettingsSheet(
         settings: _settings,
-        onChanged: (s) => setState(() {
-          _settings = s;
-          _pagedMode = s.pagedMode;
-        }),
+        onChanged: (s) {
+          setState(() {
+            _settings = s;
+            _pagedMode = s.pagedMode;
+          });
+          // REQ-008 D4/§4.6：字号/字体/主题/行距重排或切回滚动后，以
+          // "章序号 + 章内比例"重新锚定（不跳变）。
+          if (!s.pagedMode) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) _scrollToChapter(_chapterIndex, _chapterProgress);
+            });
+          }
+        },
       ),
     );
   }
@@ -336,7 +494,7 @@ class _ReaderPageState extends State<ReaderPage> {
     await _reloadProgress();
   }
 
-  /// 返回阅读页后重读进度并跳转（听读写同一 `reading_progress`，US-15）。
+  /// 返回阅读页后重读进度并跳转（听读写同一 `reading_progress`，US-15/US-8）。
   Future<void> _reloadProgress() async {
     final view = _view;
     if (view == null) return;
@@ -344,11 +502,17 @@ class _ReaderPageState extends State<ReaderPage> {
       final progress = await widget.backend.loadProgress(widget.bookId);
       if (progress == null || !mounted) return;
       final idx = _chapterIndexForHref(view, progress.href);
+      final target = idx >= 0 ? idx : _chapterIndex;
+      final p = progress.progression.clamp(0.0, 1.0);
       setState(() {
-        if (idx >= 0) _chapterIndex = idx;
-        _chapterProgress = progress.progression.clamp(0.0, 1.0);
+        _chapterIndex = target;
+        _chapterProgress = p;
       });
-      _jumpToProgress(_chapterProgress);
+      if (_pagedMode) {
+        _pagedControls?.relayoutAfterLoad();
+      } else {
+        await _scrollToChapter(target, p);
+      }
     } catch (_) {
       // 重读失败不阻断返回（保持当前页）
     }
@@ -518,7 +682,7 @@ class _ReaderPageState extends State<ReaderPage> {
                   onPointerCancel: _tapTracker.onPointerCancel,
                   child: Container(
                     color: bg,
-                    child: _buildArticleBody(view, chapter, fg),
+                    child: _buildArticleBody(view, fg),
                   ),
                 ),
               ),
@@ -594,7 +758,7 @@ class _ReaderPageState extends State<ReaderPage> {
     );
   }
 
-  Widget _buildArticleBody(BookViewData view, ChapterData chapter, Color fg) {
+  Widget _buildArticleBody(BookViewData view, Color fg) {
     if (_pagedMode) {
       final builder = widget.pagedViewBuilder ??
           (context, {required bookId, required href, required html,
@@ -630,30 +794,65 @@ class _ReaderPageState extends State<ReaderPage> {
         },
       );
     }
-    return SingleChildScrollView(
-      controller: _scrollController,
-      padding: const EdgeInsets.fromLTRB(24, 24, 24, 64),
-      child: SelectionArea(
-        onSelectionChanged: (content) => _onSelectedText(_sliceSelection(content)),
-        // 禁用 Android 原生「复制」等上下文菜单，避免与自定义工具条（划重点/笔记/翻译/查词/复制）重叠；
-        // 仍保留选区两端手柄供拖动调整。
-        contextMenuBuilder: (context, selectableRegionState) => const SizedBox.shrink(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(chapter.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-            const SizedBox(height: 16),
-            Text(
-              chapter.text,
-              style: TextStyle(
-                color: fg,
-                fontSize: _settings.fontSize.toDouble(),
-                height: _lineHeightFor(_settings.lineHeight),
-                fontFamily: _fontFamilyFor(_settings.fontFamily),
+    // REQ-008 D1：连续流 = SelectionArea + CustomScrollView + SliverList.builder 按章懒构建。
+    return SelectionArea(
+      onSelectionChanged: (content) => _onSelectedText(_sliceSelection(content)),
+      // 禁用 Android 原生「复制」等上下文菜单，避免与自定义工具条（划重点/笔记/翻译/查词/复制）重叠；
+      // 仍保留选区两端手柄供拖动调整。
+      contextMenuBuilder: (context, selectableRegionState) => const SizedBox.shrink(),
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (notification) {
+          // 用户真实拖动 → 解锁可见章判定（D2 程序化锁）。
+          if (notification is ScrollStartNotification &&
+              notification.dragDetails != null) {
+            _chapterLocked = false;
+          }
+          return false;
+        },
+        child: CustomScrollView(
+          key: _scrollViewKey,
+          controller: _scrollController,
+          // US-11 有界构建：视口 + 250px（Flutter 3.41+ 用 scrollCacheExtent）
+          scrollCacheExtent: const ScrollCacheExtent.pixels(250.0),
+          slivers: [
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 64), // 与现状等价
+              sliver: SliverList.builder(
+                itemCount: view.chapters.length,
+                itemBuilder: (context, i) => _buildChapterItem(view, i, fg),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// 每章一个 sliver item（D1）；失败章内联 `OverlayError` 且显式重试有界（D5）。
+  Widget _buildChapterItem(BookViewData view, int i, Color fg) {
+    final isLast = i == view.chapters.length - 1;
+    final gap = isLast ? 0.0 : 32.0; // 章间距（唯一行为性增量，非新控件）
+    final resolution = _chapterCache?.resolve(i);
+    if (resolution == null) return const SizedBox.shrink();
+    if (resolution.isFailure) {
+      return Padding(
+        padding: EdgeInsets.only(bottom: gap),
+        child: OverlayError(
+          message: '第 ${i + 1} 章加载失败，请稍后重试',
+          onRetry: () => setState(() => _chapterCache?.retry(i)),
+        ),
+      );
+    }
+    return Padding(
+      padding: EdgeInsets.only(bottom: gap),
+      child: ChapterSection(
+        key: _chapterKeys[i],
+        index: i,
+        chapter: resolution.chapter!,
+        fontSize: _settings.fontSize,
+        lineHeight: _lineHeightFor(_settings.lineHeight),
+        fontFamily: _fontFamilyFor(_settings.fontFamily),
+        foreground: fg,
       ),
     );
   }
@@ -705,8 +904,8 @@ class _ReaderPageState extends State<ReaderPage> {
     }
   }
 
-  String _hrefFor(BookViewData view) {
-    final pad = (_chapterIndex + 1).toString().padLeft(4, '0');
-    return 'chapter_$pad.xhtml';
-  }
+  String _hrefFor(BookViewData view) => _hrefForIndex(_chapterIndex);
+
+  String _hrefForIndex(int index) =>
+      'chapter_${(index + 1).toString().padLeft(4, '0')}.xhtml';
 }

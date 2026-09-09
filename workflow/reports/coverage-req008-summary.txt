@@ -1,0 +1,35 @@
+REQ-008 continuous-scroll · 覆盖率采集摘要（flutter test --coverage）
+date=2026-09-09  agent=test-engineer  phase=testing
+工具: flutter 3.47.2 / dart 3.11.0 ; lcov 解析脚本（scripts/cov-summary.py 面向 llvm-cov JSON，不能解析 lcov）
+原始数据: workflow/reports/coverage-req008.lcov（= app/coverage/lcov.info）
+
+== 新增/改动 Dart 文件（新代码口径 = git diff main 新增行 ∩ lcov DA 行）==
+lib/pages/continuous_scroll_policy.dart   69/69   = 100.00%
+lib/pages/progress_saver.dart             23/23   = 100.00%
+lib/pages/reader_page.dart               164/168  =  97.62%
+TOTAL                                    256/260  =  98.46%   (门槛 ≥85% -> PASS)
+
+== 同三文件 whole-file 口径 ==
+lib/pages/continuous_scroll_policy.dart   69/69   = 100.00%
+lib/pages/progress_saver.dart             23/23   = 100.00%
+lib/pages/reader_page.dart               427/454  =  94.05%
+TOTAL                                    519/546  =  95.05%
+
+== 新增代码未覆盖行（4 行，均有结论）==
+reader_page.dart:318-320  _scrollToChapter 兜底（有界步进上限内仍未定位到目标章时同步状态，不崩溃）
+reader_page.dart:395      _onProgressSeek 分页分支 state.gotoPage（需真实 PagedWebViewState，Linux 固有不可测）
+
+== 全量回归 ==
+flutter test --coverage : 198 passed / 4 skipped / 0 failed
+flutter analyze          : No issues found! (0 issues)
+cargo test --release     : 222 passed / 0 failed
+integration_test/reader_continuous_scroll_test.dart (xvfb -d linux): 5 passed / 0 failed
+app/test/no_synthetic_chrome_test.dart: 1 passed（静态守卫未削弱）
+
+== 本阶段新增测试 ==
+app/test/reader_continuous_scroll_coverage_test.dart  (5 例)
+  1. ChapterContentCache maxAttempts=0 防御分支（provider 零调用、有界）
+  2. resolveVisibleChapter 向后回滚且 current 不在已构建集合
+  3. 恢复定位到未构建远章 → 有界步进落到目标章
+  4. 分页 onProgress → _saveProgress 落盘接线
+  5. 分页听书返回 → _reloadProgress 分页重排接线
