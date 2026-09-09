@@ -9,16 +9,36 @@ import 'package:reader_app/services/library_backend.dart';
 import 'package:reader_app/widgets/directory_drawer.dart';
 import 'package:reader_app/widgets/display_settings_sheet.dart';
 import 'package:reader_app/widgets/reader_chrome.dart';
+import 'package:reader_app/widgets/selection_toolbar.dart';
 
 import 'fake_backend.dart';
+import 'fake_paged_view_controls.dart';
+import 'fake_translate_backend.dart';
 import 'fake_tts_backend.dart';
 import 'fake_tts_engine.dart';
 
-/// 听书测试用句表（与 FakeBackend 两章文本一致）
+/// 听书测试用句表（与 [_LongTextBackend] 两章文本语义一致，按 href 取句）
 const _listenSentences = {
   'chapter_0001.xhtml': ['很久以前，有一座山。'],
   'chapter_0002.xhtml': ['故事结束了。'],
 };
+
+/// 长正文（REQ-007）：文字铺满屏幕中部，使 `find.text(_ch1)` 的 center 落在
+/// 中部 1/3 命中区（既有 `_center=Offset(400,300)` 空白点属 R1-2 假阳性，已废弃）。
+const String _ch1 =
+    '很久以前，有一座山，山里住着一位老人。'
+    '他每天清晨都会沿着溪流散步，看雾气从山谷里升起。'
+    '孩子们围坐在他身边，听他讲那些古老的故事。'
+    '年复一年，山还是那座山，溪水还是那条溪水，'
+    '只是听故事的人换了一批又一批，故事却从未讲完。'
+    '老人说，山外的世界很大，但每个人心里都有一座山。'
+    '有一天，一个年轻人背起行囊，决定翻过那座山去看一看。'
+    '他走了很远很远，直到回望时，故乡已经变成一个小小的点。'
+    '山风吹过他的衣襟，他忽然明白，老人讲的故事从来都不是关于山，'
+    '而是关于每一个愿意出发的人，关于那些被时间带走却从未消失的东西。'
+    '后来，年轻人也成了讲故事的人，把那座山讲给更多的孩子听。';
+
+const String _ch2 = '故事结束了，年轻人终于翻过了那座山。';
 
 /// 分页模式 fake 构建器（不实例化真实 WebView）
 Widget fakePagedBuilder(
@@ -34,16 +54,28 @@ Widget fakePagedBuilder(
   return const Center(child: Text('分页模式（fake WebView）'));
 }
 
-const _center = Offset(400, 300); // 沉浸态下"正文中部"（呼出/隐藏）
+/// 两章长文本后端（滚动模式）。
+class _LongTextBackend extends FakeBackend {
+  @override
+  Future<BookViewData> openBook(String id) async => const BookViewData(
+        id: 'b1',
+        title: '测试书',
+        chapters: [
+          ChapterData(title: '第一章', text: _ch1),
+          ChapterData(title: '第二章', text: _ch2),
+        ],
+      );
+}
 
+/// 真实点击正文文字 center 呼出/隐藏 Chrome（滚动模式）。
 Future<void> _toggleChrome(WidgetTester tester) async {
-  await tester.tapAt(_center);
+  await tester.tapAt(tester.getCenter(find.text(_ch1)));
   await tester.pump();
 }
 
 void main() {
-  testWidgets('沉浸态进入 + 点击中部呼出顶底栏 + 底栏下一章', (tester) async {
-    final backend = FakeBackend();
+  testWidgets('沉浸态进入 + 点击正文文字呼出顶底栏 + 底栏下一章', (tester) async {
+    final backend = _LongTextBackend();
     await tester.pumpWidget(MaterialApp(
       home: ReaderPage(bookId: 'b1', bookTitle: '测试书', backend: backend),
     ));
@@ -51,10 +83,10 @@ void main() {
 
     // 沉浸态：正文可见，但无顶栏（无"返回书架"）
     expect(find.text('第一章'), findsOneWidget);
-    expect(find.text('很久以前，有一座山。'), findsOneWidget);
+    expect(find.text(_ch1), findsOneWidget);
     expect(find.text('返回书架'), findsNothing); // 沉浸态顶栏未渲染
 
-    // 点击中部 → 呼出顶栏 + 底栏
+    // 点击正文文字 center → 呼出顶栏 + 底栏
     await _toggleChrome(tester);
     expect(find.byTooltip('返回书架'), findsOneWidget);
     expect(find.text('下一章'), findsOneWidget);
@@ -63,11 +95,11 @@ void main() {
     // 底栏"下一章" → 第二章
     await tester.tap(find.text('下一章'));
     await tester.pumpAndSettle();
-    expect(find.text('故事结束了。'), findsOneWidget);
+    expect(find.text(_ch2), findsOneWidget);
   });
 
-  testWidgets('点击中部再次隐藏 chrome', (tester) async {
-    final backend = FakeBackend();
+  testWidgets('点击正文文字再次隐藏 chrome', (tester) async {
+    final backend = _LongTextBackend();
     await tester.pumpWidget(MaterialApp(
       home: ReaderPage(bookId: 'b1', bookTitle: '测试书', backend: backend),
     ));
@@ -75,21 +107,21 @@ void main() {
     await _toggleChrome(tester);
     expect(find.byTooltip('返回书架'), findsOneWidget);
     await _toggleChrome(tester);
-    expect(find.text('返回书架'), findsNothing); // 沉浸态顶栏未渲染 // 再次点击中部隐藏
+    expect(find.text('返回书架'), findsNothing); // 再次点击中部隐藏
   });
 
   testWidgets('翻章后保存进度，重开恢复到该章', (tester) async {
-    final backend = FakeBackend();
+    final backend = _LongTextBackend();
     await tester.pumpWidget(MaterialApp(
       home: ReaderPage(bookId: 'b1', bookTitle: '测试书', backend: backend),
     ));
     await tester.pumpAndSettle();
-    expect(find.text('很久以前，有一座山。'), findsOneWidget);
+    expect(find.text(_ch1), findsOneWidget);
 
     await _toggleChrome(tester);
     await tester.tap(find.text('下一章'));
     await tester.pumpAndSettle();
-    expect(find.text('故事结束了。'), findsOneWidget);
+    expect(find.text(_ch2), findsOneWidget);
     expect(backend.saved?.href, 'chapter_0002.xhtml');
 
     // 重开恢复到第二章
@@ -98,11 +130,11 @@ void main() {
       home: ReaderPage(bookId: 'b1', bookTitle: '测试书', backend: backend),
     ));
     await tester.pumpAndSettle();
-    expect(find.text('故事结束了。'), findsOneWidget);
+    expect(find.text(_ch2), findsOneWidget);
   });
 
   testWidgets('Aa 面板：弹出且可切换分页模式（不再有右上角按钮）', (tester) async {
-    final backend = FakeBackend();
+    final backend = _LongTextBackend();
     await tester.pumpWidget(MaterialApp(
       home: ReaderPage(
         bookId: 'b1',
@@ -112,7 +144,7 @@ void main() {
       ),
     ));
     await tester.pumpAndSettle();
-    expect(find.text('很久以前，有一座山。'), findsOneWidget);
+    expect(find.text(_ch1), findsOneWidget);
 
     // 无右上角模式切换按钮（Icons.auto_stories/article_outlined）
     expect(find.byIcon(Icons.auto_stories), findsNothing);
@@ -164,7 +196,7 @@ void main() {
   });
 
   testWidgets('底部进度条拖动触发 saveProgress', (tester) async {
-    final backend = FakeBackend();
+    final backend = _LongTextBackend();
     await tester.pumpWidget(MaterialApp(
       home: ReaderPage(bookId: 'b1', bookTitle: '测试书', backend: backend),
     ));
@@ -185,7 +217,7 @@ void main() {
       home: ReaderPage(
         bookId: 'b1',
         bookTitle: '测试书',
-        backend: FakeBackend(),
+        backend: _LongTextBackend(),
         ttsBackend: FakeTtsBackend(sentences: _listenSentences),
         ttsEngine: engine,
       ),
@@ -207,7 +239,7 @@ void main() {
   });
 
   testWidgets('听书返回后阅读页重读进度（US-15）', (tester) async {
-    final backend = FakeBackend();
+    final backend = _LongTextBackend();
     final engine = FakeTtsEngine();
     await tester.pumpWidget(MaterialApp(
       home: ReaderPage(
@@ -234,7 +266,7 @@ void main() {
     await tester.tap(find.byTooltip('返回'));
     await tester.pumpAndSettle();
 
-    expect(find.text('故事结束了。'), findsOneWidget, reason: '返回后应重读进度并跳到第二章');
+    expect(find.text(_ch2), findsOneWidget, reason: '返回后应重读进度并跳到第二章');
   });
 
   testWidgets('US-22 选中工具条"复制"写入系统剪贴板', (tester) async {
@@ -268,7 +300,7 @@ void main() {
   });
 
   testWidgets('目录抽屉：打开列出章节 → 选另一章跳转 + saveProgress', (tester) async {
-    final backend = FakeBackend();
+    final backend = _LongTextBackend();
     await tester.pumpWidget(MaterialApp(
       home: ReaderPage(bookId: 'b1', bookTitle: '测试书', backend: backend),
     ));
@@ -282,13 +314,13 @@ void main() {
     // 选第二章 → 跳转 + 保存 href 更新
     await tester.tap(find.text('2. 第二章'));
     await tester.pumpAndSettle();
-    expect(find.text('故事结束了。'), findsOneWidget);
+    expect(find.text(_ch2), findsOneWidget);
     expect(backend.saved?.href, 'chapter_0002.xhtml');
   });
 
   testWidgets('书签图标切换（幂等）', (tester) async {
     await tester.pumpWidget(MaterialApp(
-      home: ReaderPage(bookId: 'b1', bookTitle: '测试书', backend: FakeBackend()),
+      home: ReaderPage(bookId: 'b1', bookTitle: '测试书', backend: _LongTextBackend()),
     ));
     await tester.pumpAndSettle();
     await _toggleChrome(tester);
@@ -317,7 +349,9 @@ void main() {
     expect(find.text('划重点'), findsOneWidget);
   });
 
-  testWidgets('分页模式：边缘 15% 点击不崩（fake 无 PagedWebViewState → 短路）', (tester) async {
+  testWidgets('US-2 分页模式：左右边缘点击翻页且不 toggle Chrome（注入 fake controls）',
+      (tester) async {
+    final controls = FakePagedViewControls(nextResult: true, prevResult: true);
     await tester.pumpWidget(MaterialApp(
       home: ReaderPage(
         bookId: 'b1',
@@ -325,15 +359,119 @@ void main() {
         backend: FakeBackend(),
         pagedViewBuilder: fakePagedBuilder,
         initialPagedMode: true,
+        pagedControls: controls,
       ),
     ));
     await tester.pumpAndSettle();
     expect(find.text('分页模式（fake WebView）'), findsOneWidget);
+
     await tester.tapAt(const Offset(50, 300)); // 左边缘 <0.15w
-    await tester.pump();
+    await tester.pumpAndSettle();
     await tester.tapAt(const Offset(750, 300)); // 右边缘 >0.85w
+    await tester.pumpAndSettle();
+
+    expect(controls.prevCalls, 1);
+    expect(controls.nextCalls, 1);
+    expect(find.byTooltip('返回书架'), findsNothing, reason: '边缘翻页不得 toggle Chrome');
+  });
+
+  testWidgets('US-2 长按正文不触发 Chrome toggle', (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      home: ReaderPage(
+        bookId: 'b1',
+        bookTitle: '测试书',
+        backend: _LongTextBackend(),
+        translateBackend: FakeTranslateBackend(),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    await tester.longPress(find.text(_ch1));
+    await tester.pumpAndSettle();
+    expect(find.byType(ReaderSelectionToolbar), findsOneWidget);
+    expect(find.byTooltip('返回书架'), findsNothing, reason: '长按选中不得误触 Chrome');
+  });
+
+  testWidgets('US-5 分页模式：底栏下一章 → fake 构建器收到新 href + 保存章首进度',
+      (tester) async {
+    final backend = FakeBackend();
+    final hrefs = <String>[];
+    Widget builder(
+      BuildContext context, {
+      required String bookId,
+      required String href,
+      required String html,
+      required dynamic backend,
+      required int fontSize,
+      required ValueChanged<double> onProgress,
+      ValueChanged<String>? onSelectedText,
+    }) {
+      hrefs.add(href);
+      return Center(child: Text(href == 'chapter_0002.xhtml' ? '第二章分页' : '第一章分页'));
+    }
+
+    await tester.pumpWidget(MaterialApp(
+      home: ReaderPage(
+        bookId: 'b1',
+        bookTitle: '测试书',
+        backend: backend,
+        pagedViewBuilder: builder,
+        initialPagedMode: true,
+      ),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.text('第一章分页'), findsOneWidget);
+
+    await tester.tapAt(tester.getCenter(find.text('第一章分页')));
     await tester.pump();
-    expect(find.text('分页模式（fake WebView）'), findsOneWidget);
+    await tester.tap(find.text('下一章'));
+    await tester.pumpAndSettle();
+
+    expect(hrefs.last, 'chapter_0002.xhtml');
+    expect(find.text('第二章分页'), findsOneWidget);
+    expect(backend.saved?.href, 'chapter_0002.xhtml');
+    expect(backend.saved?.progression, 0.0);
+  });
+
+  testWidgets('US-9 分页切章后 fontSize 仍按当前 Aa 传入且选中回调仍接线', (tester) async {
+    final backend = FakeBackend();
+    final fontSizes = <int>[];
+    ValueChanged<String>? selectedCallback;
+    Widget builder(
+      BuildContext context, {
+      required String bookId,
+      required String href,
+      required String html,
+      required dynamic backend,
+      required int fontSize,
+      required ValueChanged<double> onProgress,
+      ValueChanged<String>? onSelectedText,
+    }) {
+      fontSizes.add(fontSize);
+      selectedCallback = onSelectedText;
+      return Center(child: Text(href == 'chapter_0002.xhtml' ? '第二章分页' : '第一章分页'));
+    }
+
+    await tester.pumpWidget(MaterialApp(
+      home: ReaderPage(
+        bookId: 'b1',
+        bookTitle: '测试书',
+        backend: backend,
+        pagedViewBuilder: builder,
+        initialPagedMode: true,
+      ),
+    ));
+    await tester.pumpAndSettle();
+    expect(fontSizes.last, 18, reason: '默认 Aa 字号');
+    expect(selectedCallback, isNotNull, reason: 'onSelectedText 必须仍接线');
+
+    await tester.tapAt(tester.getCenter(find.text('第一章分页')));
+    await tester.pump();
+    await tester.tap(find.text('下一章'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('第二章分页'), findsOneWidget);
+    expect(fontSizes.last, 18, reason: '切章后仍按当前 Aa 字号');
+    expect(selectedCallback, isNotNull, reason: '切章后选中回调仍接线');
   });
 
   testWidgets('ReaderDirectoryDrawer 组件：列出章节 + 当前高亮 + 选择回调', (tester) async {

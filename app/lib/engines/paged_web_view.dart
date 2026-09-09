@@ -13,6 +13,9 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 import '../services/library_backend.dart';
+import 'paged_document_reloader.dart';
+import 'paged_js_result.dart';
+import 'paged_view_controls.dart';
 
 /// 分页 WebView 的 `InAppWebViewSettings` 工厂（REQ-005 · ADR 决策点2，US-19）。
 ///
@@ -61,17 +64,49 @@ class PagedWebView extends StatefulWidget {
 }
 
 /// 对外暴露 next/prev/goto/relayout 供阅读器页调用
-class PagedWebViewState extends State<PagedWebView> {
+class PagedWebViewState extends State<PagedWebView> implements PagedViewControls {
   InAppWebViewController? _controller;
+  late final PagedDocumentReloader _reloader;
+  final PagedLoadGate _loadGate = PagedLoadGate();
+  PagedJsExecutor? _js;
 
   static const _scheme = 'reader://book/';
 
   @override
+  void initState() {
+    super.initState();
+    _reloader = PagedDocumentReloader(
+      loadData: ({required String html, required String baseUrl}) async {
+        final c = _controller;
+        if (c == null) return;
+        await c.loadData(data: html, baseUrl: WebUri(baseUrl));
+      },
+      applyStyle: ({required int fontSize, required String theme}) => _applyStyle(),
+    );
+  }
+
+  @override
   void didUpdateWidget(PagedWebView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.fontSize != oldWidget.fontSize || widget.theme != oldWidget.theme) {
-      _applyStyle();
-    }
+    // REQ-007 D2：href/html 变化 → 重载新文档；仅样式变化 → _applyStyle；都不变 → 幂等。
+    final reloading = PagedDocumentReloader.shouldReload(
+      oldHref: oldWidget.href,
+      newHref: widget.href,
+      oldHtml: oldWidget.html,
+      newHtml: widget.html,
+    );
+    if (reloading) _loadGate.begin();
+    _reloader.onWidgetUpdated(
+      oldHref: oldWidget.href,
+      newHref: widget.href,
+      oldHtml: oldWidget.html,
+      newHtml: widget.html,
+      bookId: widget.bookId,
+      oldFontSize: oldWidget.fontSize,
+      fontSize: widget.fontSize,
+      oldTheme: oldWidget.theme,
+      theme: widget.theme,
+    );
   }
 
   Future<void> _applyStyle() async {
@@ -103,13 +138,8 @@ class PagedWebViewState extends State<PagedWebView> {
   Future<void> _onLoadStop(InAppWebViewController c, WebUri? _) async {
     await c.evaluateJavascript(source: paginationJs);
     await _applyStyle();
-  }
-
-  Future<bool> _runBool(String js) async {
-    final c = _controller;
-    if (c == null) return false;
-    final v = await c.evaluateJavascript(source: js);
-    return v == 'true';
+    // REQ-007 D2：新文档（含切章重载）就绪后放行 relayoutAfterLoad。
+    _loadGate.complete();
   }
 
   /// JS → Dart 回调：`readerFlutter`（进度）与 `selectedText`（选区文本，REQ-003）。
@@ -135,23 +165,36 @@ class PagedWebViewState extends State<PagedWebView> {
     );
   }
 
-  // ---- 对外操作（阅读器页调用） ----
-  Future<bool> nextPage() => _runBool('readerPager.next()');
-  Future<bool> prevPage() => _runBool('readerPager.prev()');
-  Future<bool> gotoPage(int index) => _runBool('readerPager.goto($index)');
+  // ---- 对外操作（阅读器页调用；REQ-007 D3/D4） ----
+  @override
+  Future<bool> nextPage() =>
+      _js?.runBool('readerPager.next()') ?? Future<bool>.value(false);
+
+  @override
+  Future<bool> prevPage() =>
+      _js?.runBool('readerPager.prev()') ?? Future<bool>.value(false);
+
+  @override
+  Future<bool> gotoPage(int index) =>
+      _js?.runBool('readerPager.goto($index)') ?? Future<bool>.value(false);
 
   /// 当前章总页数（REQ-004：进度条拖动 → 分页按 progression 精确跳页）。
-  Future<int> pageCount() async {
-    final c = _controller;
-    if (c == null) return 1;
-    final v = await c.evaluateJavascript(source: 'readerPager.pageCount()');
-    final n = int.tryParse('$v');
-    return (n == null || n <= 0) ? 1 : n;
-  }
+  @override
+  Future<int> pageCount() =>
+      _js?.runInt('readerPager.pageCount()') ?? Future<int>.value(1);
+
+  @override
   Future<void> relayout() async {
     final c = _controller;
     if (c == null) return;
     await c.evaluateJavascript(source: 'readerPager.relayout()');
+  }
+
+  /// REQ-007 D2：若切章重载进行中，先等新文档载入完成（`onLoadStop`）再重排。
+  @override
+  Future<void> relayoutAfterLoad() async {
+    if (_loadGate.pending) await _loadGate.done;
+    await relayout();
   }
 
   @override
@@ -164,6 +207,7 @@ class PagedWebViewState extends State<PagedWebView> {
       initialSettings: buildPagedWebViewSettings(),
       onWebViewCreated: (c) {
         _controller = c;
+        _js = PagedJsExecutor((source) => c.evaluateJavascript(source: source));
         _registerJsHandlers(c);
       },
       shouldInterceptRequest: _intercept,

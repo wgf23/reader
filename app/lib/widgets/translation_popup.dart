@@ -143,16 +143,36 @@ class DictResultCard extends StatelessWidget {
   static String _stripHtml(String s) => s.replaceAll(RegExp(r'<[^>]*>'), '');
 }
 
-/// 错误浮层：文案 + 重试按钮（US-12/15 可断言）
+/// "翻译未配置"识别谓词（REQ-007 D5）：仅翻译未配置返回 true（查词错误不得命中）。
+///
+/// 锚定 core 文案契约 `未配置在线翻译 API Key` 与 ReaderPage 无后端时的
+/// `未配置翻译后端`；集中一处，避免散落。
+bool isTranslationNotConfiguredError(String message) =>
+    message.contains('未配置在线翻译 API Key') ||
+    message.contains('未配置翻译后端');
+
+/// 错误浮层：文案 + 重试按钮（US-12/15 可断言）。
+///
+/// REQ-007 D5：可选 [onOpenSettings]（非 null 才渲染"去设置"），不传时行为与
+/// 现状逐字一致（网络失败 / 查词错误不受影响）。
 class OverlayError extends StatelessWidget {
-  const OverlayError({super.key, required this.message, required this.onRetry});
+  const OverlayError({
+    super.key,
+    required this.message,
+    required this.onRetry,
+    this.onOpenSettings,
+    this.openSettingsLabel = '去设置',
+  });
 
   final String message;
   final VoidCallback onRetry;
+  final VoidCallback? onOpenSettings;
+  final String openSettingsLabel;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final openSettings = onOpenSettings;
     return Card(
       elevation: 3,
       color: theme.colorScheme.errorContainer,
@@ -169,10 +189,26 @@ class OverlayError extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            FilledButton.tonal(
-              onPressed: onRetry,
-              child: const Text('重试'),
-            ),
+            if (openSettings == null)
+              FilledButton.tonal(
+                onPressed: onRetry,
+                child: const Text('重试'),
+              )
+            else
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  FilledButton.tonal(
+                    onPressed: onRetry,
+                    child: const Text('重试'),
+                  ),
+                  const SizedBox(width: 8),
+                  FilledButton.tonal(
+                    onPressed: openSettings,
+                    child: Text(openSettingsLabel),
+                  ),
+                ],
+              ),
           ],
         ),
       ),

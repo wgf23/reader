@@ -14,13 +14,18 @@ import 'package:reader_app/services/translate_backend.dart';
 import 'package:reader_app/services/tts_backend.dart';
 import 'package:reader_app/widgets/display_settings_sheet.dart';
 import 'package:reader_app/widgets/listen_settings_sheet.dart';
-import 'package:reader_app/widgets/reader_chrome.dart';
 import 'package:reader_app/widgets/translation_popup.dart';
 
 import '../test/fake_backend.dart';
 import '../test/fake_translate_backend.dart';
 import '../test/fake_tts_backend.dart';
 import '../test/fake_tts_engine.dart';
+
+/// `_LongFakeBackend` 的正文文本（用于真实点击文字 center 呼出 Chrome）。
+const String _readerText = 'The morning light filtered through the curtains.\n\n'
+    'She opened the book and began to read. The words were interesting.\n\n'
+    'A story about a small village by the sea. People lived simple lives.\n\n'
+    'Every day the fisherman went out early. He knew the tides well.';
 
 /// 长文本后端：让正文占满纵向，便于看工具条跟随选词。
 class _LongFakeBackend extends FakeBackend {
@@ -31,10 +36,7 @@ class _LongFakeBackend extends FakeBackend {
         chapters: [
           ChapterData(
             title: '第一章',
-            text: 'The morning light filtered through the curtains.\n\n'
-                'She opened the book and began to read. The words were interesting.\n\n'
-                'A story about a small village by the sea. People lived simple lives.\n\n'
-                'Every day the fisherman went out early. He knew the tides well.',
+            text: _readerText,
           ),
         ],
       );
@@ -144,37 +146,12 @@ void main() {
     await _shot(tester, 'reader_immersive');
   });
 
-  testWidgets('screenshot 阅读器·呼出顶底栏', (tester) async {
+  testWidgets('screenshot 阅读器·呼出顶底栏（真实点击正文文字）', (tester) async {
     _setPhone(tester);
-    await tester.pumpWidget(_pack(Scaffold(
-      backgroundColor: Colors.white,
-      body: Column(children: [
-        ReaderTopBar(
-          title: '测试书',
-          chapter: '第一章 · 起风了',
-          onBack: () {},
-          onMore: () {},
-        ),
-        const Expanded(
-          child: Center(
-            child: Text('正文 · 沉浸态背景（呼出后 Chrome 浮层）'),
-          ),
-        ),
-        ReaderBottomBar(
-          chapterIndex: 0,
-          chapterCount: 2,
-          progress: 0.42,
-          bookmarked: false,
-          onPrevChapter: () {},
-          onNextChapter: () {},
-          onDirectory: () {},
-          onBookmark: () {},
-          onSettings: () {},
-          onProgressChanged: (_) {},
-          onProgressSeek: (_) {},
-        ),
-      ]),
-    )));
+    await tester.pumpWidget(reader());
+    await tester.pumpAndSettle();
+    // 真实点击正文文字 center 呼出 Chrome（禁止合成页，US-3）。
+    await tester.tapAt(tester.getCenter(find.text(_readerText)));
     await _shot(tester, 'reader_chrome');
   });
 
@@ -243,8 +220,8 @@ void main() {
     _setPhone(tester);
     await tester.pumpWidget(reader());
     await tester.pumpAndSettle();
-    // 沉浸态默认无 Chrome：先点正文中部 1/3 呼出顶栏，再点「更多」。
-    await tester.tapAt(const Offset(195, 422));
+    // 沉浸态默认无 Chrome：先真实点击正文文字 center 呼出顶栏，再点「更多」。
+    await tester.tapAt(tester.getCenter(find.text(_readerText)));
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('更多'));
     await _shot(tester, 'reader_more');

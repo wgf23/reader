@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show SelectedContent;
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 
+import '../engines/paged_view_controls.dart';
 import '../engines/paged_web_view.dart';
 import '../engines/system_tts_engine.dart';
 import '../engines/tts_engine.dart';
@@ -14,7 +15,9 @@ import '../widgets/display_settings_sheet.dart';
 import '../widgets/reader_chrome.dart';
 import '../widgets/selection_toolbar.dart';
 import '../widgets/translation_popup.dart';
+import 'body_tap_policy.dart';
 import 'listen_page.dart';
+import 'settings_page.dart';
 
 /// 分页视图构建器（测试注入 fake，避免依赖系统 WebView）。
 typedef PagedViewBuilder = Widget Function(
@@ -43,6 +46,7 @@ class ReaderPage extends StatefulWidget {
     required this.backend,
     this.translateBackend,
     this.pagedViewBuilder,
+    this.pagedControls,
     this.initialPagedMode = false,
     this.ttsBackend,
     this.ttsEngine,
@@ -53,6 +57,9 @@ class ReaderPage extends StatefulWidget {
   final LibraryBackend backend;
   final TranslateBackend? translateBackend;
   final PagedViewBuilder? pagedViewBuilder;
+
+  /// REQ-007 D4：测试注入 fake 分页控件（生产为 `PagedWebViewState`）。
+  final PagedViewControls? pagedControls;
 
   /// 初始分页模式（测试注入用，默认滚动）
   final bool initialPagedMode;
@@ -99,6 +106,9 @@ class _ReaderPageState extends State<ReaderPage> {
   /// 最近一次正文手势位置（选中时用于把工具条放到选词附近，而非固定顶部）。
   Offset? _lastDataPointer;
 
+  /// REQ-007 D1：不参与手势竞技场的手动 tap 判定。
+  final BodyTapTracker _tapTracker = BodyTapTracker();
+
   @override
   void initState() {
     super.initState();
@@ -109,6 +119,7 @@ class _ReaderPageState extends State<ReaderPage> {
 
   @override
   void dispose() {
+    _tapTracker.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -177,42 +188,37 @@ class _ReaderPageState extends State<ReaderPage> {
     widget.backend.saveProgress(widget.bookId, href, progression);
   }
 
-  // ---------- 手势命中区（5 层 Stack + tap-only 手势层） ----------
-  void _onBodyTapUp(TapUpDetails d, Size size) {
-    final x = d.globalPosition.dx; // 用相对 body 的 localPosition 更稳；此处用宽度比例近似
-    final local = d.localPosition;
-    final relX = local.dx / size.width;
-    final relY = local.dy / size.height;
-    // 左右边缘 15% 翻页（仅分页模式）
-    if (_pagedMode && relX < 0.15) {
-      _page(-1);
-      return;
+  // ---------- 手势命中区（5 层 Stack + 不进竞技场的 Listener） ----------
+  /// REQ-007 D1：命中区解析委托纯函数 [resolveBodyTap]，动作语义与既有
+  /// `_onBodyTapUp` 逐字一致。
+  void _applyTap(BodyTapAction action) {
+    switch (action) {
+      case BodyTapAction.prevPage:
+        _page(-1);
+      case BodyTapAction.nextPage:
+        _page(1);
+      case BodyTapAction.toggleChrome:
+        setState(() => _chromeVisible = !_chromeVisible);
+      case BodyTapAction.dismiss:
+        if (_selectedText != null) {
+          setState(() {
+            _selectedText = null;
+            _resetPopups();
+          });
+        }
+        if (_chromeVisible) setState(() => _chromeVisible = false);
     }
-    if (_pagedMode && relX > 0.85) {
-      _page(1);
-      return;
-    }
-    // 中部 1/3 → 呼出/隐藏
-    if (relX > 0.33 && relX < 0.67 && relY > 0.25 && relY < 0.75) {
-      setState(() => _chromeVisible = !_chromeVisible);
-      return;
-    }
-    // 其余正文区域：收起选中工具条、隐藏 Chrome
-    if (_selectedText != null) {
-      setState(() {
-        _selectedText = null;
-        _resetPopups();
-      });
-    }
-    if (_chromeVisible) setState(() => _chromeVisible = false);
-    final _ = x;
   }
 
+  /// 分页控件来源：测试注入优先，否则取真实 WebView state。
+  PagedViewControls? get _pagedControls =>
+      widget.pagedControls ?? _pagedKey.currentState;
+
+  /// REQ-007 D4：章内翻页成功不跳章；章首/章末才续章。
   Future<void> _page(int delta) async {
-    final state = _pagedKey.currentState;
-    if (state == null) return;
-    final ok = delta < 0 ? await state.prevPage() : await state.nextPage();
-    if (!ok) _goChapter(delta);
+    final controls = _pagedControls;
+    if (controls == null) return;
+    await PageTurnCoordinator(controls: controls, goChapter: _goChapter).page(delta);
   }
 
   /// 进度条松手 → 跳转 + 保存（原型 reader-ui-v2 底栏：拖动实时预览、松手跳转）。
@@ -237,8 +243,9 @@ class _ReaderPageState extends State<ReaderPage> {
 
   void _jumpToProgress(double v) {
     if (_pagedMode) {
-      final state = _pagedKey.currentState;
-      if (state != null) state.relayout();
+      // REQ-007 D2：切章重载进行中时，等新文档载入完成再重排（PagedLoadGate）。
+      final controls = _pagedControls;
+      if (controls != null) controls.relayoutAfterLoad();
     } else if (_scrollController.hasClients) {
       final max = _scrollController.position.maxScrollExtent;
       if (max > 0) _scrollController.jumpTo(max * v);
@@ -274,6 +281,15 @@ class _ReaderPageState extends State<ReaderPage> {
           _settings = s;
           _pagedMode = s.pagedMode;
         }),
+      ),
+    );
+  }
+
+  /// REQ-007 D5 / R3-3：翻译未配置 → 直接 push 设置页，并透传同一 translateBackend。
+  void _openTranslateSettings() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => SettingsPage(translateBackend: widget.translateBackend),
       ),
     );
   }
@@ -474,19 +490,35 @@ class _ReaderPageState extends State<ReaderPage> {
         builder: (context, constraints) {
           return Stack(
             children: [
-              // 手势层 + 正文（相骨）；Listener 记录最近长按/触摸位置供工具条定位
+              // 手势层 + 正文（相骨）；REQ-007 D1：Listener 不进手势竞技场，
+              // 故点在 SelectionArea 文字上也能收到 pointer 事件并手动判定 tap。
               Positioned.fill(
                 child: Listener(
-                  onPointerDown: (e) => _lastDataPointer = e.localPosition,
-                  onPointerUp: (e) => _lastDataPointer = e.localPosition,
-                  onPointerMove: (e) => _lastDataPointer = e.localPosition,
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.translucent,
-                    onTapUp: (d) => _onBodyTapUp(d, constraints.biggest),
-                    child: Container(
-                      color: bg,
-                      child: _buildArticleBody(view, chapter, fg),
-                    ),
+                  behavior: HitTestBehavior.translucent,
+                  onPointerDown: (e) {
+                    _lastDataPointer = e.localPosition;
+                    _tapTracker.onPointerDown(e);
+                  },
+                  onPointerMove: (e) {
+                    _lastDataPointer = e.localPosition;
+                    _tapTracker.onPointerMove(e);
+                  },
+                  onPointerUp: (e) {
+                    _lastDataPointer = e.localPosition;
+                    if (_tapTracker.onPointerUp(e)) {
+                      _applyTap(resolveBodyTap(
+                        local: e.localPosition,
+                        size: constraints.biggest,
+                        pagedMode: _pagedMode,
+                        chromeVisible: _chromeVisible,
+                        hasSelection: _selectedText != null,
+                      ));
+                    }
+                  },
+                  onPointerCancel: _tapTracker.onPointerCancel,
+                  child: Container(
+                    color: bg,
+                    child: _buildArticleBody(view, chapter, fg),
                   ),
                 ),
               ),
@@ -543,7 +575,14 @@ class _ReaderPageState extends State<ReaderPage> {
       children: [
         if (_translating) const Card(child: Padding(padding: EdgeInsets.all(10), child: Text('翻译中…'))),
         if (!_translating && _translationError != null)
-          OverlayError(message: _translationError!, onRetry: _doTranslate),
+          OverlayError(
+            message: _translationError!,
+            onRetry: _doTranslate,
+            // REQ-007 D5：仅"未配置"类翻译错误出现"去设置"；网络失败/查词错误不传。
+            onOpenSettings: isTranslationNotConfiguredError(_translationError!)
+                ? _openTranslateSettings
+                : null,
+          ),
         if (!_translating && _translation != null)
           TranslationResultCard(translation: _translation!),
         if (_lookingUp) const Card(child: Padding(padding: EdgeInsets.all(10), child: Text('查词中…'))),
