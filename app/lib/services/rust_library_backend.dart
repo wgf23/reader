@@ -58,7 +58,7 @@ class RustLibraryBackend implements LibraryBackend {
       title: view.title,
       chapters: [
         for (final c in view.chapters)
-          ChapterData(title: c.title, text: c.text),
+          ChapterData(title: c.title, text: c.text, href: c.href),
       ],
     );
   }

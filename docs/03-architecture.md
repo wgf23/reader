@@ -180,6 +180,31 @@ async fn translate_set_config(cfg: ProviderConfig) -> Result<()>; // Provider ke
 - 分层：契约类型与 `TranslationCacheRepository` trait 在 `core/src/types.rs`（共享内核）；`store/translation.rs` 实现；装配在 `api.rs` 的 `library_open`（双单例注入）；dict/translation 属 domain 层，不直接依赖 store（经 trait），满足 ddd-rules。
 - 异步方案（ADR）：core 内同步（ureq HTTP、rustls），async 由 flutter_rust_bridge 桥接层承载，core 不引入 tokio。
 
+**notes / search（REQ-009 已实现，async 桥接；ADR D1–D12）**
+```rust
+async fn notes_create(book_id: String, href: String, text: String, progression: f32,
+                      kind: String, color: Option<String>, note_text: Option<String>) -> Result<AnnotationView>;
+async fn notes_update(note_id: String, patch: NotePatchView) -> Result<()>;
+async fn notes_delete(note_id: String) -> Result<()>;
+async fn notes_delete_many(note_ids: Vec<String>) -> Result<u32>;
+async fn notes_delete_all(book_id: String) -> Result<u32>;
+async fn notes_list(book_id: String) -> Result<Vec<NoteGroupView>>;   // 按章节分组，含书签
+async fn notes_resolve(note_id: String) -> Result<LocatorView>;       // 锚→位置
+async fn notes_export(book_id: String, fmt: String, out_path: String) -> Result<ExportSummaryView>;
+async fn notes_toggle_bookmark(book_id: String, href: String, progression: f32,
+                               snippet: Option<String>) -> Result<BookmarkToggleView>; // 幂等
+async fn search(query: String, scope: SearchScopeView) -> Result<Vec<SearchHitView>>;
+```
+> DTO：`TextSelectionView` / `AnnotationView` / `NoteGroupView` / `NotePatchView` / `BookmarkToggleView` /
+> `RangeView` / `SearchHitView` / `SearchScopeView` / `ExportSummaryView`（字段见 REQ-009 02-design §2.2）。
+> `ChapterView` 增 `href`（章/资源路径，搜索定位与笔记锚点用）。
+> 装配：`library_open` 增 `NOTES`/`SEARCH` 双单例（`AnnotationRepo`/`SearchIndexRepo` 各自第二连接，
+> WAL + `busy_timeout=5000` + `foreign_keys=ON`，共享 `migrate_conn`）。`library_import` 成功后
+> `ensure_indexed`（导入即搜）；`search` 开头对 scope 内未索引书懒回填（每书一次）。
+> 分层：契约 `AnnotationRepository`/`SearchIndexRepository` 在 `core/src/types.rs`（共享内核）；
+> 实现在 `core/src/store/{annotations,search_index}.rs`；domain（`notes`/`search`/`locator`）只依赖 trait。
+> CJK 分词（bigram 预处理 + 单字 LIKE 回退）见 REQ-009 02-adr D1。
+
 ---
 
 ## 5. 线程与并发模型

@@ -37,8 +37,8 @@ void main() {
     await tester.pumpAndSettle();
 
     // 工具条含 划重点/笔记/翻译/查词/复制（无"取消"——取消改为点正文空白处）
-    expect(find.text('划重点'), findsOneWidget);
-    expect(find.text('笔记'), findsOneWidget);
+    expect(find.text('高亮'), findsOneWidget);
+    expect(find.text('划线'), findsOneWidget);
     expect(find.text('翻译'), findsOneWidget);
     expect(find.text('查词'), findsOneWidget);
     expect(find.text('复制'), findsOneWidget);
@@ -208,7 +208,7 @@ void main() {
     // 翻译/查词无条件显示（避免用户看不到入口）
     expect(find.text('翻译'), findsOneWidget);
     expect(find.text('查词'), findsOneWidget);
-    expect(find.text('划重点'), findsOneWidget);
+    expect(find.text('高亮'), findsOneWidget);
     expect(find.text('复制'), findsOneWidget);
     // 点击翻译 → 提示未配置（而非静默）
     await tester.tap(find.text('翻译'));

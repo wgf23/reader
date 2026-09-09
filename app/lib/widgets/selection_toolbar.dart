@@ -1,18 +1,54 @@
-/// 选中文本浮动工具条（原型 reader-ui-v2/04-selection.svg）。
-/// 动作由 reader_page 处理：翻译/查词 接 translate_backend，其余为占位（TODO）。
+/// 选中文本浮动工具条（原型 docs/wireframes/06-selection-toolbar.svg）。
+///
+/// 动作：复制 / 高亮（4 色）/ 划线 / 批注 / 翻译 / 查词（查词为 REQ-003 保留入口）。
+/// 颜色统一取自 `NoteColors`（单一色源，ADR C15）。
 library;
 
 import 'package:flutter/material.dart';
 
-enum SelectionAction { highlight, note, translate, lookup, copy }
+import 'note_colors.dart';
 
-class ReaderSelectionToolbar extends StatelessWidget {
+enum SelectionAction {
+  copy,
+  highlight,
+  underline,
+  note,
+  translate,
+  lookup,
+}
+
+class ReaderSelectionToolbar extends StatefulWidget {
   const ReaderSelectionToolbar({
     super.key,
     required this.onAction,
+    this.onHighlightColor,
   });
 
   final ValueChanged<SelectionAction> onAction;
+
+  /// 选定高亮颜色时回调（`#RRGGBB`）；为 null 时「高亮」直接走 [onAction]。
+  final ValueChanged<String>? onHighlightColor;
+
+  @override
+  State<ReaderSelectionToolbar> createState() =>
+      _ReaderSelectionToolbarState();
+}
+
+class _ReaderSelectionToolbarState extends State<ReaderSelectionToolbar> {
+  bool _paletteOpen = false;
+
+  void _onHighlightTap() {
+    if (widget.onHighlightColor == null) {
+      widget.onAction(SelectionAction.highlight);
+      return;
+    }
+    setState(() => _paletteOpen = !_paletteOpen);
+  }
+
+  void _pickColor(String hex) {
+    setState(() => _paletteOpen = false);
+    widget.onHighlightColor?.call(hex);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,22 +56,58 @@ class ReaderSelectionToolbar extends StatelessWidget {
       elevation: 4,
       borderRadius: BorderRadius.circular(12),
       color: Theme.of(context).colorScheme.surface,
-      child: Row(
+      child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _btn('划重点', Icons.border_color, SelectionAction.highlight),
-          _btn('笔记', Icons.edit_note, SelectionAction.note, withColorDots: true),
-          _btn('翻译', Icons.translate, SelectionAction.translate),
-          _btn('查词', Icons.abc, SelectionAction.lookup),
-          _btn('复制', Icons.copy, SelectionAction.copy),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _btn('复制', Icons.copy, SelectionAction.copy),
+              _btn('高亮', Icons.border_color, SelectionAction.highlight,
+                  onTap: _onHighlightTap),
+              _btn('划线', Icons.format_underlined, SelectionAction.underline),
+              _btn('批注', Icons.edit_note, SelectionAction.note),
+              _btn('翻译', Icons.translate, SelectionAction.translate),
+              _btn('查词', Icons.abc, SelectionAction.lookup),
+            ],
+          ),
+          if (_paletteOpen)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8, top: 2),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (final hex in NoteColors.palette)
+                    GestureDetector(
+                      key: Key('note-color-$hex'),
+                      onTap: () => _pickColor(hex),
+                      child: Container(
+                        width: 26,
+                        height: 26,
+                        margin: const EdgeInsets.symmetric(horizontal: 6),
+                        decoration: BoxDecoration(
+                          color: NoteColors.colorFor(hex),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.black12),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
         ],
       ),
     );
   }
 
-  Widget _btn(String label, IconData icon, SelectionAction action, {bool withColorDots = false}) {
+  Widget _btn(
+    String label,
+    IconData icon,
+    SelectionAction action, {
+    VoidCallback? onTap,
+  }) {
     return InkWell(
-      onTap: () => onAction(action),
+      onTap: onTap ?? () => widget.onAction(action),
       child: ConstrainedBox(
         constraints: const BoxConstraints(minWidth: 52, minHeight: 52),
         child: Padding(
@@ -46,18 +118,7 @@ class ReaderSelectionToolbar extends StatelessWidget {
             children: [
               Icon(icon, size: 22),
               const SizedBox(height: 4),
-              if (withColorDots)
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(label, style: const TextStyle(fontSize: 12)),
-                    const SizedBox(width: 4),
-                    for (final c in const [Color(0xFFFBC02D), Color(0xFF1A73E8), Color(0xFF43A047), Color(0xFFE91E63)])
-                      Container(width: 5, height: 5, margin: const EdgeInsets.symmetric(horizontal: 1.5), decoration: BoxDecoration(color: c, shape: BoxShape.circle)),
-                  ],
-                )
-              else
-                Text(label, style: const TextStyle(fontSize: 12)),
+              Text(label, style: const TextStyle(fontSize: 12)),
             ],
           ),
         ),

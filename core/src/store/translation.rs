@@ -299,8 +299,8 @@ mod tests {
     }
 
     #[test]
-    fn v2_to_v3_migration_preserves_existing_data() {
-        // 构造 user_version=2 的存量库（含书与进度）→ 重开 → 数据完整 + 新表存在 + v3
+    fn v2_to_v4_migration_preserves_existing_data() {
+        // 构造 user_version=2 的存量库（含书与进度）→ 重开 → 数据完整 + 新表存在 + v4
         let dir = tempfile::tempdir().unwrap();
         let db = dir.path().join("library.db");
         {
@@ -327,7 +327,7 @@ mod tests {
         let p = store.load_progress("bk1").unwrap().expect("进度不丢");
         assert_eq!(p.href, "c1.xhtml");
         assert!((p.progression - 0.5).abs() < 1e-4);
-        // 新表可用 + user_version==3
+        // 新表可用 + user_version==4（REQ-009 v4 迁移）
         let mut repo = TranslationRepo::open(dir.path()).unwrap();
         repo.cache_put(&entry("migrated", "echo")).unwrap();
         assert_eq!(repo.cache_count().unwrap(), 1);
@@ -335,7 +335,7 @@ mod tests {
             .conn
             .query_row("PRAGMA user_version", [], |r| r.get(0))
             .unwrap();
-        assert_eq!(ver, 3);
+        assert_eq!(ver, 4);
         // dicts/ 目录已建（Store::open）
         assert!(dir.path().join("dicts").is_dir());
     }

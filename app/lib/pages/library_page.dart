@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 
 import '../services/library_backend.dart';
 import '../services/rust_library_backend.dart';
+import '../services/rust_notes_backend.dart';
+import '../services/rust_search_backend.dart';
 import '../services/rust_translate_backend.dart';
 import 'reader_page.dart';
 
@@ -137,6 +139,9 @@ class _LibraryPageState extends State<LibraryPage> {
                   backend: _backend,
                   // REQ-003：翻译/查词后端（选中文本入口）
                   translateBackend: RustTranslateBackend(),
+                  // REQ-009：笔记/搜索后端（生产 Rust；测试注入 fake）
+                  notesBackend: RustNotesBackend(),
+                  searchBackend: RustSearchBackend(),
                 ),
               ),
             );

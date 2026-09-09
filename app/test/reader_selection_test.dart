@@ -37,11 +37,12 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(ReaderSelectionToolbar), findsOneWidget);
-    expect(find.text('划重点'), findsOneWidget);
-    expect(find.text('笔记'), findsOneWidget);
+    expect(find.text('复制'), findsOneWidget);
+    expect(find.text('高亮'), findsOneWidget);
+    expect(find.text('划线'), findsOneWidget);
+    expect(find.text('批注'), findsOneWidget);
     expect(find.text('翻译'), findsOneWidget);
     expect(find.text('查词'), findsOneWidget);
-    expect(find.text('复制'), findsOneWidget);
   });
 
   testWidgets('工具条跟随选中文字：中部长按 → 工具条出现在选词上方（非固定顶部）', (tester) async {

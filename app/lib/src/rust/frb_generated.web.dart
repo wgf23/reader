@@ -28,19 +28,31 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_web.dart';
 
                   @protected String dco_decode_String(dynamic raw);
 
+@protected AnnotationView dco_decode_annotation_view(dynamic raw);
+
 @protected BookSummary dco_decode_book_summary(dynamic raw);
 
 @protected BookView dco_decode_book_view(dynamic raw);
+
+@protected BookmarkToggleView dco_decode_bookmark_toggle_view(dynamic raw);
 
 @protected bool dco_decode_bool(dynamic raw);
 
 @protected DictEntryView dco_decode_box_autoadd_dict_entry_view(dynamic raw);
 
+@protected double dco_decode_box_autoadd_f_64(dynamic raw);
+
 @protected ListenSettingsView dco_decode_box_autoadd_listen_settings_view(dynamic raw);
 
 @protected LocatorView dco_decode_box_autoadd_locator_view(dynamic raw);
 
+@protected NotePatchView dco_decode_box_autoadd_note_patch_view(dynamic raw);
+
 @protected ProgressView dco_decode_box_autoadd_progress_view(dynamic raw);
+
+@protected SearchScopeView dco_decode_box_autoadd_search_scope_view(dynamic raw);
+
+@protected int dco_decode_box_autoadd_u_32(dynamic raw);
 
 @protected ChapterView dco_decode_chapter_view(dynamic raw);
 
@@ -48,9 +60,17 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_web.dart';
 
 @protected DictInfoView dco_decode_dict_info_view(dynamic raw);
 
+@protected ExportSummaryView dco_decode_export_summary_view(dynamic raw);
+
 @protected double dco_decode_f_32(dynamic raw);
 
+@protected double dco_decode_f_64(dynamic raw);
+
+@protected PlatformInt64 dco_decode_i_64(dynamic raw);
+
 @protected List<String> dco_decode_list_String(dynamic raw);
+
+@protected List<AnnotationView> dco_decode_list_annotation_view(dynamic raw);
 
 @protected List<BookSummary> dco_decode_list_book_summary(dynamic raw);
 
@@ -58,7 +78,13 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_web.dart';
 
 @protected List<DictInfoView> dco_decode_list_dict_info_view(dynamic raw);
 
+@protected List<NoteGroupView> dco_decode_list_note_group_view(dynamic raw);
+
 @protected Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
+
+@protected List<RangeView> dco_decode_list_range_view(dynamic raw);
+
+@protected List<SearchHitView> dco_decode_list_search_hit_view(dynamic raw);
 
 @protected List<SentenceChunkView> dco_decode_list_sentence_chunk_view(dynamic raw);
 
@@ -66,13 +92,27 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_web.dart';
 
 @protected LocatorView dco_decode_locator_view(dynamic raw);
 
+@protected NoteGroupView dco_decode_note_group_view(dynamic raw);
+
+@protected NotePatchView dco_decode_note_patch_view(dynamic raw);
+
 @protected String? dco_decode_opt_String(dynamic raw);
 
 @protected DictEntryView? dco_decode_opt_box_autoadd_dict_entry_view(dynamic raw);
 
+@protected double? dco_decode_opt_box_autoadd_f_64(dynamic raw);
+
 @protected ProgressView? dco_decode_opt_box_autoadd_progress_view(dynamic raw);
 
+@protected int? dco_decode_opt_box_autoadd_u_32(dynamic raw);
+
 @protected ProgressView dco_decode_progress_view(dynamic raw);
+
+@protected RangeView dco_decode_range_view(dynamic raw);
+
+@protected SearchHitView dco_decode_search_hit_view(dynamic raw);
+
+@protected SearchScopeView dco_decode_search_scope_view(dynamic raw);
 
 @protected SentenceChunkView dco_decode_sentence_chunk_view(dynamic raw);
 
@@ -90,19 +130,31 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_web.dart';
 
 @protected String sse_decode_String(SseDeserializer deserializer);
 
+@protected AnnotationView sse_decode_annotation_view(SseDeserializer deserializer);
+
 @protected BookSummary sse_decode_book_summary(SseDeserializer deserializer);
 
 @protected BookView sse_decode_book_view(SseDeserializer deserializer);
+
+@protected BookmarkToggleView sse_decode_bookmark_toggle_view(SseDeserializer deserializer);
 
 @protected bool sse_decode_bool(SseDeserializer deserializer);
 
 @protected DictEntryView sse_decode_box_autoadd_dict_entry_view(SseDeserializer deserializer);
 
+@protected double sse_decode_box_autoadd_f_64(SseDeserializer deserializer);
+
 @protected ListenSettingsView sse_decode_box_autoadd_listen_settings_view(SseDeserializer deserializer);
 
 @protected LocatorView sse_decode_box_autoadd_locator_view(SseDeserializer deserializer);
 
+@protected NotePatchView sse_decode_box_autoadd_note_patch_view(SseDeserializer deserializer);
+
 @protected ProgressView sse_decode_box_autoadd_progress_view(SseDeserializer deserializer);
+
+@protected SearchScopeView sse_decode_box_autoadd_search_scope_view(SseDeserializer deserializer);
+
+@protected int sse_decode_box_autoadd_u_32(SseDeserializer deserializer);
 
 @protected ChapterView sse_decode_chapter_view(SseDeserializer deserializer);
 
@@ -110,9 +162,17 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_web.dart';
 
 @protected DictInfoView sse_decode_dict_info_view(SseDeserializer deserializer);
 
+@protected ExportSummaryView sse_decode_export_summary_view(SseDeserializer deserializer);
+
 @protected double sse_decode_f_32(SseDeserializer deserializer);
 
+@protected double sse_decode_f_64(SseDeserializer deserializer);
+
+@protected PlatformInt64 sse_decode_i_64(SseDeserializer deserializer);
+
 @protected List<String> sse_decode_list_String(SseDeserializer deserializer);
+
+@protected List<AnnotationView> sse_decode_list_annotation_view(SseDeserializer deserializer);
 
 @protected List<BookSummary> sse_decode_list_book_summary(SseDeserializer deserializer);
 
@@ -120,7 +180,13 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_web.dart';
 
 @protected List<DictInfoView> sse_decode_list_dict_info_view(SseDeserializer deserializer);
 
+@protected List<NoteGroupView> sse_decode_list_note_group_view(SseDeserializer deserializer);
+
 @protected Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
+
+@protected List<RangeView> sse_decode_list_range_view(SseDeserializer deserializer);
+
+@protected List<SearchHitView> sse_decode_list_search_hit_view(SseDeserializer deserializer);
 
 @protected List<SentenceChunkView> sse_decode_list_sentence_chunk_view(SseDeserializer deserializer);
 
@@ -128,13 +194,27 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_web.dart';
 
 @protected LocatorView sse_decode_locator_view(SseDeserializer deserializer);
 
+@protected NoteGroupView sse_decode_note_group_view(SseDeserializer deserializer);
+
+@protected NotePatchView sse_decode_note_patch_view(SseDeserializer deserializer);
+
 @protected String? sse_decode_opt_String(SseDeserializer deserializer);
 
 @protected DictEntryView? sse_decode_opt_box_autoadd_dict_entry_view(SseDeserializer deserializer);
 
+@protected double? sse_decode_opt_box_autoadd_f_64(SseDeserializer deserializer);
+
 @protected ProgressView? sse_decode_opt_box_autoadd_progress_view(SseDeserializer deserializer);
 
+@protected int? sse_decode_opt_box_autoadd_u_32(SseDeserializer deserializer);
+
 @protected ProgressView sse_decode_progress_view(SseDeserializer deserializer);
+
+@protected RangeView sse_decode_range_view(SseDeserializer deserializer);
+
+@protected SearchHitView sse_decode_search_hit_view(SseDeserializer deserializer);
+
+@protected SearchScopeView sse_decode_search_scope_view(SseDeserializer deserializer);
 
 @protected SentenceChunkView sse_decode_sentence_chunk_view(SseDeserializer deserializer);
 
@@ -154,19 +234,31 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_web.dart';
 
 @protected void sse_encode_String(String self, SseSerializer serializer);
 
+@protected void sse_encode_annotation_view(AnnotationView self, SseSerializer serializer);
+
 @protected void sse_encode_book_summary(BookSummary self, SseSerializer serializer);
 
 @protected void sse_encode_book_view(BookView self, SseSerializer serializer);
+
+@protected void sse_encode_bookmark_toggle_view(BookmarkToggleView self, SseSerializer serializer);
 
 @protected void sse_encode_bool(bool self, SseSerializer serializer);
 
 @protected void sse_encode_box_autoadd_dict_entry_view(DictEntryView self, SseSerializer serializer);
 
+@protected void sse_encode_box_autoadd_f_64(double self, SseSerializer serializer);
+
 @protected void sse_encode_box_autoadd_listen_settings_view(ListenSettingsView self, SseSerializer serializer);
 
 @protected void sse_encode_box_autoadd_locator_view(LocatorView self, SseSerializer serializer);
 
+@protected void sse_encode_box_autoadd_note_patch_view(NotePatchView self, SseSerializer serializer);
+
 @protected void sse_encode_box_autoadd_progress_view(ProgressView self, SseSerializer serializer);
+
+@protected void sse_encode_box_autoadd_search_scope_view(SearchScopeView self, SseSerializer serializer);
+
+@protected void sse_encode_box_autoadd_u_32(int self, SseSerializer serializer);
 
 @protected void sse_encode_chapter_view(ChapterView self, SseSerializer serializer);
 
@@ -174,9 +266,17 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_web.dart';
 
 @protected void sse_encode_dict_info_view(DictInfoView self, SseSerializer serializer);
 
+@protected void sse_encode_export_summary_view(ExportSummaryView self, SseSerializer serializer);
+
 @protected void sse_encode_f_32(double self, SseSerializer serializer);
 
+@protected void sse_encode_f_64(double self, SseSerializer serializer);
+
+@protected void sse_encode_i_64(PlatformInt64 self, SseSerializer serializer);
+
 @protected void sse_encode_list_String(List<String> self, SseSerializer serializer);
+
+@protected void sse_encode_list_annotation_view(List<AnnotationView> self, SseSerializer serializer);
 
 @protected void sse_encode_list_book_summary(List<BookSummary> self, SseSerializer serializer);
 
@@ -184,7 +284,13 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_web.dart';
 
 @protected void sse_encode_list_dict_info_view(List<DictInfoView> self, SseSerializer serializer);
 
+@protected void sse_encode_list_note_group_view(List<NoteGroupView> self, SseSerializer serializer);
+
 @protected void sse_encode_list_prim_u_8_strict(Uint8List self, SseSerializer serializer);
+
+@protected void sse_encode_list_range_view(List<RangeView> self, SseSerializer serializer);
+
+@protected void sse_encode_list_search_hit_view(List<SearchHitView> self, SseSerializer serializer);
 
 @protected void sse_encode_list_sentence_chunk_view(List<SentenceChunkView> self, SseSerializer serializer);
 
@@ -192,13 +298,27 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_web.dart';
 
 @protected void sse_encode_locator_view(LocatorView self, SseSerializer serializer);
 
+@protected void sse_encode_note_group_view(NoteGroupView self, SseSerializer serializer);
+
+@protected void sse_encode_note_patch_view(NotePatchView self, SseSerializer serializer);
+
 @protected void sse_encode_opt_String(String? self, SseSerializer serializer);
 
 @protected void sse_encode_opt_box_autoadd_dict_entry_view(DictEntryView? self, SseSerializer serializer);
 
+@protected void sse_encode_opt_box_autoadd_f_64(double? self, SseSerializer serializer);
+
 @protected void sse_encode_opt_box_autoadd_progress_view(ProgressView? self, SseSerializer serializer);
 
+@protected void sse_encode_opt_box_autoadd_u_32(int? self, SseSerializer serializer);
+
 @protected void sse_encode_progress_view(ProgressView self, SseSerializer serializer);
+
+@protected void sse_encode_range_view(RangeView self, SseSerializer serializer);
+
+@protected void sse_encode_search_hit_view(SearchHitView self, SseSerializer serializer);
+
+@protected void sse_encode_search_scope_view(SearchScopeView self, SseSerializer serializer);
 
 @protected void sse_encode_sentence_chunk_view(SentenceChunkView self, SseSerializer serializer);
 

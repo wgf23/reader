@@ -12,6 +12,7 @@ import 'package:reader_app/widgets/reader_chrome.dart';
 import 'package:reader_app/widgets/selection_toolbar.dart';
 
 import 'fake_backend.dart';
+import 'fake_notes_backend.dart';
 import 'fake_paged_view_controls.dart';
 import 'fake_translate_backend.dart';
 import 'fake_tts_backend.dart';
@@ -319,34 +320,64 @@ void main() {
   });
 
   testWidgets('书签图标切换（幂等）', (tester) async {
+    final notes = FakeNotesBackend(
+      chapterTexts: const {'chapter_0001.xhtml': _ch1},
+      chapterTitles: const {'chapter_0001.xhtml': '第一章'},
+    );
     await tester.pumpWidget(MaterialApp(
-      home: ReaderPage(bookId: 'b1', bookTitle: '测试书', backend: _LongTextBackend()),
+      home: ReaderPage(
+        bookId: 'b1',
+        bookTitle: '测试书',
+        backend: _LongTextBackend(),
+        notesBackend: notes,
+      ),
     ));
     await tester.pumpAndSettle();
     await _toggleChrome(tester);
     expect(find.byTooltip('加书签'), findsOneWidget);
     await tester.tap(find.byTooltip('加书签'));
-    await tester.pump();
+    await tester.pumpAndSettle();
     expect(find.byTooltip('取消书签'), findsOneWidget);
+    expect(notes.store.where((a) => a.kind == 'bookmark').length, 1);
     await tester.tap(find.byTooltip('取消书签'));
-    await tester.pump();
+    await tester.pumpAndSettle();
     expect(find.byTooltip('加书签'), findsOneWidget);
+    expect(notes.store.where((a) => a.kind == 'bookmark'), isEmpty);
   });
 
-  testWidgets('选中工具条：划重点/笔记/复制 点击不崩溃', (tester) async {
+  testWidgets('选中工具条：复制/高亮(选色)/划线/批注 入口可用', (tester) async {
+    final notes = FakeNotesBackend(
+      chapterTexts: const {'chapter_0001.xhtml': '很久以前，有一座山。'},
+      chapterTitles: const {'chapter_0001.xhtml': '第一章'},
+    );
     await tester.pumpWidget(MaterialApp(
-      home: ReaderPage(bookId: 'b1', bookTitle: '测试书', backend: FakeBackend()),
+      home: ReaderPage(
+        bookId: 'b1',
+        bookTitle: '测试书',
+        backend: FakeBackend(),
+        notesBackend: notes,
+      ),
     ));
     await tester.pumpAndSettle();
     final sa = tester.widget<SelectionArea>(find.byType(SelectionArea));
     sa.onSelectionChanged!(const SelectedContent(plainText: '很久以前'));
     await tester.pumpAndSettle();
-    for (final label in ['划重点', '笔记', '复制']) {
-      await tester.tap(find.text(label));
-      await tester.pumpAndSettle();
+    for (final label in ['复制', '高亮', '划线', '批注', '翻译', '查词']) {
+      expect(find.text(label), findsOneWidget, reason: '工具条应含 $label');
     }
-    // 复制/占位项不抛错，工具条仍在
-    expect(find.text('划重点'), findsOneWidget);
+    // 点高亮 → 弹出 4 色 → 选绿色 → 落库 kind=highlight + 该色
+    await tester.tap(find.text('高亮'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('note-color-#FBC02D')), findsOneWidget);
+    expect(find.byKey(const Key('note-color-#1A73E8')), findsOneWidget);
+    expect(find.byKey(const Key('note-color-#43A047')), findsOneWidget);
+    expect(find.byKey(const Key('note-color-#E91E63')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('note-color-#43A047')));
+    await tester.pumpAndSettle();
+    expect(
+      notes.createCalls.any((c) => c.startsWith('highlight:#43A047:')),
+      isTrue,
+    );
   });
 
   testWidgets('US-2 分页模式：左右边缘点击翻页且不 toggle Chrome（注入 fake controls）',

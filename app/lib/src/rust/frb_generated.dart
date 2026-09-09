@@ -68,7 +68,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => -2040275071;
+  int get rustContentHash => 245810283;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -105,10 +105,44 @@ abstract class RustLibApi extends BaseApi {
 
   Future<void> crateApiLibraryRemove({required String id});
 
+  Future<AnnotationView> crateApiNotesCreate(
+      {required String bookId,
+      required String href,
+      required String text,
+      required double progression,
+      required String kind,
+      String? color,
+      String? noteText});
+
+  Future<void> crateApiNotesDelete({required String noteId});
+
+  Future<int> crateApiNotesDeleteAll({required String bookId});
+
+  Future<int> crateApiNotesDeleteMany({required List<String> noteIds});
+
+  Future<ExportSummaryView> crateApiNotesExport(
+      {required String bookId, required String fmt, required String outPath});
+
+  Future<List<NoteGroupView>> crateApiNotesList({required String bookId});
+
+  Future<LocatorView> crateApiNotesResolve({required String noteId});
+
+  Future<BookmarkToggleView> crateApiNotesToggleBookmark(
+      {required String bookId,
+      required String href,
+      required double progression,
+      String? snippet});
+
+  Future<void> crateApiNotesUpdate(
+      {required String noteId, required NotePatchView patch});
+
   Future<ProgressView?> crateApiProgressGet({required String id});
 
   Future<void> crateApiProgressSave(
       {required String id, required String href, required double progression});
+
+  Future<List<SearchHitView>> crateApiSearch(
+      {required String query, required SearchScopeView scope});
 
   Future<TranslationView> crateApiTranslate(
       {required String text, required String from, required String to});
@@ -416,13 +450,263 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<AnnotationView> crateApiNotesCreate(
+      {required String bookId,
+      required String href,
+      required String text,
+      required double progression,
+      required String kind,
+      String? color,
+      String? noteText}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(bookId, serializer);
+        sse_encode_String(href, serializer);
+        sse_encode_String(text, serializer);
+        sse_encode_f_32(progression, serializer);
+        sse_encode_String(kind, serializer);
+        sse_encode_opt_String(color, serializer);
+        sse_encode_opt_String(noteText, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 12, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_annotation_view,
+        decodeErrorData: sse_decode_String,
+      ),
+      constMeta: kCrateApiNotesCreateConstMeta,
+      argValues: [bookId, href, text, progression, kind, color, noteText],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiNotesCreateConstMeta => const TaskConstMeta(
+        debugName: "notes_create",
+        argNames: [
+          "bookId",
+          "href",
+          "text",
+          "progression",
+          "kind",
+          "color",
+          "noteText"
+        ],
+      );
+
+  @override
+  Future<void> crateApiNotesDelete({required String noteId}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(noteId, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 13, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_unit,
+        decodeErrorData: sse_decode_String,
+      ),
+      constMeta: kCrateApiNotesDeleteConstMeta,
+      argValues: [noteId],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiNotesDeleteConstMeta => const TaskConstMeta(
+        debugName: "notes_delete",
+        argNames: ["noteId"],
+      );
+
+  @override
+  Future<int> crateApiNotesDeleteAll({required String bookId}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(bookId, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 14, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_u_32,
+        decodeErrorData: sse_decode_String,
+      ),
+      constMeta: kCrateApiNotesDeleteAllConstMeta,
+      argValues: [bookId],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiNotesDeleteAllConstMeta => const TaskConstMeta(
+        debugName: "notes_delete_all",
+        argNames: ["bookId"],
+      );
+
+  @override
+  Future<int> crateApiNotesDeleteMany({required List<String> noteIds}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_list_String(noteIds, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 15, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_u_32,
+        decodeErrorData: sse_decode_String,
+      ),
+      constMeta: kCrateApiNotesDeleteManyConstMeta,
+      argValues: [noteIds],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiNotesDeleteManyConstMeta => const TaskConstMeta(
+        debugName: "notes_delete_many",
+        argNames: ["noteIds"],
+      );
+
+  @override
+  Future<ExportSummaryView> crateApiNotesExport(
+      {required String bookId, required String fmt, required String outPath}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(bookId, serializer);
+        sse_encode_String(fmt, serializer);
+        sse_encode_String(outPath, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 16, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_export_summary_view,
+        decodeErrorData: sse_decode_String,
+      ),
+      constMeta: kCrateApiNotesExportConstMeta,
+      argValues: [bookId, fmt, outPath],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiNotesExportConstMeta => const TaskConstMeta(
+        debugName: "notes_export",
+        argNames: ["bookId", "fmt", "outPath"],
+      );
+
+  @override
+  Future<List<NoteGroupView>> crateApiNotesList({required String bookId}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(bookId, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 17, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_list_note_group_view,
+        decodeErrorData: sse_decode_String,
+      ),
+      constMeta: kCrateApiNotesListConstMeta,
+      argValues: [bookId],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiNotesListConstMeta => const TaskConstMeta(
+        debugName: "notes_list",
+        argNames: ["bookId"],
+      );
+
+  @override
+  Future<LocatorView> crateApiNotesResolve({required String noteId}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(noteId, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 18, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_locator_view,
+        decodeErrorData: sse_decode_String,
+      ),
+      constMeta: kCrateApiNotesResolveConstMeta,
+      argValues: [noteId],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiNotesResolveConstMeta => const TaskConstMeta(
+        debugName: "notes_resolve",
+        argNames: ["noteId"],
+      );
+
+  @override
+  Future<BookmarkToggleView> crateApiNotesToggleBookmark(
+      {required String bookId,
+      required String href,
+      required double progression,
+      String? snippet}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(bookId, serializer);
+        sse_encode_String(href, serializer);
+        sse_encode_f_32(progression, serializer);
+        sse_encode_opt_String(snippet, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 19, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_bookmark_toggle_view,
+        decodeErrorData: sse_decode_String,
+      ),
+      constMeta: kCrateApiNotesToggleBookmarkConstMeta,
+      argValues: [bookId, href, progression, snippet],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiNotesToggleBookmarkConstMeta =>
+      const TaskConstMeta(
+        debugName: "notes_toggle_bookmark",
+        argNames: ["bookId", "href", "progression", "snippet"],
+      );
+
+  @override
+  Future<void> crateApiNotesUpdate(
+      {required String noteId, required NotePatchView patch}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(noteId, serializer);
+        sse_encode_box_autoadd_note_patch_view(patch, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 20, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_unit,
+        decodeErrorData: sse_decode_String,
+      ),
+      constMeta: kCrateApiNotesUpdateConstMeta,
+      argValues: [noteId, patch],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiNotesUpdateConstMeta => const TaskConstMeta(
+        debugName: "notes_update",
+        argNames: ["noteId", "patch"],
+      );
+
+  @override
   Future<ProgressView?> crateApiProgressGet({required String id}) {
     return handler.executeNormal(NormalTask(
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_String(id, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 12, port: port_);
+            funcId: 21, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_opt_box_autoadd_progress_view,
@@ -449,7 +733,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(href, serializer);
         sse_encode_f_32(progression, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 13, port: port_);
+            funcId: 22, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -467,6 +751,32 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<List<SearchHitView>> crateApiSearch(
+      {required String query, required SearchScopeView scope}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(query, serializer);
+        sse_encode_box_autoadd_search_scope_view(scope, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 23, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_list_search_hit_view,
+        decodeErrorData: sse_decode_String,
+      ),
+      constMeta: kCrateApiSearchConstMeta,
+      argValues: [query, scope],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiSearchConstMeta => const TaskConstMeta(
+        debugName: "search",
+        argNames: ["query", "scope"],
+      );
+
+  @override
   Future<TranslationView> crateApiTranslate(
       {required String text, required String from, required String to}) {
     return handler.executeNormal(NormalTask(
@@ -476,7 +786,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(from, serializer);
         sse_encode_String(to, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 14, port: port_);
+            funcId: 24, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_translation_view,
@@ -499,7 +809,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 15, port: port_);
+            funcId: 25, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -523,7 +833,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 16, port: port_);
+            funcId: 26, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_translate_config_view,
@@ -549,7 +859,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(provider, serializer);
         sse_encode_String(key, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 17, port: port_);
+            funcId: 27, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -573,7 +883,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_String(strategy, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 18, port: port_);
+            funcId: 28, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -597,7 +907,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 19, port: port_);
+            funcId: 29, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_listen_settings_view,
@@ -623,7 +933,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_box_autoadd_listen_settings_view(settings, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 20, port: port_);
+            funcId: 30, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -651,7 +961,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(href, serializer);
         sse_encode_u_32(idx, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 21, port: port_);
+            funcId: 31, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_locator_view,
@@ -678,7 +988,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(bookId, serializer);
         sse_encode_String(href, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 22, port: port_);
+            funcId: 32, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_list_sentence_chunk_view,
@@ -707,7 +1017,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(href, serializer);
         sse_encode_box_autoadd_locator_view(locator, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 23, port: port_);
+            funcId: 33, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_u_32,
@@ -728,6 +1038,29 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   String dco_decode_String(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as String;
+  }
+
+  @protected
+  AnnotationView dco_decode_annotation_view(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 13)
+      throw Exception('unexpected arr length: expect 13 but see ${arr.length}');
+    return AnnotationView(
+      id: dco_decode_String(arr[0]),
+      bookId: dco_decode_String(arr[1]),
+      kind: dco_decode_String(arr[2]),
+      color: dco_decode_opt_String(arr[3]),
+      href: dco_decode_String(arr[4]),
+      progression: dco_decode_f_32(arr[5]),
+      snippet: dco_decode_opt_String(arr[6]),
+      noteText: dco_decode_opt_String(arr[7]),
+      start: dco_decode_opt_box_autoadd_u_32(arr[8]),
+      end: dco_decode_opt_box_autoadd_u_32(arr[9]),
+      createdAt: dco_decode_i_64(arr[10]),
+      updatedAt: dco_decode_i_64(arr[11]),
+      syncStatus: dco_decode_String(arr[12]),
+    );
   }
 
   @protected
@@ -759,6 +1092,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  BookmarkToggleView dco_decode_bookmark_toggle_view(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return BookmarkToggleView(
+      bookmarked: dco_decode_bool(arr[0]),
+      noteId: dco_decode_opt_String(arr[1]),
+    );
+  }
+
+  @protected
   bool dco_decode_bool(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as bool;
@@ -768,6 +1113,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   DictEntryView dco_decode_box_autoadd_dict_entry_view(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_dict_entry_view(raw);
+  }
+
+  @protected
+  double dco_decode_box_autoadd_f_64(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as double;
   }
 
   @protected
@@ -783,20 +1134,39 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  NotePatchView dco_decode_box_autoadd_note_patch_view(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_note_patch_view(raw);
+  }
+
+  @protected
   ProgressView dco_decode_box_autoadd_progress_view(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_progress_view(raw);
   }
 
   @protected
+  SearchScopeView dco_decode_box_autoadd_search_scope_view(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_search_scope_view(raw);
+  }
+
+  @protected
+  int dco_decode_box_autoadd_u_32(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as int;
+  }
+
+  @protected
   ChapterView dco_decode_chapter_view(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 2)
-      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
     return ChapterView(
       title: dco_decode_String(arr[0]),
       text: dco_decode_String(arr[1]),
+      href: dco_decode_String(arr[2]),
     );
   }
 
@@ -830,15 +1200,46 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  ExportSummaryView dco_decode_export_summary_view(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return ExportSummaryView(
+      path: dco_decode_String(arr[0]),
+      noteCount: dco_decode_u_32(arr[1]),
+      format: dco_decode_String(arr[2]),
+    );
+  }
+
+  @protected
   double dco_decode_f_32(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as double;
   }
 
   @protected
+  double dco_decode_f_64(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as double;
+  }
+
+  @protected
+  PlatformInt64 dco_decode_i_64(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dcoDecodeI64(raw);
+  }
+
+  @protected
   List<String> dco_decode_list_String(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_String).toList();
+  }
+
+  @protected
+  List<AnnotationView> dco_decode_list_annotation_view(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_annotation_view).toList();
   }
 
   @protected
@@ -860,9 +1261,27 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<NoteGroupView> dco_decode_list_note_group_view(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_note_group_view).toList();
+  }
+
+  @protected
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as Uint8List;
+  }
+
+  @protected
+  List<RangeView> dco_decode_list_range_view(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_range_view).toList();
+  }
+
+  @protected
+  List<SearchHitView> dco_decode_list_search_hit_view(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_search_hit_view).toList();
   }
 
   @protected
@@ -900,6 +1319,32 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  NoteGroupView dco_decode_note_group_view(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return NoteGroupView(
+      chapterTitle: dco_decode_String(arr[0]),
+      href: dco_decode_String(arr[1]),
+      notes: dco_decode_list_annotation_view(arr[2]),
+    );
+  }
+
+  @protected
+  NotePatchView dco_decode_note_patch_view(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return NotePatchView(
+      noteText: dco_decode_opt_String(arr[0]),
+      color: dco_decode_opt_String(arr[1]),
+      kind: dco_decode_opt_String(arr[2]),
+    );
+  }
+
+  @protected
   String? dco_decode_opt_String(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_String(raw);
@@ -912,9 +1357,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  double? dco_decode_opt_box_autoadd_f_64(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_f_64(raw);
+  }
+
+  @protected
   ProgressView? dco_decode_opt_box_autoadd_progress_view(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_box_autoadd_progress_view(raw);
+  }
+
+  @protected
+  int? dco_decode_opt_box_autoadd_u_32(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_u_32(raw);
   }
 
   @protected
@@ -926,6 +1383,48 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     return ProgressView(
       href: dco_decode_String(arr[0]),
       progression: dco_decode_f_32(arr[1]),
+    );
+  }
+
+  @protected
+  RangeView dco_decode_range_view(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return RangeView(
+      start: dco_decode_u_32(arr[0]),
+      end: dco_decode_u_32(arr[1]),
+    );
+  }
+
+  @protected
+  SearchHitView dco_decode_search_hit_view(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 7)
+      throw Exception('unexpected arr length: expect 7 but see ${arr.length}');
+    return SearchHitView(
+      bookId: dco_decode_String(arr[0]),
+      bookTitle: dco_decode_String(arr[1]),
+      href: dco_decode_String(arr[2]),
+      chapterTitle: dco_decode_String(arr[3]),
+      snippet: dco_decode_String(arr[4]),
+      ranges: dco_decode_list_range_view(arr[5]),
+      score: dco_decode_opt_box_autoadd_f_64(arr[6]),
+    );
+  }
+
+  @protected
+  SearchScopeView dco_decode_search_scope_view(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return SearchScopeView(
+      allBooks: dco_decode_bool(arr[0]),
+      bookId: dco_decode_opt_String(arr[1]),
+      formats: dco_decode_list_String(arr[2]),
     );
   }
 
@@ -1005,6 +1504,38 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  AnnotationView sse_decode_annotation_view(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_String(deserializer);
+    var var_bookId = sse_decode_String(deserializer);
+    var var_kind = sse_decode_String(deserializer);
+    var var_color = sse_decode_opt_String(deserializer);
+    var var_href = sse_decode_String(deserializer);
+    var var_progression = sse_decode_f_32(deserializer);
+    var var_snippet = sse_decode_opt_String(deserializer);
+    var var_noteText = sse_decode_opt_String(deserializer);
+    var var_start = sse_decode_opt_box_autoadd_u_32(deserializer);
+    var var_end = sse_decode_opt_box_autoadd_u_32(deserializer);
+    var var_createdAt = sse_decode_i_64(deserializer);
+    var var_updatedAt = sse_decode_i_64(deserializer);
+    var var_syncStatus = sse_decode_String(deserializer);
+    return AnnotationView(
+        id: var_id,
+        bookId: var_bookId,
+        kind: var_kind,
+        color: var_color,
+        href: var_href,
+        progression: var_progression,
+        snippet: var_snippet,
+        noteText: var_noteText,
+        start: var_start,
+        end: var_end,
+        createdAt: var_createdAt,
+        updatedAt: var_updatedAt,
+        syncStatus: var_syncStatus);
+  }
+
+  @protected
   BookSummary sse_decode_book_summary(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_id = sse_decode_String(deserializer);
@@ -1030,6 +1561,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  BookmarkToggleView sse_decode_bookmark_toggle_view(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_bookmarked = sse_decode_bool(deserializer);
+    var var_noteId = sse_decode_opt_String(deserializer);
+    return BookmarkToggleView(bookmarked: var_bookmarked, noteId: var_noteId);
+  }
+
+  @protected
   bool sse_decode_bool(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return deserializer.buffer.getUint8() != 0;
@@ -1040,6 +1580,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_dict_entry_view(deserializer));
+  }
+
+  @protected
+  double sse_decode_box_autoadd_f_64(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_f_64(deserializer));
   }
 
   @protected
@@ -1057,6 +1603,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  NotePatchView sse_decode_box_autoadd_note_patch_view(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_note_patch_view(deserializer));
+  }
+
+  @protected
   ProgressView sse_decode_box_autoadd_progress_view(
       SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
@@ -1064,11 +1617,25 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  SearchScopeView sse_decode_box_autoadd_search_scope_view(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_search_scope_view(deserializer));
+  }
+
+  @protected
+  int sse_decode_box_autoadd_u_32(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_u_32(deserializer));
+  }
+
+  @protected
   ChapterView sse_decode_chapter_view(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_title = sse_decode_String(deserializer);
     var var_text = sse_decode_String(deserializer);
-    return ChapterView(title: var_title, text: var_text);
+    var var_href = sse_decode_String(deserializer);
+    return ChapterView(title: var_title, text: var_text, href: var_href);
   }
 
   @protected
@@ -1099,9 +1666,32 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  ExportSummaryView sse_decode_export_summary_view(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_path = sse_decode_String(deserializer);
+    var var_noteCount = sse_decode_u_32(deserializer);
+    var var_format = sse_decode_String(deserializer);
+    return ExportSummaryView(
+        path: var_path, noteCount: var_noteCount, format: var_format);
+  }
+
+  @protected
   double sse_decode_f_32(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return deserializer.buffer.getFloat32();
+  }
+
+  @protected
+  double sse_decode_f_64(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getFloat64();
+  }
+
+  @protected
+  PlatformInt64 sse_decode_i_64(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getPlatformInt64();
   }
 
   @protected
@@ -1112,6 +1702,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var ans_ = <String>[];
     for (var idx_ = 0; idx_ < len_; ++idx_) {
       ans_.add(sse_decode_String(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<AnnotationView> sse_decode_list_annotation_view(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <AnnotationView>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_annotation_view(deserializer));
     }
     return ans_;
   }
@@ -1154,10 +1757,48 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<NoteGroupView> sse_decode_list_note_group_view(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <NoteGroupView>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_note_group_view(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var len_ = sse_decode_i_32(deserializer);
     return deserializer.buffer.getUint8List(len_);
+  }
+
+  @protected
+  List<RangeView> sse_decode_list_range_view(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <RangeView>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_range_view(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<SearchHitView> sse_decode_list_search_hit_view(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <SearchHitView>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_search_hit_view(deserializer));
+    }
+    return ans_;
   }
 
   @protected
@@ -1201,6 +1842,26 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  NoteGroupView sse_decode_note_group_view(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_chapterTitle = sse_decode_String(deserializer);
+    var var_href = sse_decode_String(deserializer);
+    var var_notes = sse_decode_list_annotation_view(deserializer);
+    return NoteGroupView(
+        chapterTitle: var_chapterTitle, href: var_href, notes: var_notes);
+  }
+
+  @protected
+  NotePatchView sse_decode_note_patch_view(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_noteText = sse_decode_opt_String(deserializer);
+    var var_color = sse_decode_opt_String(deserializer);
+    var var_kind = sse_decode_opt_String(deserializer);
+    return NotePatchView(
+        noteText: var_noteText, color: var_color, kind: var_kind);
+  }
+
+  @protected
   String? sse_decode_opt_String(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -1224,6 +1885,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  double? sse_decode_opt_box_autoadd_f_64(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_f_64(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
   ProgressView? sse_decode_opt_box_autoadd_progress_view(
       SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
@@ -1236,11 +1908,60 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  int? sse_decode_opt_box_autoadd_u_32(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_u_32(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
   ProgressView sse_decode_progress_view(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_href = sse_decode_String(deserializer);
     var var_progression = sse_decode_f_32(deserializer);
     return ProgressView(href: var_href, progression: var_progression);
+  }
+
+  @protected
+  RangeView sse_decode_range_view(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_start = sse_decode_u_32(deserializer);
+    var var_end = sse_decode_u_32(deserializer);
+    return RangeView(start: var_start, end: var_end);
+  }
+
+  @protected
+  SearchHitView sse_decode_search_hit_view(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_bookId = sse_decode_String(deserializer);
+    var var_bookTitle = sse_decode_String(deserializer);
+    var var_href = sse_decode_String(deserializer);
+    var var_chapterTitle = sse_decode_String(deserializer);
+    var var_snippet = sse_decode_String(deserializer);
+    var var_ranges = sse_decode_list_range_view(deserializer);
+    var var_score = sse_decode_opt_box_autoadd_f_64(deserializer);
+    return SearchHitView(
+        bookId: var_bookId,
+        bookTitle: var_bookTitle,
+        href: var_href,
+        chapterTitle: var_chapterTitle,
+        snippet: var_snippet,
+        ranges: var_ranges,
+        score: var_score);
+  }
+
+  @protected
+  SearchScopeView sse_decode_search_scope_view(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_allBooks = sse_decode_bool(deserializer);
+    var var_bookId = sse_decode_opt_String(deserializer);
+    var var_formats = sse_decode_list_String(deserializer);
+    return SearchScopeView(
+        allBooks: var_allBooks, bookId: var_bookId, formats: var_formats);
   }
 
   @protected
@@ -1327,6 +2048,25 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_annotation_view(
+      AnnotationView self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.id, serializer);
+    sse_encode_String(self.bookId, serializer);
+    sse_encode_String(self.kind, serializer);
+    sse_encode_opt_String(self.color, serializer);
+    sse_encode_String(self.href, serializer);
+    sse_encode_f_32(self.progression, serializer);
+    sse_encode_opt_String(self.snippet, serializer);
+    sse_encode_opt_String(self.noteText, serializer);
+    sse_encode_opt_box_autoadd_u_32(self.start, serializer);
+    sse_encode_opt_box_autoadd_u_32(self.end, serializer);
+    sse_encode_i_64(self.createdAt, serializer);
+    sse_encode_i_64(self.updatedAt, serializer);
+    sse_encode_String(self.syncStatus, serializer);
+  }
+
+  @protected
   void sse_encode_book_summary(BookSummary self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_String(self.id, serializer);
@@ -1345,6 +2085,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_bookmark_toggle_view(
+      BookmarkToggleView self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_bool(self.bookmarked, serializer);
+    sse_encode_opt_String(self.noteId, serializer);
+  }
+
+  @protected
   void sse_encode_bool(bool self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     serializer.buffer.putUint8(self ? 1 : 0);
@@ -1355,6 +2103,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       DictEntryView self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_dict_entry_view(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_f_64(double self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_f_64(self, serializer);
   }
 
   @protected
@@ -1372,6 +2126,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_box_autoadd_note_patch_view(
+      NotePatchView self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_note_patch_view(self, serializer);
+  }
+
+  @protected
   void sse_encode_box_autoadd_progress_view(
       ProgressView self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
@@ -1379,10 +2140,24 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_box_autoadd_search_scope_view(
+      SearchScopeView self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_search_scope_view(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_u_32(int self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_u_32(self, serializer);
+  }
+
+  @protected
   void sse_encode_chapter_view(ChapterView self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_String(self.title, serializer);
     sse_encode_String(self.text, serializer);
+    sse_encode_String(self.href, serializer);
   }
 
   @protected
@@ -1406,9 +2181,30 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_export_summary_view(
+      ExportSummaryView self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.path, serializer);
+    sse_encode_u_32(self.noteCount, serializer);
+    sse_encode_String(self.format, serializer);
+  }
+
+  @protected
   void sse_encode_f_32(double self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     serializer.buffer.putFloat32(self);
+  }
+
+  @protected
+  void sse_encode_f_64(double self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putFloat64(self);
+  }
+
+  @protected
+  void sse_encode_i_64(PlatformInt64 self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putPlatformInt64(self);
   }
 
   @protected
@@ -1417,6 +2213,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_i_32(self.length, serializer);
     for (final item in self) {
       sse_encode_String(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_annotation_view(
+      List<AnnotationView> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_annotation_view(item, serializer);
     }
   }
 
@@ -1451,11 +2257,41 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_list_note_group_view(
+      List<NoteGroupView> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_note_group_view(item, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_list_prim_u_8_strict(
       Uint8List self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.length, serializer);
     serializer.buffer.putUint8List(self);
+  }
+
+  @protected
+  void sse_encode_list_range_view(
+      List<RangeView> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_range_view(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_search_hit_view(
+      List<SearchHitView> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_search_hit_view(item, serializer);
+    }
   }
 
   @protected
@@ -1488,6 +2324,24 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_note_group_view(
+      NoteGroupView self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.chapterTitle, serializer);
+    sse_encode_String(self.href, serializer);
+    sse_encode_list_annotation_view(self.notes, serializer);
+  }
+
+  @protected
+  void sse_encode_note_patch_view(
+      NotePatchView self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.noteText, serializer);
+    sse_encode_opt_String(self.color, serializer);
+    sse_encode_opt_String(self.kind, serializer);
+  }
+
+  @protected
   void sse_encode_opt_String(String? self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -1509,6 +2363,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_opt_box_autoadd_f_64(double? self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_f_64(self, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_opt_box_autoadd_progress_view(
       ProgressView? self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
@@ -1520,10 +2384,49 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_opt_box_autoadd_u_32(int? self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_u_32(self, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_progress_view(ProgressView self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_String(self.href, serializer);
     sse_encode_f_32(self.progression, serializer);
+  }
+
+  @protected
+  void sse_encode_range_view(RangeView self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_u_32(self.start, serializer);
+    sse_encode_u_32(self.end, serializer);
+  }
+
+  @protected
+  void sse_encode_search_hit_view(
+      SearchHitView self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.bookId, serializer);
+    sse_encode_String(self.bookTitle, serializer);
+    sse_encode_String(self.href, serializer);
+    sse_encode_String(self.chapterTitle, serializer);
+    sse_encode_String(self.snippet, serializer);
+    sse_encode_list_range_view(self.ranges, serializer);
+    sse_encode_opt_box_autoadd_f_64(self.score, serializer);
+  }
+
+  @protected
+  void sse_encode_search_scope_view(
+      SearchScopeView self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_bool(self.allBooks, serializer);
+    sse_encode_opt_String(self.bookId, serializer);
+    sse_encode_list_String(self.formats, serializer);
   }
 
   @protected

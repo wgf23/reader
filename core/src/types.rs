@@ -176,5 +176,206 @@ pub trait ProviderConfig {
     fn set_default_provider(&mut self, provider: &str) -> Result<()>;
 }
 
-// TODO(P0): TextSelection / NoteKind / Settings / DictEntry / Translation …
-//           见 docs/04-module-design.md §2 与 §7。
+// ===================== REQ-009 · 笔记与全文搜索（共享内核 + 跨层契约） =====================
+// 契约与载荷类型落共享内核的原因同 REQ-003：ddd-rules 对 infrastructure（core/src/store）
+// 禁业务模块（locator/notes/search）但不禁 `crate::types`；故 store 实现契约只依赖本文件，
+// domain（locator/notes/search）只依赖 trait（ADR REQ-009 D3）。
+
+/// 笔记种类（`annotations.kind`；docs/04 §5）。
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum NoteKind {
+    Highlight,
+    Underline,
+    Note,
+    Bookmark,
+}
+
+impl NoteKind {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            NoteKind::Highlight => "highlight",
+            NoteKind::Underline => "underline",
+            NoteKind::Note => "note",
+            NoteKind::Bookmark => "bookmark",
+        }
+    }
+
+    pub fn parse(s: &str) -> Option<NoteKind> {
+        match s {
+            "highlight" => Some(NoteKind::Highlight),
+            "underline" => Some(NoteKind::Underline),
+            "note" => Some(NoteKind::Note),
+            "bookmark" => Some(NoteKind::Bookmark),
+            _ => None,
+        }
+    }
+}
+
+/// 选中文本 + 当前章内进度（`LocatorResolver::from_selection` 的入参，ADR D2）。
+#[derive(Debug, Clone, PartialEq)]
+pub struct TextSelection {
+    pub snippet: String,
+    pub progression: f32,
+}
+
+/// 笔记记录（`annotations` 表行；`locator` 含文本锚/进度）。
+#[derive(Debug, Clone, PartialEq)]
+pub struct Annotation {
+    pub id: String,
+    pub book_id: BookId,
+    pub kind: NoteKind,
+    pub color: Option<String>, // "#RRGGBB"
+    pub locator: Locator,
+    pub snippet: Option<String>,
+    pub note_text: Option<String>,
+    pub created_at: i64,
+    pub updated_at: i64,
+    pub sync_status: String, // "local"
+}
+
+/// 笔记局部更新（`None` = 不修改该字段）。
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct NotePatch {
+    pub note_text: Option<String>,
+    pub color: Option<String>,
+    pub kind: Option<NoteKind>,
+}
+
+/// 导出格式（Markdown / JSON）。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ExportFormat {
+    Markdown,
+    Json,
+}
+
+impl ExportFormat {
+    pub fn parse(s: &str) -> Option<Self> {
+        match s.to_ascii_lowercase().as_str() {
+            "markdown" | "md" => Some(ExportFormat::Markdown),
+            "json" => Some(ExportFormat::Json),
+            _ => None,
+        }
+    }
+
+    pub fn ext(&self) -> &'static str {
+        match self {
+            ExportFormat::Markdown => "md",
+            ExportFormat::Json => "json",
+        }
+    }
+
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            ExportFormat::Markdown => "markdown",
+            ExportFormat::Json => "json",
+        }
+    }
+}
+
+/// 导出结果摘要。
+#[derive(Debug, Clone, PartialEq)]
+pub struct ExportSummary {
+    pub path: String,
+    pub note_count: u32,
+    pub format: ExportFormat,
+}
+
+/// 按章节分组的笔记列表。
+#[derive(Debug, Clone, PartialEq)]
+pub struct NoteGroup {
+    pub chapter_title: String,
+    pub href: String,
+    pub notes: Vec<Annotation>,
+}
+
+/// 分组方式（本期只实现 `Chapter`）。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum GroupBy {
+    Chapter,
+    None,
+}
+
+/// UTF-16 code unit 半开区间 `[start, end)`（与 Dart `String` 索引一致）。
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TextRange {
+    pub start: u32,
+    pub end: u32,
+}
+
+/// 搜索命中（含上下文片段与关键词 UTF-16 区间）。
+#[derive(Debug, Clone, PartialEq)]
+pub struct SearchHit {
+    pub book_id: BookId,
+    pub book_title: String,
+    pub href: String,
+    pub chapter_title: String,
+    pub snippet: String,
+    pub ranges: Vec<TextRange>,
+    pub score: Option<f64>,
+}
+
+/// 搜索范围（`book_id=None` = 全部书籍；`formats` 空 = 全部格式）。
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct SearchScope {
+    pub book_id: Option<BookId>,
+    pub formats: Vec<String>,
+}
+
+/// 待索引章节（`api.rs` 组装后交 `SearchService::index_book`）。
+#[derive(Debug, Clone, PartialEq)]
+pub struct IndexedChapter {
+    pub href: String,
+    pub chapter_title: String,
+    pub text: String,
+    pub text_bi: String,
+}
+
+/// 仓储查询行（JOIN books 后的原始结果）。
+#[derive(Debug, Clone, PartialEq)]
+pub struct SearchRow {
+    pub book_id: BookId,
+    pub book_title: String,
+    pub href: String,
+    pub chapter_title: String,
+    pub text: String,
+    pub score: Option<f64>,
+}
+
+/// 笔记仓储契约（domain → infrastructure 实现 → interface 装配注入）。
+pub trait AnnotationRepository {
+    fn insert(&mut self, a: &Annotation) -> Result<()>;
+    fn update(&mut self, id: &str, patch: &NotePatch, now: i64) -> Result<()>;
+    fn delete(&mut self, id: &str) -> Result<()>;
+    fn delete_many(&mut self, ids: &[String]) -> Result<usize>;
+    fn delete_all(&mut self, book_id: &str, kinds: Option<&[NoteKind]>) -> Result<usize>;
+    fn list(&self, book_id: &str) -> Result<Vec<Annotation>>;
+    fn get(&self, id: &str) -> Result<Option<Annotation>>;
+    fn find_bookmark(
+        &self,
+        book_id: &str,
+        href: &str,
+        progression: f32,
+    ) -> Result<Option<Annotation>>;
+}
+
+/// 搜索索引仓储契约（FTS5 短语查询 + 单字 CJK 子串回退，ADR D1）。
+pub trait SearchIndexRepository {
+    /// 事务：先删该书全部行，再逐章插入（幂等，重复索引不翻倍）。
+    fn replace_book(&mut self, book_id: &str, chapters: &[IndexedChapter]) -> Result<()>;
+    fn is_indexed(&self, book_id: &str) -> Result<bool>;
+    fn remove_book(&mut self, book_id: &str) -> Result<()>;
+    /// FTS5 短语查询（≥2 字 CJK / ASCII 词走此路）。
+    fn query_fts(
+        &self,
+        match_expr: &str,
+        scope: &SearchScope,
+        limit: usize,
+    ) -> Result<Vec<SearchRow>>;
+    /// 子串回退（单字 CJK，FTS bigram 不覆盖）：`text LIKE '%needle%'`。
+    fn query_substring(
+        &self,
+        needle: &str,
+        scope: &SearchScope,
+        limit: usize,
+    ) -> Result<Vec<SearchRow>>;
+}
