@@ -3,6 +3,7 @@ import 'package:flutter/rendering.dart' show SelectedContent;
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:reader_app/pages/reader_page.dart';
+import 'package:reader_app/pages/settings_page.dart';
 import 'package:reader_app/services/translate_backend.dart';
 import 'package:reader_app/widgets/translation_popup.dart';
 
@@ -272,5 +273,94 @@ void main() {
     expect(find.text('离线'), findsOneWidget);
     expect(find.text('offline'), findsOneWidget);
     expect(find.textContaining('未配置在线翻译 API Key'), findsOneWidget);
+  });
+
+  // ---------- REQ-007：翻译未配置引导（US-12）+ 来源标签（US-13） ----------
+
+  testWidgets('US-12 无 key 翻译错误浮层：文案含"设置" + 去设置/重试，点击去设置进入设置页且透传同一 backend',
+      (tester) async {
+    final translate = FakeTranslateBackend(
+      translateFailures: 1,
+      translateError: '翻译服务未配置：未配置在线翻译 API Key（deepl），'
+          '且离线翻译未命中（请先安装内置词库）；请在「设置」中配置在线翻译或导入词库',
+      installedDicts: const [
+        DictInfoData(id: 'd1', name: 'REQ007测试词库', wordCount: 1, path: '/tmp/d1.ifo'),
+      ],
+    );
+    await tester.pumpWidget(wrap(ReaderPage(
+      bookId: 'b1',
+      bookTitle: '测试书',
+      backend: FakeBackend(),
+      translateBackend: translate,
+    )));
+    await tester.pumpAndSettle();
+
+    final selectionArea =
+        tester.widget<SelectionArea>(find.byType(SelectionArea));
+    selectionArea.onSelectionChanged!(const SelectedContent(plainText: '很久以前'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('翻译'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(OverlayError), findsOneWidget);
+    expect(find.textContaining('设置'), findsWidgets);
+    expect(find.text('去设置'), findsOneWidget);
+    expect(find.text('重试'), findsOneWidget);
+
+    await tester.tap(find.text('去设置'));
+    await tester.pumpAndSettle();
+    expect(find.byType(SettingsPage), findsOneWidget);
+    // 透传同一注入实例：SettingsPage 用该 fake 的 listDicts 渲染出专属词库名。
+    expect(find.text('REQ007测试词库'), findsOneWidget,
+        reason: '必须透传 ReaderPage 的同一 translateBackend，不得落到默认 Rust 后端');
+  });
+
+  testWidgets('US-12 查词失败不出现"去设置"（避免与词典引导串扰）', (tester) async {
+    final translate = FakeTranslateBackend(
+      lookupError: '未安装词库，请先在设置中导入',
+    );
+    await tester.pumpWidget(wrap(ReaderPage(
+      bookId: 'b1',
+      bookTitle: '测试书',
+      backend: FakeBackend(),
+      translateBackend: translate,
+    )));
+    await tester.pumpAndSettle();
+    final selectionArea =
+        tester.widget<SelectionArea>(find.byType(SelectionArea));
+    selectionArea.onSelectionChanged!(const SelectedContent(plainText: '很'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('查词'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(OverlayError), findsOneWidget);
+    expect(find.textContaining('未安装词库'), findsOneWidget);
+    expect(find.text('重试'), findsOneWidget);
+    expect(find.text('去设置'), findsNothing);
+  });
+
+  testWidgets('US-13 在线链路：provider=deepl 且未缓存 → 卡片显示"在线"+"deepl"',
+      (tester) async {
+    final translate = FakeTranslateBackend(
+      translationProvider: 'deepl',
+      fromCache: false,
+    );
+    await tester.pumpWidget(wrap(ReaderPage(
+      bookId: 'b1',
+      bookTitle: '测试书',
+      backend: FakeBackend(),
+      translateBackend: translate,
+    )));
+    await tester.pumpAndSettle();
+    final selectionArea =
+        tester.widget<SelectionArea>(find.byType(SelectionArea));
+    selectionArea.onSelectionChanged!(const SelectedContent(plainText: '很久以前'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('翻译'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(TranslationResultCard), findsOneWidget);
+    expect(find.text('在线'), findsOneWidget);
+    expect(find.text('deepl'), findsOneWidget);
   });
 }

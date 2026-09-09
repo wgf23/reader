@@ -561,8 +561,10 @@ impl TranslationService {
         }
         if online_unconfigured || online.is_empty() {
             let pname = first_unconfigured.unwrap_or_else(|| "deepl".to_string());
+            // REQ-007 US-11：仅追加"设置"引导，三段既有语义逐字保留（既有 contains 断言不破）。
             return Err(Error::NotConfigured(format!(
-                "未配置在线翻译 API Key（{pname}），且离线翻译未命中（请先安装内置词库）"
+                "未配置在线翻译 API Key（{pname}），且离线翻译未命中（请先安装内置词库）\
+                 ；请在「设置」中配置在线翻译或导入词库"
             )));
         }
         Err(offline_error
@@ -1713,7 +1715,7 @@ mod tests {
 
     #[test]
     fn translate_auto_unconfigured_and_offline_miss_message() {
-        // US-16：无 key + 离线未命中 → 错误同时含两句语义；失败不写缓存
+        // US-16/US-11：无 key + 离线未命中 → 错误同时含三段语义（含"设置"引导）；失败不写缓存
         let mut svc = svc_with(
             MemCache::default(),
             MemConfig::with_default(AUTO_PROVIDER),
@@ -1723,7 +1725,25 @@ mod tests {
         let msg = err.to_string();
         assert!(msg.contains("未配置在线翻译 API Key"), "msg={msg}");
         assert!(msg.contains("离线翻译未命中"), "msg={msg}");
+        assert!(msg.contains("设置"), "REQ-007 追加设置引导；msg={msg}");
         assert_eq!(svc.cache.cache_count().unwrap(), 0, "失败不写缓存");
+    }
+
+    #[test]
+    fn translate_auto_configured_key_provider_is_deepl_uncached() {
+        // REQ-007 US-10 显式断言：auto + key → 真实 provider 名 deepl 且未命中缓存。
+        let mut config = MemConfig::with_default(AUTO_PROVIDER);
+        config.set_provider_key("deepl", "k").unwrap();
+        let mut svc = svc_with(
+            MemCache::default(),
+            config,
+            vec![Box::new(DeepLStub), Box::new(OfflineStub)],
+        );
+        let r = svc.translate_routed("Hello", Lang::En, Lang::Zh).unwrap();
+        assert_eq!(r.translation.provider, "deepl");
+        assert!(!r.from_cache);
+        assert!(r.fallback_reason.is_none());
+        assert!(!r.translation.text.contains("离线翻译未命中"));
     }
 
     #[test]

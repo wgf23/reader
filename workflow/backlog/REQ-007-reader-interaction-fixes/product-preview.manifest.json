@@ -1,0 +1,142 @@
+{
+  "req": "REQ-007",
+  "product": "阅读器交互修复（中部呼出 / 切章 / 在线翻译引导）—— 真实渲染截图对照",
+  "screens": [
+    {
+      "id": "S1",
+      "name": "阅读器 · 沉浸态",
+      "device": "mobile",
+      "design": {
+        "svg": "docs/wireframes/reader-ui-v2/01-immersive.svg",
+        "viewport": "900x640",
+        "label": "设计稿 v2 · 沉浸阅读态（线框 01-immersive）"
+      },
+      "impl": {
+        "png": "app/screenshots/reader_immersive.png",
+        "viewport": "390x844",
+        "label": "真实渲染 · 沉浸态（无 Chrome 全屏正文）"
+      },
+      "intent": [
+        "沉浸阅读态默认无任何常驻 Chrome（无 AppBar/底栏），正文全屏",
+        "中部 1/3 区域点击呼出/隐藏顶底栏；左右 15% 边缘热区仅分页模式翻页",
+        "长按/选中文本出浮动工具条；REQ-007 不改布局，仅修中部点击（含点在正文文字上）的手势可达性"
+      ],
+      "acceptance": [
+        "无常驻顶栏/底栏（沉浸态）",
+        "正文全屏铺满视口",
+        "正文文字中部可点击（其呼出结果由 S2 reader_chrome 真实截图佐证）",
+        "左右 15% 边缘热区语义保留（不误触 Chrome，见 US-2 widget/单测）",
+        "长按选中仍出工具条（见 S3）"
+      ]
+    },
+    {
+      "id": "S2",
+      "name": "阅读器 · 呼出顶底栏（真实点击正文文字）",
+      "device": "mobile",
+      "design": {
+        "svg": "docs/wireframes/reader-ui-v2/02-menus.svg",
+        "viewport": "900x640",
+        "label": "设计稿 v2 · 呼出工具栏态（线框 02-menus）"
+      },
+      "impl": {
+        "png": "app/screenshots/reader_chrome.png",
+        "viewport": "390x844",
+        "label": "真实渲染 · 真实 ReaderPage 点击正文文字呼出（非合成页）"
+      },
+      "intent": [
+        "顶栏：← 返回 / 书名 · 章节名 / ⋯ 更多",
+        "底栏：上一章 · ☰目录 · 可拖进度条 · 书签 · Aa · 下一章",
+        "REQ-007 关键修复：由真实 ReaderPage + 真实点击正文文字 center 呼出（禁止拼 ReaderTopBar/ReaderBottomBar 的合成页，US-3）",
+        "REQ-007 关键修复：底栏『下一章』在滚动模式可用（US-4）"
+      ],
+      "acceptance": [
+        "截图为真实点击正文文字呼出的顶底栏（非合成页）",
+        "顶栏返回 / 书名·章节 / 更多可见",
+        "底栏上一章 / 目录 / 进度条 / 书签 / Aa / 下一章齐全",
+        "底栏『下一章』存在且可用",
+        "无自创布局（控件集合与线框一致）"
+      ]
+    },
+    {
+      "id": "S3",
+      "name": "阅读器 · 长按选词工具条",
+      "device": "mobile",
+      "design": {
+        "svg": "docs/wireframes/reader-ui-v2/04-selection.svg",
+        "viewport": "900x640",
+        "label": "设计稿 v2 · 选词浮动工具条（线框 04-selection）"
+      },
+      "impl": {
+        "png": "app/screenshots/reader_selected.png",
+        "viewport": "390x844",
+        "label": "真实渲染 · 长按选中工具条（零改动回归）"
+      },
+      "intent": [
+        "长按/选中文本浮出自定义工具条：划重点 / 笔记 / 翻译 / 查词 / 复制（5 入口）",
+        "工具条随选中区浮动，两端选柄可见；REQ-007 工具条零改动",
+        "REQ-007：错误态结果卡片在翻译未配置时新增『去设置』按钮（由 widget/集成测试佐证，本屏为工具条回归）"
+      ],
+      "acceptance": [
+        "自定义工具条出现且五入口齐全",
+        "无系统原生 ActionMode / 工具条",
+        "选中文本有高亮",
+        "翻译/查词入口仍可复用（REQ-003 通路零回退）"
+      ]
+    },
+    {
+      "id": "S4",
+      "name": "翻译浮层 · 译文卡片来源标签",
+      "device": "mobile",
+      "design": {
+        "svg": "docs/wireframes/08-translation.svg",
+        "viewport": "900x640",
+        "label": "设计稿 v1 · 翻译与词典浮层（线框 08）"
+      },
+      "impl": {
+        "png": "app/screenshots/translation_cards.png",
+        "viewport": "390x844",
+        "label": "真实渲染 · 在线/离线/缓存/回退 四种译文卡片"
+      },
+      "intent": [
+        "译文卡片来源标签：在线 / 离线 / 缓存 + provider 名（对应线框『DeepL · 命中缓存』）",
+        "回退提示行（如『在线失败，已回退离线』）",
+        "REQ-007：无 key + 离线未命中错误文案追加『设置』引导（core 文案），卡片标签逻辑零改动"
+      ],
+      "acceptance": [
+        "『在线』标签 + provider=deepl 可见",
+        "『离线』标签 + provider=offline 可见",
+        "『缓存』标签可见（fromCache=true）",
+        "provider 名正确（deepl / offline）",
+        "回退提示『在线失败，已回退离线』可见",
+        "译文正文 + 标签行布局不变"
+      ]
+    },
+    {
+      "id": "S5",
+      "name": "设置页 · 词典与翻译（『去设置』目标页）",
+      "device": "mobile",
+      "design": {
+        "svg": "docs/wireframes/03-settings.svg",
+        "viewport": "900x640",
+        "label": "设计稿 v1 · 设置页（线框 03）"
+      },
+      "impl": {
+        "png": "app/screenshots/settings_translate.png",
+        "viewport": "390x844",
+        "label": "真实渲染 · 词典与翻译区块（策略下拉 + 掩码 key）"
+      },
+      "intent": [
+        "设置页『词典与翻译』区块：翻译策略下拉 + DeepL API Key 配置",
+        "REQ-007：作为错误浮层『去设置』的目标页被直接 push 并透传 translateBackend（R3-3 入口打通）",
+        "页面布局零改动（本 REQ 不新增页面/不改导航）"
+      ],
+      "acceptance": [
+        "『翻译策略』下拉可见",
+        "当前策略显示『自动（在线优先）』",
+        "『DeepL API Key』输入框可见",
+        "已配置 key 时掩码回填（不回填明文）",
+        "无新增页面 / 未改导航（页面零改动）"
+      ]
+    }
+  ]
+}
