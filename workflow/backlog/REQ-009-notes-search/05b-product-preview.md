@@ -1,5 +1,5 @@
-<!-- wf-meta: req=REQ-009-notes-search | phase=product-preview | agent=product-reviewer | date=2026-09-09 | gate=failed -->
-# REQ-009-notes-search · 阶段5a 产品验收（设计稿 ↔ 真实渲染截图 对照）
+<!-- wf-meta: req=REQ-009-notes-search | phase=product-preview | agent=product-reviewer | date=2026-09-09 | gate=passed -->
+# REQ-009-notes-search · 阶段5a 产品验收（设计稿 ↔ 真实渲染截图 对照）—— rework-B 后复验
 
 > **视角**：产品/用户（非开发自评）。UI 权威：`docs/wireframes/06-selection-toolbar.svg`、
 > `07-annotation-panel.svg`、`04-search.svg`（均 900×640 横屏低保真）。
@@ -8,9 +8,10 @@
 > `FakeNotesBackend`/`FakeSearchBackend`），**未使用** `app/test/goldens/*.png`（widget 测试 Ahem 方块占位）。
 >
 > **采集命令**：`bash scripts/ui-screenshots.sh REQ-009`
-> **采集结果**：**退出码 0**；`screenshots_test.dart` **17 passed / 0 failed**（其中 REQ-009 新增 4 例）；
-> 报告 `product-preview-REQ-009-notes-search.html`（4 屏，1,081,241 B；总屏数 4 / 视口不一致 4 /
+> **采集结果（rework-B 后复验，2026-09-09）**：**退出码 0**；`screenshots_test.dart` **17 passed / 0 failed**（其中 REQ-009 新增 4 例）；
+> 报告 `product-preview-REQ-009-notes-search.html`（4 屏，**1,087,027 B**；总屏数 4 / 视口不一致 4 /
 > 无实现截图 0；内嵌 4 张 SVG + 4 张 base64 PNG）。
+> **本次复验结论**：首轮 deviation=1（D1）已由 rework-B 修复并复验归零，**deviation = 0 → 闸门5 前置 passed**（见 §2、§8）。
 >
 > **判定方法说明**：本轮评审为纯文本环境（模型不支持图像输入），故逐屏判定基于**真实渲染 PNG 的
 > 像素/几何分析**（唯一色数、色彩饱和度、行/列墨迹聚类、色块 bbox、区域色彩统计），证据均为可复算
@@ -97,9 +98,9 @@
 | 按格式（EPUB/PDF/MOBI，复选） | 3 个 `CheckboxListTile`；默认 `_formats={'EPUB','MOBI'}` 与线框勾选状态（EPUB✓ PDF✗ MOBI✓）一致 | 通过 |
 | 「结果 N 条 · X.XXs」 | 面板底部 `Key('search-stats')` → `结果 ${_hits.length} 条 · ${_elapsed.toStringAsFixed(2)}s` | 通过 |
 | 空态 / 空查询提示 | `未找到相关结果` / `请输入关键词`（widget 测试覆盖 US-18） | 通过 |
-| 「第 N 章 · 章节名」的 **N** | 实现为 `Text('第 ${index + 1} 章 · ${hit.chapterTitle}')`（`search_page.dart:198`），`index` = 结果列表序号；截图中三条显示 **第 1 / 第 2 / 第 3 章**，而线框示例为 **第 1 / 第 3 / 第 2 章**（各书真实章号） | **偏差（做错）** |
+| 「第 N 章 · 章节名」的 **N** | 实现为 `Text('第 ${hit.chapterIndex + 1} 章 · ${hit.chapterTitle}')`（`app/lib/pages/search_page.dart:198`），`chapterIndex` = **该书真实章节序号（0 基）**，由 `core/src/api.rs::search` 经 `chapter_indices(book_id)`（`open_book` 章节顺序 `href→序号`）回填，跨书各自 0 基；截图中三条显示 **第 1 / 第 3 / 第 2 章**，与线框 04 示例（各书真实章号）一致 | **通过（rework-B D1 已闭环）** |
 
-**S3 结论：有偏差（1 项，见 §2）。** 除「第 N 章」语义外，其余验收点全部命中。
+**S3 结论：通过。** 结果行「第 N 章」已改为各书真实章节序号（第 1 / 第 3 / 第 2 章，与线框 04 一致），首轮 D1 闭环；其余验收点全部命中。
 
 ---
 
@@ -124,15 +125,27 @@
 
 | # | 屏 | 类型（少做 / 做错 / 发明） | 证据 | 判定 |
 |---|---|---|---|---|
-| **D1** | S3 全文搜索 | **做错（语义）** | 结果行「第 N 章」用**结果列表序号**而非**书籍章节序号**：`search_page.dart:171` `itemBuilder: (context, i) => _resultRow(i, _hits[i])` + `:198` `'第 ${index + 1} 章 · ${hit.chapterTitle}'`。线框 04 示例三条结果为「第 1 / 3 / 2 章」（各书真实章号，非顺序号）。S3 截图复刻线框同三本书/三章，实际渲染为「第 1 / 2 / 3 章」，其中第 2、3 条与线框不符。集成测试 `notes_search_integration_test.dart:166` 断言 `'第 1 章 · 第二章'`（命中所在章为第二章却显示第 1 章），锁定该行为。数据模型 `SearchHit`/`SearchHitView`/`SearchHitData` 无章节序号字段（`core/src/types.rs:307`、`core/src/api.rs:187`、`app/lib/services/search_backend.dart:14`），UI 无法取到真实章号 | **偏差 → rework-B** |
+| ~~D1~~ | S3 全文搜索 | 做错（语义）——**已闭环** | **首轮**：结果行「第 N 章」用结果列表序号而非真实章节序号（`search_page.dart:198` `第 ${index + 1} 章`，数据模型无 `chapter_index`），S3 渲染「第 1 / 2 / 3 章」与线框 04 的「第 1 / 3 / 2 章」不符 | **rework-B 修复 + 复验通过（deviation 归零）** |
 
-> **deviation 计数 = 1**（未授权偏差 1 项）。→ 闸门5 前置 **failed**，需 `workflow/rework/REWORK-REQ-009-B.md`。
+> **deviation 计数 = 0**（首轮 1 项 D1 经 `REWORK-REQ-009-B` 修复并复验闭环；无新增偏差）。→ 闸门5 前置 **passed**。
 
-**修复建议（供架构裁定）**：
-1. **忠实修复（推荐）**：`SearchHit`/`SearchHitView`/`SearchHitData` 增 `chapter_index: u32`（由 `api.rs` 按书库章节顺序回填，或索引时随章写入），UI 渲染 `第 ${hit.chapterIndex + 1} 章 · ${hit.chapterTitle}`；同步更新集成/widget 测试断言。
-2. **或降级并改设计/原型**：若架构判定真实章号超出本期范围，则去掉「第 N 章 · 」前缀、只显示章节名，并同步修订 `02-design §6.3` 与线框 04，避免"第 N 章"与章节名自相矛盾（如「第 1 章 · 第二章」）。
+### 2.1 D1 闭环复核（rework-B 后，2026-09-09）
 
-> 说明：D1 为**单行、用户可见**的标签语义问题，根因在数据模型缺章节序号（架构级），故按流程记 rework-B。
+| 复核项 | 独立证据 | 结果 |
+|---|---|---|
+| **渲染代码** | `app/lib/pages/search_page.dart:198` 已改为 `'第 ${hit.chapterIndex + 1} 章 · ${hit.chapterTitle}'`（不再引用结果列表 `index`；`index` 仅用于 `search-locate-N` key） | ✅ |
+| **数据回填** | `core/src/api.rs:704 chapter_indices(book_id)`：`open_book` 枚举章节顺序 → `href→0 基序号`；`api.rs:961-978` 按命中 `book_id` 去重逐书回填，跨书各自 0 基，`href` 未命中保持 0 不 panic | ✅ |
+| **Rust 端语义** | 独立重跑 `cargo test --release --test notes_search_api` → **1 passed / 0 failed**；用例断言全量命中 `chapter_index == 书库章节序号`，并构造**非首章**（idx≥1）命中证明非列表序号（`core/tests/notes_search_api.rs:229-283`） | ✅ |
+| **Dart 端跨书反例** | 独立重跑 `flutter test test/search_page_test.dart` → **12 passed / 0 failed**；`search_page_test.dart:242-271` 构造第 1 条 `chapterIndex=2`（→第 3 章）、第 2 条 `chapterIndex=1`（→第 2 章），断言 `第 3 章 · 第三章`/`第 2 章 · 第二章` 存在且 `第 1 章 · 第三章` 不存在（若用列表序号必失败） | ✅ |
+| **真实渲染截图** | 独立重跑 `bash scripts/ui-screenshots.sh REQ-009` → **退出码 0**、**17 passed / 0 failed**；`screenshots_test.dart:596-598` 断言三条分别为 `第 1 章 · 城市与记忆` / `第 3 章 · 城市与符号` / `第 2 章 · 城市与贸易` 后再 `_shot`；`app/screenshots/search_page.png` 重生成（223,092 B，1170×2532，与 HEAD 一致、与修复前版本 sha256 不同） | ✅ |
+| **像素级差异定位** | 与修复前截图逐像素比对：全图仅 2 处变化带——dev y 889–915 与 y 1237–1263，均落在 dev x 99–118（逻辑 x 33–39，即「第 N 章」中 **N** 的字符位）。即仅第 2、3 条结果的**章号数字**改变（1/2/3 → 1/3/2），第 1 条（数字不变）及其余文字/按钮/筛选面板零变化 | ✅ |
+| **设计同步** | `02-design.md` §3/§4.4/§6.3 已同步 `chapter_index`（标注 rework-B D1，`hit.chapterIndex + 1`）；零 schema 变更（`fts_books` 列不变） | ✅ |
+
+> D1 复核结论：**「第 N 章」= 各书真实章节序号，与线框 04 的「第 1 / 3 / 2 章」语义一致**（非列表顺序 1/2/3）。首轮偏差闭环。
+
+**（首轮修复建议留档，已按方案 1 忠实修复）**：
+1. **忠实修复（已采纳）**：`SearchHit`/`SearchHitView`/`SearchHitData` 增 `chapter_index: u32`（`api.rs` 按书库章节顺序回填），UI 渲染 `第 ${hit.chapterIndex + 1} 章 · ${hit.chapterTitle}`；同步更新集成/widget 测试断言。
+2. **或降级并改设计/原型**（未采纳）：去掉「第 N 章 · 」前缀、只显示章节名。
 
 ---
 
@@ -174,11 +187,12 @@
 
 ## 6. 结论
 
-- **逐屏判定**：S1 **通过**、S2 **通过**、S3 **有偏差（D1）**、S4 **通过**。
-- **deviation 计数 = 1**（D1：搜索结果「第 N 章」用结果序号而非章节序号，与线框 04 不符）。
-- **闸门5 前置判定：failed** —— 需 `workflow/rework/REWORK-REQ-009-B.md` 回架构/开发修正后重跑闸门3–5a。
+- **逐屏判定（rework-B 后复验）**：S1 **通过**、S2 **通过**、S3 **通过**、S4 **通过**。
+- **deviation 计数 = 0**（首轮 D1：搜索结果「第 N 章」用结果序号而非章节序号 → 已按 rework-B 方案 1 修复并复验闭环；无新增偏差）。
+- **闸门5 前置判定：passed** —— 无未授权偏差，允许 release-manager 合并主线（闸门5b）。
 - 其余差异（视口方向、查词入口、面板形态/宽度、色值、M3 主题色、工具条样式）均为设计/ADR 已授权取舍或既有基线，不计入 deviation。
 - 建议（非阻塞）：补 390×844 竖屏设计稿以支持像素级视觉验收；真机按 US-24 清单执行。
+- 遗留（非本闸门阻塞）：Android 真机 US-24 ①–⑧ 未执行（本环境无设备，登记于 `03-review §6.1`）。
 
 ---
 
@@ -186,9 +200,24 @@
 
 | 文件 | 变更 |
 |---|---|
-| `workflow/backlog/REQ-009-notes-search/05b-product-preview.md` | 新增（本报告） |
+| `workflow/backlog/REQ-009-notes-search/05b-product-preview.md` | 新增（首轮）+ **本次复验更新（D1 闭环、deviation=0、gate=passed）** |
 | `workflow/backlog/REQ-009-notes-search/product-preview.manifest.json` | 新增（4 屏清单） |
-| `workflow/backlog/REQ-009-notes-search/product-preview-REQ-009-notes-search.html` | 新增（4 屏，1,081,241 B） |
-| `workflow/rework/REWORK-REQ-009-B.md` | 新增（D1 偏差处置） |
-| `app/integration_test/screenshots_test.dart` | 追加 REQ-009 S1–S4 真实截图用例 |
-| `app/screenshots/{selection_toolbar_colors,notes_panel,search_page,notes_jump_temp_highlight}.png` | 新增真实渲染截图 |
+| `workflow/backlog/REQ-009-notes-search/product-preview-REQ-009-notes-search.html` | 新增（首轮 4 屏）+ **本次重生成（4 屏，1,087,027 B）** |
+| `workflow/rework/REWORK-REQ-009-B.md` | 新增（D1 偏差处置 + developer 修复/复验回填） |
+| `app/integration_test/screenshots_test.dart` | 追加 REQ-009 S1–S4 真实截图用例；S3 断言真实章号 1/3/2 |
+| `app/screenshots/{selection_toolbar_colors,notes_panel,search_page,notes_jump_temp_highlight}.png` | 真实渲染截图（本次重跑；S3 `search_page.png` 223,092 B 已含修复） |
+
+---
+
+## 8. 复验执行记录（rework-B 后，product-reviewer 独立实跑）
+
+| # | 命令 | 结果 |
+|---|---|---|
+| 1 | `bash scripts/ui-screenshots.sh REQ-009` | **退出码 0**；cargo build → `screenshots_test.dart` **17 passed / 0 failed** → 报告重生成；4 屏 |
+| 2 | `flutter test test/search_page_test.dart` | **12 passed / 0 failed**（含跨书真实章号反例，证明非列表序号） |
+| 3 | `cargo test --release --test notes_search_api` | **1 passed / 0 failed**（全量 + 非首章 `chapter_index` == 真实章节序号） |
+| 4 | `xvfb-run -a flutter test integration_test/notes_search_integration_test.dart -d linux` | **2/2**（US-10、US-22 真实选词/搜索→定位） |
+| 5 | 截图逐像素比对（修复前 vs 修复后 `search_page.png`） | 仅 2 处变化带，均在「第 N 章」数字字符位（逻辑 x 33–39）：第 2、3 条 1/2/3 → 1/3/2 |
+| 6 | `app/screenshots/search_page.png` 哈希 | 与 HEAD 一致（`c1a25b4a…`，223,092 B），确认为最新真实渲染 |
+
+> **复验结论**：S3「第 N 章」= 真实章节序号，与线框 04 的「第 1 / 3 / 2 章」语义一致；S1/S2/S4 证据文件字节级未变，判定维持通过。**deviation = 0 → 闸门5 前置 passed**。
