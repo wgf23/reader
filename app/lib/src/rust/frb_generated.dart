@@ -1402,16 +1402,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   SearchHitView dco_decode_search_hit_view(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 7)
-      throw Exception('unexpected arr length: expect 7 but see ${arr.length}');
+    if (arr.length != 8)
+      throw Exception('unexpected arr length: expect 8 but see ${arr.length}');
     return SearchHitView(
       bookId: dco_decode_String(arr[0]),
       bookTitle: dco_decode_String(arr[1]),
       href: dco_decode_String(arr[2]),
       chapterTitle: dco_decode_String(arr[3]),
-      snippet: dco_decode_String(arr[4]),
-      ranges: dco_decode_list_range_view(arr[5]),
-      score: dco_decode_opt_box_autoadd_f_64(arr[6]),
+      chapterIndex: dco_decode_u_32(arr[4]),
+      snippet: dco_decode_String(arr[5]),
+      ranges: dco_decode_list_range_view(arr[6]),
+      score: dco_decode_opt_box_autoadd_f_64(arr[7]),
     );
   }
 
@@ -1941,6 +1942,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_bookTitle = sse_decode_String(deserializer);
     var var_href = sse_decode_String(deserializer);
     var var_chapterTitle = sse_decode_String(deserializer);
+    var var_chapterIndex = sse_decode_u_32(deserializer);
     var var_snippet = sse_decode_String(deserializer);
     var var_ranges = sse_decode_list_range_view(deserializer);
     var var_score = sse_decode_opt_box_autoadd_f_64(deserializer);
@@ -1949,6 +1951,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         bookTitle: var_bookTitle,
         href: var_href,
         chapterTitle: var_chapterTitle,
+        chapterIndex: var_chapterIndex,
         snippet: var_snippet,
         ranges: var_ranges,
         score: var_score);
@@ -2415,6 +2418,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_String(self.bookTitle, serializer);
     sse_encode_String(self.href, serializer);
     sse_encode_String(self.chapterTitle, serializer);
+    sse_encode_u_32(self.chapterIndex, serializer);
     sse_encode_String(self.snippet, serializer);
     sse_encode_list_range_view(self.ranges, serializer);
     sse_encode_opt_box_autoadd_f_64(self.score, serializer);

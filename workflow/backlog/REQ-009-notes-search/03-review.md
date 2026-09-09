@@ -161,3 +161,13 @@ US-1..24 均可断言：cargo 单测（US-4/5/12/15/16/18/20/21/23）、widget �
 2. `docs/04 §5` 的 `vocabulary` 表本期不建（沿用既有约定）；`fts_books` 已按 v4 扩列。
 3. 既有告警 `core/src/tts/mod.rs:572 unused variable text`（REQ-005 遗留，非本 REQ 引入）。
 4. 本阶段未跑 `scripts/ui-screenshots.sh REQ-009` / 产品预览（属阶段 5a）。
+
+## 7. rework-B 修复（D1：搜索结果章节号，developer）
+
+> 触发：`workflow/rework/REWORK-REQ-009-B.md`（阶段5a deviation=1）。方案 1（忠实修复）、**零 schema 变更**。
+
+- **数据模型**：`SearchHit`/`SearchHitView`/`SearchHitData` 增 `chapter_index`（0 基）；domain 置 0，`api.rs::search` 按命中 book 分组 `open_book` 枚举章节 → `href→序号` 回填（跨书各自序号）。`fts_books` 列/迁移**未改**；`docs/04 §5/§7` 因此无需同步（已核）。
+- **UI**：`search_page.dart` 改 `第 ${hit.chapterIndex + 1} 章 · ${hit.chapterTitle}`；列表 `index` 仅用于 `search-locate-N` key。
+- **测试**：`search_page_test.dart` 新增跨书/非首章反例（第 1 条显示「第 3 章」、第 2 条「第 2 章」，证明非列表序号）；集成 US-22 断言「第 2 章 · 第二章」；`notes_search_api.rs` 断言全量命中序号 + 非首章 `index=idx>=1`；S3 截图断言「第 1/3/2 章」。
+- **复验**：`cargo test --release` 全绿；`flutter test` 288 passed；`flutter analyze` 0；真实集成 2/2；`screenshots_test` 17/17（`search_page.png` 重生成）；DDD=0；CRAP FAIL=0/WARN=7/PASS=312。
+- **结论**：deviation 归零（S3 三条与线框 04 一致），`REWORK-REQ-009-B.md` gate=passed；交 product-reviewer 重跑闸门5a。

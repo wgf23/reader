@@ -303,12 +303,16 @@ pub struct TextRange {
 }
 
 /// 搜索命中（含上下文片段与关键词 UTF-16 区间）。
+///
+/// `chapter_index` 为该书章节顺序的 0 基序号（rework-B D1）；domain 查询阶段无从得知
+/// 书库章节顺序，先置 0，由 `api.rs::search` 按书回填真实序号（跨书 scope 每本各自序号）。
 #[derive(Debug, Clone, PartialEq)]
 pub struct SearchHit {
     pub book_id: BookId,
     pub book_title: String,
     pub href: String,
     pub chapter_title: String,
+    pub chapter_index: u32,
     pub snippet: String,
     pub ranges: Vec<TextRange>,
     pub score: Option<f64>,

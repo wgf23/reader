@@ -6,7 +6,7 @@
 import 'frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These functions are ignored because they are not marked as `pub`: `_unused_result_type`, `book_title_of`, `books_in_scope`, `chapter_text`, `chapter_titles`, `dict_service`, `domain_scope`, `ensure_indexed`, `err_msg`, `indexed_chapters`, `notes_service`, `search_service`, `service`, `to_annotation_view`, `to_group_view`, `to_hit_view`, `to_locator_view`, `to_summary`, `translation_service`
+// These functions are ignored because they are not marked as `pub`: `_unused_result_type`, `book_title_of`, `books_in_scope`, `chapter_indices`, `chapter_text`, `chapter_titles`, `dict_service`, `domain_scope`, `ensure_indexed`, `err_msg`, `indexed_chapters`, `notes_service`, `search_service`, `service`, `to_annotation_view`, `to_group_view`, `to_hit_view`, `to_locator_view`, `to_summary`, `translation_service`
 // These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `TextSelectionView`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
@@ -617,6 +617,9 @@ class SearchHitView {
   final String bookTitle;
   final String href;
   final String chapterTitle;
+
+  /// 该书章节顺序的 0 基序号（rework-B D1；UI 渲染 `+1`）。
+  final int chapterIndex;
   final String snippet;
   final List<RangeView> ranges;
   final double? score;
@@ -626,6 +629,7 @@ class SearchHitView {
     required this.bookTitle,
     required this.href,
     required this.chapterTitle,
+    required this.chapterIndex,
     required this.snippet,
     required this.ranges,
     this.score,
@@ -637,6 +641,7 @@ class SearchHitView {
       bookTitle.hashCode ^
       href.hashCode ^
       chapterTitle.hashCode ^
+      chapterIndex.hashCode ^
       snippet.hashCode ^
       ranges.hashCode ^
       score.hashCode;
@@ -650,6 +655,7 @@ class SearchHitView {
           bookTitle == other.bookTitle &&
           href == other.href &&
           chapterTitle == other.chapterTitle &&
+          chapterIndex == other.chapterIndex &&
           snippet == other.snippet &&
           ranges == other.ranges &&
           score == other.score;

@@ -226,6 +226,62 @@ fn notes_and_search_bridge_end_to_end() {
     assert!(!h.ranges.is_empty());
     assert!(h.ranges[0].start < h.ranges[0].end);
 
+    // rework-B D1：命中行的章节序号须等于该书库章节顺序的真实 0 基序号（非列表序号）。
+    for x in &hits {
+        if let Some((i, _c)) = view
+            .chapters
+            .iter()
+            .enumerate()
+            .find(|(_, c)| c.href == x.href)
+        {
+            assert_eq!(
+                x.chapter_index, i as u32,
+                "命中 {} 的 chapter_index 应为真实章节序号 {}（非列表序号）",
+                x.href, i
+            );
+        }
+    }
+    // 非首章用例：取第 2 个及以后、含连续 2 字 CJK 的章节，用该 bigram 搜索，
+    // 断言同 href 的命中 chapter_index == 该章真实序号（>=1），证明不是列表序号。
+    let mut non_first: Option<(usize, String)> = None;
+    for (i, c) in view.chapters.iter().enumerate() {
+        if i == 0 {
+            continue;
+        }
+        let cs: Vec<char> = c.text.chars().collect();
+        for w in cs.windows(2) {
+            let (a, b) = (w[0] as u32, w[1] as u32);
+            if (0x4E00..=0x9FFF).contains(&a) && (0x4E00..=0x9FFF).contains(&b) {
+                non_first = Some((i, w.iter().collect()));
+                break;
+            }
+        }
+        if non_first.is_some() {
+            break;
+        }
+    }
+    let (idx, w2) = non_first.expect("应存在非首章且含连续 2 字 CJK 的章节");
+    assert!(idx >= 1, "该用例必须命中非首章");
+    let hits2 = block_on(api::search(
+        w2.clone(),
+        api::SearchScopeView {
+            all_books: false,
+            book_id: Some(book_id.clone()),
+            formats: vec![],
+        },
+    ))
+    .unwrap();
+    let same: Vec<_> = hits2
+        .iter()
+        .filter(|x| x.href == view.chapters[idx].href)
+        .collect();
+    assert!(!same.is_empty(), "非首章词 {w2:?} 应命中其所在章");
+    assert!(
+        same.iter().all(|x| x.chapter_index == idx as u32),
+        "非首章命中的 chapter_index 应为 {idx}，实际 {:?}",
+        same.iter().map(|x| x.chapter_index).collect::<Vec<_>>()
+    );
+
     let scoped = block_on(api::search(
         word.clone(),
         api::SearchScopeView {

@@ -27,6 +27,7 @@ class RustSearchBackend implements SearchBackend {
           bookTitle: h.bookTitle,
           href: h.href,
           chapterTitle: h.chapterTitle,
+          chapterIndex: h.chapterIndex,
           snippet: h.snippet,
           ranges: [
             for (final r in h.ranges)

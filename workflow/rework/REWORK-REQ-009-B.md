@@ -1,4 +1,4 @@
-<!-- wf-meta: req=REQ-009-notes-search | phase=product-preview | agent=product-reviewer | date=2026-09-09 | gate=open -->
+<!-- wf-meta: req=REQ-009-notes-search | phase=product-preview | agent=product-reviewer | date=2026-09-09 | gate=passed -->
 # REWORK-REQ-009-B · 产品验收偏差处置（rework-B）
 
 ## 触发
@@ -39,3 +39,60 @@
 
 ## 结论
 - **deviation = 1（D1）→ 闸门5 前置 failed**；修复并复验后回填本文件 `gate=passed` 并重跑闸门3–5a。
+
+---
+
+## 修复实现 + 复验结果（developer，2026-09-09）
+
+**方案**：采用**方案 1（忠实修复）**，且为**零 schema 变更**（不在 `fts_books` 加 UNINDEXED 列、无迁移/回填）。
+
+### chapter_index 的来源与回填
+
+- `core/src/types.rs::SearchHit` 增 `chapter_index: u32`：domain 查询阶段无从得知书库章节顺序，置 0（带注释），由 `api.rs::search` 回填。
+- `core/src/api.rs` 新增 `chapter_indices(book_id)`（与既有 `chapter_titles` 同处）：`open_book` 枚举该书章节顺序 → `href → 0 基序号`。
+- `core/src/api.rs::search`：查询后按命中 `book_id` 去重，逐书构建 `href→序号` 映射，再回填每条命中的 `chapter_index`；**跨书 scope 每本书各自 0 基**；`href` 查不到时保持 0（不 panic）。
+- `SearchHitView` / `SearchHitData` 同步增字段；`search_page.dart` 渲染
+  `第 ${hit.chapterIndex + 1} 章 · ${hit.chapterTitle}`（不再用结果列表 `index`；`index` 仅保留给 `search-locate-N` key）。
+- `core/src/search/mod.rs` 查询结果已携带 `href`，api 据此回填，domain 层零新依赖（DDD 分层不变）。
+
+### 改动文件
+
+| 文件 | 变更 |
+|---|---|
+| `core/src/types.rs` | `SearchHit.chapter_index: u32` |
+| `core/src/search/mod.rs` | `query` 产出 `SearchHit.chapter_index = 0`（占位，api 回填） |
+| `core/src/api.rs` | `SearchHitView.chapter_index`；`chapter_indices`；`search` 按书回填 |
+| `core/src/frb_generated.rs` | FRB codegen 生成物（未手改） |
+| `app/lib/src/rust/{api.dart,frb_generated.dart}` | FRB codegen 生成物（未手改） |
+| `app/lib/services/search_backend.dart` | `SearchHitData.chapterIndex`（required） |
+| `app/lib/services/rust_search_backend.dart` | 映射 `chapterIndex` |
+| `app/lib/pages/search_page.dart` | 渲染真实章号 |
+| `app/test/search_page_test.dart` | 断言真实章号 + 跨书/非首章「第 3 / 第 2 章」反例（证明非列表序号） |
+| `app/test/reader_notes_test.dart` | 两处 `SearchHitData` 补 `chapterIndex` |
+| `app/integration_test/notes_search_integration_test.dart` | 断言改为「第 2 章 · 第二章」 |
+| `app/integration_test/screenshots_test.dart` | S3 三条命中 `chapterIndex=0/2/1` + 断言「第 1/3/2 章」 |
+| `core/tests/notes_search_api.rs` | 全量命中 `chapter_index == 书库章节序号`；非首章命中 `chapter_index == idx(>=1)` |
+| `workflow/backlog/REQ-009-notes-search/02-design.md` | §3 类型、§4.4 时序、§6.3 逐屏映射同步（标注 rework-B D1） |
+| `app/screenshots/search_page.png` | S3 重生成（真实章号） |
+| `workflow/reports/{coverage-req009-rust.json,coverage-req009-rust.lcov,crap-req009.md}` | 覆盖率/CRAP 重跑 |
+
+> `docs/04 §5/§7` **无需改**：零 schema 变更（`fts_books` 列不变）、`SearchService::query` 签名不变；章节序号在 interface 层（`api.rs`）组装。`02-design.md` 已同步。
+
+### 复验（本机实跑）
+
+| # | 命令 | 结果 |
+|---|---|---|
+| 1 | `cd core && cargo test --release` | **全绿**（0 failed；lib 241 + 集成 41） |
+| 2 | `cd app && flutter test` | **288 passed / 0 failed / 5 skipped** |
+| 3 | `cd app && flutter analyze` | **No issues found!** |
+| 4 | `xvfb-run -a flutter test integration_test/notes_search_integration_test.dart -d linux` | **2/2**（US-10、US-22） |
+| 5 | `xvfb-run -a flutter test integration_test/screenshots_test.dart -d linux` | **17/17**；S3 断言「第 1 / 3 / 2 章」通过；`search_page.png` 重生成（223,092 B） |
+| 6 | `ddd-lint check /root/reader` | **违规=0** |
+| 7 | `crap scan core/src`（重跑覆盖率） | **FAIL=0 / WARN=7 / PASS=312** |
+
+**S3 三条结果真实章号**（`search_page.png`，与线框 04 一致）：
+- 看不见的城市 · 城市与记忆 → **第 1 章**
+- 马可瓦尔多 · 城市与符号 → **第 3 章**
+- 树上的男爵 · 城市与贸易 → **第 2 章**
+
+**闸门3 自评**：CRAP FAIL=0；DDD 违规=0；cargo/flutter/analyze 全绿；无未处理 rework；S3 原型一致性 deviation=0。→ **gate=passed**，请 product-reviewer 重跑闸门5a 复核。

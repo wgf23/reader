@@ -195,7 +195,7 @@ class _SearchPageState extends State<SearchPage> {
             ],
           ),
           Text(
-            '第 ${index + 1} 章 · ${hit.chapterTitle}',
+            '第 ${hit.chapterIndex + 1} 章 · ${hit.chapterTitle}',
             style: const TextStyle(color: Colors.grey, fontSize: 12),
           ),
           const SizedBox(height: 4),

@@ -17,6 +17,7 @@ class SearchHitData {
     required this.bookTitle,
     required this.href,
     required this.chapterTitle,
+    required this.chapterIndex,
     required this.snippet,
     required this.ranges,
     this.score,
@@ -26,6 +27,10 @@ class SearchHitData {
   final String bookTitle;
   final String href;
   final String chapterTitle;
+
+  /// 该命中所属书籍的**真实章节序号**（0 基，按书库章节顺序；rework-B D1）。
+  /// UI 渲染「第 N 章」时使用 `chapterIndex + 1`，不使用结果列表序号。
+  final int chapterIndex;
   final String snippet;
   final List<TextRangeData> ranges;
   final double? score;

@@ -1695,6 +1695,7 @@ impl SseDecode for crate::api::SearchHitView {
         let mut var_bookTitle = <String>::sse_decode(deserializer);
         let mut var_href = <String>::sse_decode(deserializer);
         let mut var_chapterTitle = <String>::sse_decode(deserializer);
+        let mut var_chapterIndex = <u32>::sse_decode(deserializer);
         let mut var_snippet = <String>::sse_decode(deserializer);
         let mut var_ranges = <Vec<crate::api::RangeView>>::sse_decode(deserializer);
         let mut var_score = <Option<f64>>::sse_decode(deserializer);
@@ -1703,6 +1704,7 @@ impl SseDecode for crate::api::SearchHitView {
             book_title: var_bookTitle,
             href: var_href,
             chapter_title: var_chapterTitle,
+            chapter_index: var_chapterIndex,
             snippet: var_snippet,
             ranges: var_ranges,
             score: var_score,
@@ -2141,6 +2143,7 @@ impl flutter_rust_bridge::IntoDart for crate::api::SearchHitView {
             self.book_title.into_into_dart().into_dart(),
             self.href.into_into_dart().into_dart(),
             self.chapter_title.into_into_dart().into_dart(),
+            self.chapter_index.into_into_dart().into_dart(),
             self.snippet.into_into_dart().into_dart(),
             self.ranges.into_into_dart().into_dart(),
             self.score.into_into_dart().into_dart(),
@@ -2571,6 +2574,7 @@ impl SseEncode for crate::api::SearchHitView {
         <String>::sse_encode(self.book_title, serializer);
         <String>::sse_encode(self.href, serializer);
         <String>::sse_encode(self.chapter_title, serializer);
+        <u32>::sse_encode(self.chapter_index, serializer);
         <String>::sse_encode(self.snippet, serializer);
         <Vec<crate::api::RangeView>>::sse_encode(self.ranges, serializer);
         <Option<f64>>::sse_encode(self.score, serializer);

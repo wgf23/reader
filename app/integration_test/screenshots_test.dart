@@ -558,6 +558,7 @@ void main() {
         bookTitle: '看不见的城市',
         href: _req009Href1,
         chapterTitle: '城市与记忆',
+        chapterIndex: 0, // 线框 04：第 1 章
         snippet: snippet1,
         ranges: [TextRangeData(start: 13, end: 17)],
       ),
@@ -566,6 +567,7 @@ void main() {
         bookTitle: '马可瓦尔多',
         href: _req009Href1,
         chapterTitle: '城市与符号',
+        chapterIndex: 2, // 线框 04：第 3 章
         snippet: snippet2,
         ranges: [TextRangeData(start: 10, end: 14)],
       ),
@@ -574,6 +576,7 @@ void main() {
         bookTitle: '树上的男爵',
         href: _req009Href1,
         chapterTitle: '城市与贸易',
+        chapterIndex: 1, // 线框 04：第 2 章
         snippet: snippet3,
         ranges: [TextRangeData(start: 13, end: 17)],
       ),
@@ -589,6 +592,10 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('search-stats')), findsOneWidget);
     expect(find.byKey(const Key('search-locate-0')), findsOneWidget);
+    // rework-B D1：三条结果分别显示各书真实章节序号（线框 04 的 第 1 / 3 / 2 章）。
+    expect(find.text('第 1 章 · 城市与记忆'), findsOneWidget);
+    expect(find.text('第 3 章 · 城市与符号'), findsOneWidget);
+    expect(find.text('第 2 章 · 城市与贸易'), findsOneWidget);
     await _shot(tester, 'search_page');
   });
 

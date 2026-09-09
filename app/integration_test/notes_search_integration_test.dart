@@ -137,6 +137,7 @@ void main() {
         bookTitle: '测试书',
         href: _href2,
         chapterTitle: '第二章',
+        chapterIndex: 1, // 第二章 = 该书第 2 章（0 基索引 1）
         snippet: snippet,
         ranges: [TextRangeData(start: 7, end: 9)], // 「城市」
       ),
@@ -163,7 +164,8 @@ void main() {
 
     // 结果行 + 关键词高亮（蓝色加粗）+ 统计
     expect(find.text('测试书'), findsWidgets);
-    expect(find.textContaining('第 1 章 · 第二章'), findsOneWidget);
+    // rework-B D1：命中所在章为第二章 → 显示真实章号「第 2 章」，而非结果列表序号「第 1 章」。
+    expect(find.textContaining('第 2 章 · 第二章'), findsOneWidget);
     expect(find.byKey(const Key('search-locate-0')), findsOneWidget);
     expect(find.byKey(const Key('search-stats')), findsOneWidget);
     expect(search.queries, contains('城市'));

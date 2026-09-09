@@ -189,6 +189,8 @@ pub struct SearchHitView {
     pub book_title: String,
     pub href: String,
     pub chapter_title: String,
+    /// 该书章节顺序的 0 基序号（rework-B D1；UI 渲染 `+1`）。
+    pub chapter_index: u32,
     pub snippet: String,
     pub ranges: Vec<RangeView>,
     pub score: Option<f64>,
@@ -673,6 +675,7 @@ fn to_hit_view(h: &SearchHit) -> SearchHitView {
         book_title: h.book_title.clone(),
         href: h.href.clone(),
         chapter_title: h.chapter_title.clone(),
+        chapter_index: h.chapter_index,
         snippet: h.snippet.clone(),
         ranges: h
             .ranges
@@ -694,6 +697,18 @@ fn chapter_titles(book_id: &str) -> std::result::Result<HashMap<String, String>,
         .chapters
         .into_iter()
         .map(|c| (c.href, c.title))
+        .collect())
+}
+
+/// href → 章节序号（0 基，按书库章节顺序；搜索结果行「第 N 章」用，rework-B D1）。
+fn chapter_indices(book_id: &str) -> std::result::Result<HashMap<String, u32>, String> {
+    let svc = service()?.lock().map_err(|_| "服务锁错误".to_string())?;
+    let opened = svc.open_book(book_id).map_err(err_msg)?;
+    Ok(opened
+        .chapters
+        .into_iter()
+        .enumerate()
+        .map(|(i, c)| (c.href, i as u32))
         .collect())
 }
 
@@ -937,10 +952,30 @@ pub async fn search(
             let _ = ensure_indexed(&id);
         }
     }
-    let svc = search_service()?
-        .lock()
-        .map_err(|_| "服务锁错误".to_string())?;
-    let hits = svc.query(&query, &domain).map_err(err_msg)?;
+    let mut hits = {
+        let svc = search_service()?
+            .lock()
+            .map_err(|_| "服务锁错误".to_string())?;
+        svc.query(&query, &domain).map_err(err_msg)?
+    };
+    // rework-B D1：按书回填真实章节序号（跨书 scope 每本书各自 0 基顺序）。
+    let mut per_book: HashMap<String, HashMap<String, u32>> = HashMap::new();
+    for h in &hits {
+        if !per_book.contains_key(&h.book_id) {
+            if let Ok(map) = chapter_indices(&h.book_id) {
+                per_book.insert(h.book_id.clone(), map);
+            }
+        }
+    }
+    for h in &mut hits {
+        let idx = per_book
+            .get(&h.book_id)
+            .and_then(|m| m.get(&h.href))
+            .copied();
+        if let Some(i) = idx {
+            h.chapter_index = i;
+        }
+    }
     Ok(hits.iter().map(to_hit_view).collect())
 }
 

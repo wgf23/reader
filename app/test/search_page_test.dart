@@ -32,6 +32,7 @@ SearchHitData hit({
   String bookTitle = '看不见的城市',
   String href = 'chapter_0001.xhtml',
   String chapterTitle = '城市与记忆',
+  int chapterIndex = 0,
   String snippet = '看不见的城市，卡尔维诺写道。',
   List<TextRangeData> ranges = const [TextRangeData(start: 4, end: 6)],
 }) =>
@@ -40,6 +41,7 @@ SearchHitData hit({
       bookTitle: bookTitle,
       href: href,
       chapterTitle: chapterTitle,
+      chapterIndex: chapterIndex,
       snippet: snippet,
       ranges: ranges,
     );
@@ -237,10 +239,13 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('多条结果 → 渲染分隔线；范围可切回全部书籍', (tester) async {
+  testWidgets('多条结果 → 真实章号（非列表序号）；渲染分隔线；范围可切回全部书籍',
+      (tester) async {
+    // rework-B D1：第 1 条命中「第三章」、第 2 条命中「第二章」——若误用列表序号会渲染成
+    // 第 1 / 第 2 章，故此处锁定「真实章节序号」语义。
     final backend = FakeSearchBackend(hits: [
-      hit(bookTitle: '书一'),
-      hit(bookTitle: '书二', chapterTitle: '第二章'),
+      hit(bookTitle: '书一', chapterTitle: '第三章', chapterIndex: 2),
+      hit(bookTitle: '书二', chapterTitle: '第二章', chapterIndex: 1),
     ]);
     await pumpSearch(tester, backend: backend);
     await tester.enterText(find.byKey(const Key('search-field')), '城市');
@@ -248,6 +253,12 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('书一'), findsOneWidget);
     expect(find.text('书二'), findsOneWidget);
+    expect(find.text('第 3 章 · 第三章'), findsOneWidget,
+        reason: '第 1 条结果应显示其真实章节序号（第 3 章），而非列表序号 1');
+    expect(find.text('第 2 章 · 第二章'), findsOneWidget,
+        reason: '第 2 条结果应显示其真实章节序号（第 2 章）');
+    expect(find.text('第 1 章 · 第三章'), findsNothing,
+        reason: '不得回退为结果列表序号');
     expect(find.byType(Divider), findsWidgets, reason: '多条结果应有分隔线');
 
     await tester.tap(find.byKey(const Key('scope-current')));

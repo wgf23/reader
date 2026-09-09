@@ -81,6 +81,7 @@ pub struct SearchHit {
     pub book_title: String,
     pub href: String,
     pub chapter_title: String,
+    pub chapter_index: u32,   // rework-B D1：该书章节顺序 0 基序号，由 api 层回填
     pub snippet: String,
     pub ranges: Vec<TextRange>,
     pub score: Option<f64>,
@@ -178,6 +179,7 @@ pub struct BookmarkToggleView { pub bookmarked: bool, pub note_id: Option<String
 pub struct RangeView { pub start: u32, pub end: u32 }
 pub struct SearchHitView {
     pub book_id: String, pub book_title: String, pub href: String, pub chapter_title: String,
+    pub chapter_index: u32,   // rework-B D1：真实章节序号（0 基）
     pub snippet: String, pub ranges: Vec<RangeView>, pub score: Option<f64>,
 }
 pub struct SearchScopeView { pub all_books: bool, pub book_id: Option<String>, pub formats: Vec<String> }
@@ -262,8 +264,11 @@ abstract class NotesBackend {
 class TextRangeData { const TextRangeData({required this.start, required this.end}); final int start, end; }
 class SearchHitData {
   const SearchHitData({required this.bookId, required this.bookTitle, required this.href,
-    required this.chapterTitle, required this.snippet, required this.ranges, this.score});
-  final String bookId, bookTitle, href, chapterTitle, snippet;
+    required this.chapterTitle, required this.chapterIndex, required this.snippet,
+    required this.ranges, this.score});
+  final String bookId, bookTitle, href, chapterTitle;
+  final int chapterIndex;   // rework-B D1：真实章节序号（0 基，UI 渲染 +1）
+  final String snippet;
   final List<TextRangeData> ranges; final double? score;
 }
 class SearchScopeData { const SearchScopeData({this.allBooks = true, this.bookId, this.formats = const []});
@@ -412,6 +417,7 @@ SearchPage 输入 → 点「全文搜索」
               WHERE fts_books MATCH ?1 [AND f.book_id=?] [AND b.format IN (...)]
               ORDER BY rank LIMIT ?2
           → extract_snippet(row.text, query, 30) → SearchHit{snippet, ranges}
+      → 按命中 book 分组 open_book 枚举章节 → href→真实序号回填 chapter_index（rework-B D1，跨书各自序号）
       → 返回 Vec<SearchHitView>（含耗时由 UI 计时）
   → SearchPage 渲染结果行（书名/章节/上下文关键词高亮/定位）+ 右侧筛选面板
 ```
@@ -483,7 +489,7 @@ SearchPage 输入 → 点「全文搜索」
 | 顶部搜索框 + 放大镜 | `SearchPage` 顶部 `TextField` + 图标 | 输入后点按钮 |
 | 「全文搜索」蓝色按钮 | `ElevatedButton` | 触发 `SearchBackend.search` |
 | 结果行：书名（粗） | `Text(bookTitle, bold)` | US-18 |
-| 「第 N 章 · 章节名」 | `Text('第 ${i+1} 章 · $chapterTitle')` | US-18 |
+| 「第 N 章 · 章节名」 | `Text('第 ${hit.chapterIndex + 1} 章 · $chapterTitle')`（rework-B D1：`chapterIndex` 为该书真实章节序号 0 基，非结果列表序号） | US-18 |
 | 上下文片段（关键词蓝色加粗） | `RichText` 按 `ranges` 分段（`#1A73E8` + bold） | US-18：span 颜色/字重可断言 |
 | 「定位」按钮 | `OutlinedButton` → 返回 `SearchHitData` | US-19：跳转 + 关键词临时高亮 |
 | 右侧筛选面板「筛选」 | `Container` 固定宽（172） | 线框右侧 |

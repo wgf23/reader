@@ -214,6 +214,8 @@ impl SearchService {
                     book_title: r.book_title,
                     href: r.href,
                     chapter_title: r.chapter_title,
+                    // 章节序号由 api 层按书库章节顺序回填（rework-B D1）。
+                    chapter_index: 0,
                     snippet,
                     ranges,
                     score: r.score,
