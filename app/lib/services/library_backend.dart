@@ -23,10 +23,14 @@ class BookSummaryData {
 }
 
 class ChapterData {
-  const ChapterData({required this.title, required this.text});
+  const ChapterData({required this.title, required this.text, this.href = ''});
 
   final String title;
   final String text;
+
+  /// 章/资源路径（规范 EPUB 内相对路径；REQ-009 搜索定位/笔记锚点用）。
+  /// 默认 `''` 保证既有 fake 调用不破。
+  final String href;
 }
 
 class BookViewData {

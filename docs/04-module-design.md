@@ -195,9 +195,15 @@ CREATE TABLE settings (
   value         TEXT NOT NULL
 );
 
--- 全文搜索（FTS5，入库时构建）
+-- 全文搜索（FTS5，REQ-009 v4；入库时构建）
+-- text_bi 为唯一索引列（CJK bigram 预处理流）；href/chapter/text 仅存储（UNINDEXED），
+-- text 供应用层抽 snippet 与关键词 UTF-16 区间。详见 REQ-009 02-adr D1/D4。
 CREATE VIRTUAL TABLE fts_books USING fts5(
-  book_id UNINDEXED, chapter, text,
+  book_id UNINDEXED,
+  href    UNINDEXED,
+  chapter UNINDEXED,
+  text    UNINDEXED,
+  text_bi,
   tokenize='unicode61'
 );
 ```
@@ -205,7 +211,12 @@ CREATE VIRTUAL TABLE fts_books USING fts5(
 **说明**：
 - 笔记锚定用 `locator_json`（灵活性），列表/导出用 `snippet` 冗余列（不解析 JSON）。
 - 删除书默认 `ON DELETE CASCADE` 清笔记；LIB-04 的"保留笔记"选项 = 先导出再删（由 UI 编排）。
-- 搜索：`fts_books` 按章插入；搜索时 JOIN books 过滤范围。
+  `fts_books` 为虚拟表不参与 FK 级联，故 `Store::remove_book` 在同一事务内显式
+  `DELETE FROM fts_books WHERE book_id=?`（REQ-009 ADR D3）。
+- 搜索：`fts_books` 按章插入；搜索时 JOIN books 过滤范围。CJK 2 字词靠 `text_bi`（bigram）命中，
+  单字 CJK 走 `text LIKE` 回退（REQ-009 ADR D1）。
+- 迁移 v4（REQ-009）：`annotations` + `idx_annot_book` + 上述 `fts_books`，`PRAGMA user_version=4`；
+  主连接补 `busy_timeout=5000`，笔记/搜索第二连接显式 `foreign_keys=ON` + `busy_timeout`。
 
 ---
 
@@ -236,22 +247,29 @@ impl BookCanonicalizer {
     pub fn canonicalize(parsed: &ParsedBook, out_dir: &Path) -> Result<CanonicalEpub>;
 }
 
-// locator/
+// locator/（REQ-009 D2：纯文本入参，由 interface 层 api.rs 取章全文后调用）
 pub struct LocatorResolver;
 impl LocatorResolver {
-    pub fn from_selection(book: &Book, sel: &TextSelection) -> Result<Locator>;
-    pub fn resolve(book: &Book, loc: &Locator) -> Result<ResolvedPosition>; // 供引擎 goto
-    pub fn text_at(book: &Book, loc: &Locator) -> Result<String>;           // 供面板/导出
+    /// 由选中片段 + 当前章内进度生成文本锚；无匹配 → text=None（progression 兜底）。
+    /// TextAnchor.start/end 为 UTF-16 半开区间（与 Dart substring 同尺度）。
+    pub fn from_selection(text: &str, book_id: &BookId, href: &str, sel: &TextSelection) -> Result<Locator>;
+    pub fn text_at(text: &str, loc: &Locator) -> Result<String>;           // 供面板/导出
 }
 
-// notes/
+// notes/（REQ-009 D3/D8/D9：只依赖 AnnotationRepository trait，禁 crate::store）
 pub struct AnnotationService;
 impl AnnotationService {
-    pub fn create(book: &Book, sel: &TextSelection, kind: NoteKind, color: Option<Color>, text: Option<String>) -> Result<Annotation>;
-    pub fn update(id: NoteId, patch: NotePatch) -> Result<()>;
-    pub fn delete(id: NoteId) -> Result<()>;
-    pub fn list(book_id: BookId) -> Result<Vec<Annotation>>;
-    pub fn export(book_id: BookId, fmt: ExportFormat, out: &Path) -> Result<ExportSummary>;
+    pub fn new(repo: Box<dyn AnnotationRepository + Send>) -> Self;
+    pub fn create(&mut self, book_id: &str, locator: Locator, kind: NoteKind,
+                  color: Option<String>, note_text: Option<String>) -> Result<Annotation>;
+    pub fn update(&mut self, id: &str, patch: &NotePatch) -> Result<()>;
+    pub fn delete(&mut self, id: &str) -> Result<()>;
+    pub fn delete_many(&mut self, ids: &[String]) -> Result<usize>;
+    pub fn delete_all(&mut self, book_id: &str) -> Result<usize>;   // 全部 kind（含书签）
+    pub fn list(&self, book_id: &str, chapter_titles: &HashMap<String, String>) -> Result<Vec<NoteGroup>>;
+    pub fn resolve(&self, id: &str) -> Result<Locator>;
+    pub fn export(&self, book_title: &str, groups: &[NoteGroup], fmt: ExportFormat, out: &Path) -> Result<ExportSummary>;
+    pub fn toggle_bookmark(&mut self, book_id: &str, locator: Locator, snippet: Option<String>) -> Result<(bool, Option<String>)>;
 }
 
 // dict/ —— 词典 + 翻译
@@ -276,11 +294,20 @@ impl TranslationService {
 // 常量：AUTO_PROVIDER="auto"；FALLBACK_REASON_ONLINE_FAILED/UNCONFIGURED；RoutedTranslation{translation,from_cache,fallback_reason}
 // settings 键 translate.default_provider 默认值 "offline" → "auto"（键名不变、值域扩展，无迁移）
 
-// search/
+// search/（REQ-009 D1：CJK bigram 预处理纯函数 + 服务；只依赖 SearchIndexRepository trait）
+/// CJK 连续段 → 重叠 bigram；ASCII 字母数字 → 整词小写；标点/空白为边界。
+pub fn bigram_index_text(text: &str) -> String;
+/// 查询 → FTS5 安全短语表达式；全空 → None（api 层短路）。
+pub fn build_match_expr(query: &str) -> Option<String>;
+/// 在原文中抽上下文片段并给出关键词 UTF-16 区间。
+pub fn extract_snippet(text: &str, query: &str, window: usize) -> (String, Vec<TextRange>);
+
 pub struct SearchService;
 impl SearchService {
-    pub fn index_book(book: &Book) -> Result<()>;              // 入库时调用
-    pub fn query(q: &str, scope: Scope) -> Result<Vec<SearchHit>>;
+    pub fn new(repo: Box<dyn SearchIndexRepository + Send>) -> Self;
+    pub fn index_book(&mut self, book_id: &str, chapters: &[IndexedChapter]) -> Result<()>;
+    pub fn is_indexed(&self, book_id: &str) -> Result<bool>;
+    pub fn query(&self, q: &str, scope: &SearchScope) -> Result<Vec<SearchHit>>; // 单字 CJK → LIKE 回退
 }
 ```
 

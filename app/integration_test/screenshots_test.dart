@@ -8,15 +8,22 @@ import 'package:integration_test/integration_test.dart';
 import 'package:reader_app/pages/library_page.dart';
 import 'package:reader_app/pages/listen_page.dart';
 import 'package:reader_app/pages/reader_page.dart';
+import 'package:reader_app/pages/search_page.dart';
 import 'package:reader_app/pages/settings_page.dart';
 import 'package:reader_app/services/library_backend.dart';
+import 'package:reader_app/services/notes_backend.dart';
+import 'package:reader_app/services/search_backend.dart';
 import 'package:reader_app/services/translate_backend.dart';
 import 'package:reader_app/services/tts_backend.dart';
 import 'package:reader_app/widgets/display_settings_sheet.dart';
 import 'package:reader_app/widgets/listen_settings_sheet.dart';
+import 'package:reader_app/widgets/notes_panel.dart';
+import 'package:reader_app/widgets/selection_toolbar.dart';
 import 'package:reader_app/widgets/translation_popup.dart';
 
 import '../test/fake_backend.dart';
+import '../test/fake_notes_backend.dart';
+import '../test/fake_search_backend.dart';
 import '../test/fake_translate_backend.dart';
 import '../test/fake_tts_backend.dart';
 import '../test/fake_tts_engine.dart';
@@ -144,6 +151,103 @@ class _LongListenShotBackend extends FakeBackend {
           const ChapterData(title: '第四章', text: '第四章句一。第四章句二。'),
         ],
       );
+}
+
+/// REQ-009：笔记/搜索截图语料（两章，带 href，供真实 ReaderPage 选词/面板/跳转）。
+const String _req009Ch1 = '第一章的正文从这里开始。'
+    '他沿着河岸慢慢走着，看水面上浮起的薄雾，听远处传来的钟声。'
+    '这样的清晨他已经经历过无数次，可每一次都像第一次那样新鲜。';
+const String _req009Ch2 = '看不见的城市，卡尔维诺写道：城市是记忆的。'
+    '他还说，每一座城市都会把它的记忆藏在街巷的转角里。';
+const String _req009Href1 = 'chapter_0001.xhtml';
+const String _req009Href2 = 'chapter_0002.xhtml';
+
+class _NotesSearchShotBackend extends FakeBackend {
+  @override
+  Future<BookViewData> openBook(String id) async => const BookViewData(
+        id: 'b1',
+        title: '测试书',
+        chapters: [
+          ChapterData(title: '第一章', text: _req009Ch1, href: _req009Href1),
+          ChapterData(title: '第二章', text: _req009Ch2, href: _req009Href2),
+        ],
+      );
+}
+
+AnnotationData _shotNote(
+  String id, {
+  String kind = 'highlight',
+  String? color = '#FBC02D',
+  String? snippet,
+  String? noteText,
+  String href = _req009Href1,
+  double progression = 0.1,
+  int? start,
+  int? end,
+  required int updatedAt,
+}) =>
+    AnnotationData(
+      id: id,
+      bookId: 'b1',
+      kind: kind,
+      color: color,
+      href: href,
+      progression: progression,
+      snippet: snippet,
+      noteText: noteText,
+      start: start,
+      end: end,
+      createdAt: updatedAt,
+      updatedAt: updatedAt,
+      syncStatus: 'local',
+    );
+
+/// 预置 6 条笔记（两章 + 书签），用于真实笔记面板截图（线框 07）。
+FakeNotesBackend _notesShotBackend() {
+  final b = FakeNotesBackend(
+    chapterTitles: const {
+      _req009Href1: '第一章',
+      _req009Href2: '第二章',
+    },
+  );
+  b.store.addAll([
+    _shotNote('n1',
+        snippet: '多年以后，面对行刑队，奥雷里亚诺…',
+        noteText: '布恩迪亚家族命运的伏笔',
+        updatedAt: 1700300000),
+    _shotNote('n2',
+        color: '#1A73E8',
+        snippet: '冰块在箱中散发寒气的那个下午…',
+        noteText: '童年记忆与孤独的意象',
+        updatedAt: 1700200000),
+    _shotNote('n3',
+        snippet: '他想着吉卜赛人的磁铁，觉得世界…',
+        noteText: '魔幻现实主义的引入',
+        updatedAt: 1700100000),
+    _shotNote('n4',
+        color: '#1A73E8',
+        href: _req009Href2,
+        progression: 0.5,
+        snippet: '城市是记忆的',
+        noteText: '上校形象的铺垫',
+        start: 14,
+        end: 20,
+        updatedAt: 1700000000),
+    _shotNote('n5',
+        href: _req009Href2,
+        progression: 0.6,
+        snippet: '阿玛兰塔·乌苏拉回到马孔多…',
+        noteText: '结局的预示',
+        updatedAt: 1699900000),
+    _shotNote('n6',
+        kind: 'bookmark',
+        color: null,
+        href: _req009Href2,
+        progression: 0.0,
+        snippet: '书签：第二章开头',
+        updatedAt: 1699800000),
+  ]);
+  return b;
 }
 
 /// 用 RepaintBoundary.toImage 把真实引擎渲染转成 PNG（桌面集成测试不支持 takeScreenshot）。
@@ -389,5 +493,135 @@ void main() {
     expect(find.text('翻译策略'), findsOneWidget);
     expect(find.text('自动（在线优先）'), findsOneWidget);
     await _shot(tester, 'settings_translate');
+  });
+
+  // ==================== REQ-009 新增 UI（S1/S2/S3/S4） ====================
+
+  testWidgets('screenshot 选词工具条·四色高亮（REQ-009 S1）', (tester) async {
+    _setPhone(tester);
+    await tester.pumpWidget(_pack(ReaderPage(
+      bookId: 'b1',
+      bookTitle: '测试书',
+      backend: _LongFakeBackend(),
+      notesBackend: _notesShotBackend(),
+    )));
+    await tester.pumpAndSettle();
+    // 真实长按选词 → 浮动工具条；点「高亮」展开 4 色选色（线框 06）。
+    await tester.longPressAt(const Offset(200, 300));
+    await tester.pumpAndSettle();
+    expect(find.byType(ReaderSelectionToolbar), findsOneWidget);
+    await tester.tap(find.text('高亮'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('note-color-#1A73E8')), findsOneWidget);
+    await _shot(tester, 'selection_toolbar_colors');
+  });
+
+  testWidgets('screenshot 笔记面板·章节分组（REQ-009 S2）', (tester) async {
+    _setPhone(tester);
+    await tester.pumpWidget(_pack(ReaderPage(
+      bookId: 'b1',
+      bookTitle: '测试书',
+      backend: _NotesSearchShotBackend(),
+      notesBackend: _notesShotBackend(),
+    )));
+    await tester.pumpAndSettle();
+    // 沉浸态默认无 Chrome：真实点击正文 center 呼出顶栏 → 更多 → 笔记。
+    final size = tester.view.physicalSize / tester.view.devicePixelRatio;
+    await tester.tapAt(Offset(size.width / 2, size.height / 2));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('更多'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('笔记'));
+    await tester.pumpAndSettle();
+    expect(find.byType(NotesPanel), findsOneWidget);
+    expect(
+      find.descendant(
+          of: find.byType(NotesPanel), matching: find.text('第一章')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+          of: find.byType(NotesPanel), matching: find.text('第二章')),
+      findsOneWidget,
+    );
+    await _shot(tester, 'notes_panel');
+  });
+
+  testWidgets('screenshot 全文搜索·结果与筛选（REQ-009 S3）', (tester) async {
+    _setPhone(tester);
+    const snippet1 = '……在《看不见的城市》里，卡尔维诺写道：城市是记忆的……';
+    const snippet2 = '……一家人的故事里，卡尔维诺始终关注日常的……';
+    const snippet3 = '……柯希莫在树上度过一生，卡尔维诺借此探讨自由……';
+    final search = FakeSearchBackend(hits: const [
+      SearchHitData(
+        bookId: 'b1',
+        bookTitle: '看不见的城市',
+        href: _req009Href1,
+        chapterTitle: '城市与记忆',
+        chapterIndex: 0, // 线框 04：第 1 章
+        snippet: snippet1,
+        ranges: [TextRangeData(start: 13, end: 17)],
+      ),
+      SearchHitData(
+        bookId: 'b2',
+        bookTitle: '马可瓦尔多',
+        href: _req009Href1,
+        chapterTitle: '城市与符号',
+        chapterIndex: 2, // 线框 04：第 3 章
+        snippet: snippet2,
+        ranges: [TextRangeData(start: 10, end: 14)],
+      ),
+      SearchHitData(
+        bookId: 'b3',
+        bookTitle: '树上的男爵',
+        href: _req009Href1,
+        chapterTitle: '城市与贸易',
+        chapterIndex: 1, // 线框 04：第 2 章
+        snippet: snippet3,
+        ranges: [TextRangeData(start: 13, end: 17)],
+      ),
+    ]);
+    await tester.pumpWidget(_pack(SearchPage(
+      searchBackend: search,
+      initialBookId: 'b1',
+      initialBookTitle: '看不见的城市',
+    )));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('search-field')), '卡尔维诺');
+    await tester.tap(find.byKey(const Key('search-submit')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('search-stats')), findsOneWidget);
+    expect(find.byKey(const Key('search-locate-0')), findsOneWidget);
+    // rework-B D1：三条结果分别显示各书真实章节序号（线框 04 的 第 1 / 3 / 2 章）。
+    expect(find.text('第 1 章 · 城市与记忆'), findsOneWidget);
+    expect(find.text('第 3 章 · 城市与符号'), findsOneWidget);
+    expect(find.text('第 2 章 · 城市与贸易'), findsOneWidget);
+    await _shot(tester, 'search_page');
+  });
+
+  testWidgets('screenshot 笔记跳回原文·临时高亮（REQ-009 S4）', (tester) async {
+    _setPhone(tester);
+    final notes = _notesShotBackend();
+    await tester.pumpWidget(_pack(ReaderPage(
+      bookId: 'b1',
+      bookTitle: '测试书',
+      backend: _NotesSearchShotBackend(),
+      notesBackend: notes,
+    )));
+    await tester.pumpAndSettle();
+    final size = tester.view.physicalSize / tester.view.devicePixelRatio;
+    await tester.tapAt(Offset(size.width / 2, size.height / 2));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('更多'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('笔记'));
+    await tester.pumpAndSettle();
+    // 点第二章笔记条目 → 面板关闭 + 跳回原文 + 临时高亮（线框 07）。
+    await tester.tap(find.byKey(const Key('note-row-n4')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('temp-highlight')), findsOneWidget);
+    await _shot(tester, 'notes_jump_temp_highlight');
+    // 让临时高亮超时清除，避免遗留定时器。
+    await tester.pump(const Duration(seconds: 4));
   });
 }

@@ -1,0 +1,12 @@
+src/locator/mod.rs:61:19: replace += with *= in LocatorResolver::from_selection
+src/locator/mod.rs:65:64: replace + with - in LocatorResolver::from_selection
+src/locator/mod.rs:65:64: replace + with * in LocatorResolver::from_selection
+src/notes/mod.rs:308:40: replace - with + in civil_from_days
+src/notes/mod.rs:308:40: replace - with / in civil_from_days
+src/search/mod.rs:132:21: replace > with >= in extract_snippet
+src/store/mod.rs:247:9: replace Store::integrity_check -> Result<bool> with Ok(true)
+src/store/mod.rs:268:16: replace < with <= in migrate_conn
+src/store/mod.rs:292:16: replace < with <= in migrate_conn
+src/store/mod.rs:306:16: replace < with <= in migrate_conn
+src/store/mod.rs:331:16: replace < with <= in migrate_conn
+src/store/annotations.rs:191:87: replace < with <= in <impl AnnotationRepository for AnnotationRepo>::find_bookmark

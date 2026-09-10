@@ -9,19 +9,29 @@ import '../engines/paged_view_controls.dart';
 import '../engines/paged_web_view.dart';
 import '../engines/system_tts_engine.dart';
 import '../engines/tts_engine.dart';
+import '../services/export_path_picker.dart';
 import '../services/library_backend.dart';
+import '../services/notes_backend.dart';
+import '../services/rust_notes_backend.dart';
+import '../services/rust_search_backend.dart';
 import '../services/rust_tts_backend.dart';
+import '../services/search_backend.dart';
 import '../services/translate_backend.dart';
 import '../services/tts_backend.dart';
 import '../widgets/directory_drawer.dart';
 import '../widgets/display_settings_sheet.dart';
+import '../widgets/note_colors.dart';
+import '../widgets/note_editor_card.dart';
+import '../widgets/notes_panel.dart';
 import '../widgets/reader_chrome.dart';
 import '../widgets/selection_toolbar.dart';
 import '../widgets/translation_popup.dart';
 import 'body_tap_policy.dart';
 import 'continuous_scroll_policy.dart';
 import 'listen_page.dart';
+import 'note_span_policy.dart';
 import 'progress_saver.dart';
+import 'search_page.dart';
 import 'settings_page.dart';
 
 /// 分页视图构建器（测试注入 fake，避免依赖系统 WebView）。
@@ -36,13 +46,29 @@ typedef PagedViewBuilder = Widget Function(
   ValueChanged<String>? onSelectedText,
 });
 
+/// 阅读目标（跨书定位用；REQ-009 US-19）。
+class ReaderTarget {
+  const ReaderTarget({
+    required this.href,
+    required this.progression,
+    this.tempStart,
+    this.tempEnd,
+  });
+
+  final String href;
+  final double progression;
+  final int? tempStart;
+  final int? tempEnd;
+}
+
 /// 阅读器页（重构版 · 原型 docs/wireframes/reader-ui-v2/*）。
 ///
 /// - 沉浸态：默认无 Chrome；点击正文中部 1/3 呼出/隐藏 顶栏+底栏（Kindle 式）。
 /// - 左右边缘 15% 点击翻页（仅分页模式）；滚动模式靠滑动。
 /// - 顶栏：返回/书名·章节/⋯更多；底栏：上一章/☰目录/可拖进度条/书签/Aa/下一章。
 /// - Aa 面板（底部弹层）：字号/字体/主题/行距/**翻页模式切换**（从右上角移入）。
-/// - 选中文本 → 统一浮动工具条（划重点/笔记/翻译/查词/复制）。
+/// - 选中文本 → 统一浮动工具条（复制/高亮/划线/批注/翻译/查词）。
+/// - REQ-009：笔记面板（右侧覆盖层）、持久化高亮渲染、书签、搜索定位。
 class ReaderPage extends StatefulWidget {
   const ReaderPage({
     super.key,
@@ -56,6 +82,10 @@ class ReaderPage extends StatefulWidget {
     this.ttsBackend,
     this.ttsEngine,
     this.chapterProvider,
+    this.notesBackend,
+    this.searchBackend,
+    this.exportPathPicker,
+    this.initialTarget,
   });
 
   final String bookId;
@@ -76,6 +106,14 @@ class ReaderPage extends StatefulWidget {
 
   /// REQ-008 D5：章节内容出口（测试注入失败/空章；null → `view.chapters[i]`）。
   final ChapterContentProvider? chapterProvider;
+
+  /// REQ-009：笔记/搜索后端与导出路径选择（测试注入；null → 懒创建 Rust 实现）。
+  final NotesBackend? notesBackend;
+  final SearchBackend? searchBackend;
+  final ExportPathPicker? exportPathPicker;
+
+  /// REQ-009：跨书定位初始目标（US-19）。
+  final ReaderTarget? initialTarget;
 
   @override
   State<ReaderPage> createState() => _ReaderPageState();
@@ -114,6 +152,17 @@ class _ReaderPageState extends State<ReaderPage> {
   double _chapterProgress = 0.0;
   String? _error;
 
+  // ---------- REQ-009 笔记/搜索/书签状态 ----------
+  NotesBackend? _notesBackendLazy;
+  SearchBackend? _searchBackendLazy;
+  final Map<String, List<NoteSpanData>> _notesByHref =
+      <String, List<NoteSpanData>>{};
+  bool _notesPanelOpen = false;
+  TempHighlightData? _tempHighlight;
+  String? _tempHref;
+  Timer? _tempTimer;
+  bool _busyNote = false;
+
   // REQ-003 选中/翻译/查词状态
   String? _selectedText;
   bool _translating = false;
@@ -140,10 +189,14 @@ class _ReaderPageState extends State<ReaderPage> {
     );
     _load();
     _scrollController.addListener(_onScroll);
+    if (widget.notesBackend != null) {
+      _loadNotes();
+    }
   }
 
   @override
   void dispose() {
+    _tempTimer?.cancel();
     // REQ-008 D6 降级线：退出前强刷最后一次滚动位置（不阻断返回）。
     if (_view != null && !_pagedMode) {
       unawaited(_progressSaver.flush(
@@ -157,15 +210,78 @@ class _ReaderPageState extends State<ReaderPage> {
     super.dispose();
   }
 
+  // ---------- REQ-009 笔记/搜索后端（懒创建，测试注入优先） ----------
+  NotesBackend get _notes =>
+      widget.notesBackend ?? (_notesBackendLazy ??= RustNotesBackend());
+  SearchBackend get _search =>
+      widget.searchBackend ?? (_searchBackendLazy ??= RustSearchBackend());
+  ExportPathPicker get _picker =>
+      widget.exportPathPicker ?? defaultExportPathPicker();
+
+  /// 加载本书笔记并按 href 归组为渲染区间（失败静默，不阻断阅读）。
+  Future<void> _loadNotes() async {
+    if (widget.notesBackend == null && _notesBackendLazy == null) {
+      // 未注入且从未使用：不主动触碰 Rust（widget 测试无 FFI）。
+      return;
+    }
+    try {
+      final groups = await _notes.list(widget.bookId);
+      if (!mounted) return;
+      final byHref = <String, List<NoteSpanData>>{};
+      var order = 0;
+      for (final g in groups) {
+        for (final n in g.notes) {
+          if (n.start == null || n.end == null) continue;
+          if (n.kind == 'bookmark') continue;
+          byHref.putIfAbsent(n.href, () => <NoteSpanData>[]).add(
+                NoteSpanData(
+                  start: n.start!,
+                  end: n.end!,
+                  kind: n.kind,
+                  color: n.color,
+                  order: order++,
+                ),
+              );
+        }
+      }
+      setState(() {
+        _notesByHref
+          ..clear()
+          ..addAll(byHref);
+      });
+      _refreshBookmarkState(groups);
+    } catch (_) {
+      // 笔记加载失败不阻断阅读（下次变更时重试）。
+    }
+  }
+
+  void _refreshBookmarkState(List<NoteGroupData> groups) {
+    if (_view == null) return;
+    final href = _hrefForIndex(_chapterIndex);
+    final p = _chapterProgress;
+    final found = groups
+        .expand((g) => g.notes)
+        .where((n) => n.kind == 'bookmark' && n.href == href)
+        .any((n) => (n.progression - p).abs() < 0.01);
+    if (mounted) setState(() => _bookmarked = found);
+  }
+
   Future<void> _load() async {
     try {
       final view = await widget.backend.openBook(widget.bookId);
       var start = 0;
-      final progress = await widget.backend.loadProgress(widget.bookId);
-      if (progress != null) {
-        final idx = _chapterIndexForHref(view, progress.href);
+      final target = widget.initialTarget;
+      if (target != null) {
+        final idx = _chapterIndexForHref(view, target.href);
         if (idx >= 0) start = idx;
-        _chapterProgress = progress.progression.clamp(0.0, 1.0);
+        _chapterProgress = target.progression.clamp(0.0, 1.0);
+      } else {
+        final progress = await widget.backend.loadProgress(widget.bookId);
+        if (progress != null) {
+          final idx = _chapterIndexForHref(view, progress.href);
+          if (idx >= 0) start = idx;
+          _chapterProgress = progress.progression.clamp(0.0, 1.0);
+        }
       }
       if (!mounted) return;
       setState(() {
@@ -178,6 +294,13 @@ class _ReaderPageState extends State<ReaderPage> {
         _chapterCache = ChapterContentCache(
           provider: widget.chapterProvider ?? (i) => view.chapters[i],
         );
+        if (target?.tempStart != null && target?.tempEnd != null) {
+          _tempHighlight = TempHighlightData(
+            start: target!.tempStart!,
+            end: target.tempEnd!,
+          );
+          _tempHref = target.href;
+        }
       });
       if (!_pagedMode) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -185,12 +308,19 @@ class _ReaderPageState extends State<ReaderPage> {
           _scrollToChapter(start, _chapterProgress);
         });
       }
+      if (target?.tempStart != null) {
+        _scheduleTempClear();
+      }
     } catch (e) {
       if (mounted) setState(() => _error = '$e');
     }
   }
 
   int _chapterIndexForHref(BookViewData view, String href) {
+    if (href.isEmpty) return -1;
+    for (var i = 0; i < view.chapters.length; i++) {
+      if (view.chapters[i].href == href) return i;
+    }
     final m = RegExp(r'chapter_(\d+)\.xhtml').firstMatch(href);
     if (m != null) {
       final idx = int.tryParse(m.group(1) ?? '') ?? 0;
@@ -353,6 +483,10 @@ class _ReaderPageState extends State<ReaderPage> {
   /// REQ-007 D1：命中区解析委托纯函数 [resolveBodyTap]，动作语义与既有
   /// `_onBodyTapUp` 逐字一致。
   void _applyTap(BodyTapAction action) {
+    if (_tempHighlight != null) {
+      _tempTimer?.cancel();
+      setState(() => _tempHighlight = null);
+    }
     switch (action) {
       case BodyTapAction.prevPage:
         _page(-1);
@@ -464,8 +598,18 @@ class _ReaderPageState extends State<ReaderPage> {
               Navigator.pop(context); // 先关闭底部弹层（US-1）
               _openListen();
             }),
-            ListTile(leading: const Icon(Icons.sticky_note_2), title: const Text('笔记'), onTap: () => Navigator.pop(context)),
-            ListTile(leading: const Icon(Icons.ios_share), title: const Text('导出'), onTap: () => Navigator.pop(context)),
+            ListTile(leading: const Icon(Icons.sticky_note_2), title: const Text('笔记'), onTap: () {
+              Navigator.pop(context);
+              _openNotesPanel();
+            }),
+            ListTile(leading: const Icon(Icons.search), title: const Text('搜索'), onTap: () {
+              Navigator.pop(context);
+              _openSearch();
+            }),
+            ListTile(leading: const Icon(Icons.ios_share), title: const Text('导出'), onTap: () {
+              Navigator.pop(context);
+              _exportNotes();
+            }),
           ],
         ),
       ),
@@ -629,9 +773,271 @@ class _ReaderPageState extends State<ReaderPage> {
       case SelectionAction.copy:
         _copySelection();
       case SelectionAction.highlight:
+        _createNote('highlight', color: NoteColors.defaultColor);
+      case SelectionAction.underline:
+        _createNote('underline', color: NoteColors.defaultColor);
       case SelectionAction.note:
-        // 占位：划重点/笔记 为后续 REQ
-        break;
+        _openNoteEditor();
+    }
+  }
+
+  /// 工具条选定高亮颜色（线框 06 的四色点）。
+  void _createHighlightWithColor(String hex) =>
+      _createNote('highlight', color: hex);
+
+  Future<void> _createNote(
+    String kind, {
+    String? color,
+    String? noteText,
+  }) async {
+    final text = _selectedText;
+    if (text == null || _busyNote || _view == null) return;
+    _busyNote = true;
+    final href = _hrefForIndex(_chapterIndex);
+    final progression = _chapterProgress;
+    try {
+      await _notes.create(
+        bookId: widget.bookId,
+        href: href,
+        text: text,
+        progression: progression,
+        kind: kind,
+        color: color,
+        noteText: noteText,
+      );
+      await _loadNotes();
+      if (mounted) {
+        setState(() {
+          _selectedText = null;
+          _resetPopups();
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('创建笔记失败：$e')));
+      }
+    } finally {
+      _busyNote = false;
+    }
+  }
+
+  void _openNoteEditor() {
+    if (_selectedText == null) return;
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => Dialog(
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: NoteEditorCard(
+            onSave: (t) {
+              if (t.trim().isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('批注内容不能为空')),
+                );
+                return;
+              }
+              Navigator.pop(ctx);
+              _createNote('note', noteText: t);
+            },
+            onDelete: () => Navigator.pop(ctx),
+            onClose: () => Navigator.pop(ctx),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ---------- REQ-009 跳转 / 临时高亮 ----------
+  void _scheduleTempClear() {
+    _tempTimer?.cancel();
+    _tempTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted) setState(() => _tempHighlight = null);
+    });
+  }
+
+  /// 面板条目 / 搜索命中的统一跳转（复用 `_changeChapter` 更新 reading_progress）。
+  Future<void> _jumpTo(
+    String href,
+    double progression, {
+    int? tempStart,
+    int? tempEnd,
+  }) async {
+    final view = _view;
+    if (view == null) return;
+    final idx = _chapterIndexForHref(view, href);
+    final target = idx >= 0 ? idx : _chapterIndex;
+    await _changeChapter(target, progression.clamp(0.0, 1.0));
+    if (!mounted) return;
+    if (tempStart != null && tempEnd != null && tempEnd > tempStart) {
+      setState(() {
+        _tempHighlight = TempHighlightData(start: tempStart, end: tempEnd);
+        _tempHref = href;
+      });
+      _scheduleTempClear();
+    }
+  }
+
+  Future<void> _openNoteEntry(AnnotationData note) async {
+    try {
+      final loc = await _notes.resolve(note.id);
+      final href = loc.href.isNotEmpty ? loc.href : note.href;
+      await _jumpTo(
+        href,
+        loc.progression,
+        tempStart: note.start,
+        tempEnd: note.end,
+      );
+    } catch (_) {
+      await _jumpTo(note.href, note.progression, tempStart: note.start, tempEnd: note.end);
+    }
+    if (mounted) setState(() => _notesPanelOpen = false);
+  }
+
+  void _openNotesPanel() {
+    setState(() => _notesPanelOpen = true);
+    _loadNotes();
+  }
+
+  Future<void> _openSearch() async {
+    final hit = await Navigator.of(context).push<SearchHitData>(
+      MaterialPageRoute<SearchHitData>(
+        builder: (_) => SearchPage(
+          searchBackend: _search,
+          initialBookId: widget.bookId,
+          initialBookTitle: widget.bookTitle,
+        ),
+      ),
+    );
+    if (hit == null || !mounted) return;
+    await _openHit(hit);
+  }
+
+  Future<void> _openHit(SearchHitData hit) async {
+    if (hit.bookId == widget.bookId) {
+      // 命中区间相对 snippet；先定位 snippet 在章文本中的偏移再平移（US-19）。
+      int? ts;
+      int? te;
+      final view = _view;
+      if (view != null) {
+        final idx = _chapterIndexForHref(view, hit.href);
+        if (idx >= 0 && hit.ranges.isNotEmpty) {
+          final text = view.chapters[idx].text;
+          final base = text.indexOf(hit.snippet);
+          if (base >= 0) {
+            ts = base + hit.ranges.first.start;
+            te = base + hit.ranges.first.end;
+          }
+        }
+      }
+      await _jumpTo(hit.href, _progressionForRange(hit), tempStart: ts, tempEnd: te);
+      return;
+    }
+    // 跨书定位（US-19）：打开该书并携带初始目标。
+    final start = hit.ranges.isNotEmpty ? hit.ranges.first.start : null;
+    final end = hit.ranges.isNotEmpty ? hit.ranges.first.end : null;
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ReaderPage(
+          bookId: hit.bookId,
+          bookTitle: hit.bookTitle,
+          backend: widget.backend,
+          translateBackend: widget.translateBackend,
+          notesBackend: widget.notesBackend,
+          searchBackend: widget.searchBackend,
+          exportPathPicker: widget.exportPathPicker,
+          initialTarget: ReaderTarget(
+            href: hit.href,
+            progression: 0.0,
+            tempStart: start,
+            tempEnd: end,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 命中在章内的近似 progression（snippet 前部 → 0 附近，避免跳章首）。
+  double _progressionForRange(SearchHitData hit) {
+    // 搜索结果未携带章内比例；临时高亮定位已足够，progress 取 0（章首可见）。
+    return 0.0;
+  }
+
+  Future<void> _toggleBookmark() async {
+    final view = _view;
+    if (view == null) return;
+    final href = _hrefForIndex(_chapterIndex);
+    try {
+      final r = await _notes.toggleBookmark(
+        bookId: widget.bookId,
+        href: href,
+        progression: _chapterProgress,
+      );
+      if (!mounted) return;
+      setState(() => _bookmarked = r.bookmarked);
+      await _loadNotes();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('书签操作失败：$e')));
+      }
+    }
+  }
+
+  Future<void> _exportNotes() async {
+    List<NoteGroupData> groups;
+    try {
+      groups = await _notes.list(widget.bookId);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('读取笔记失败：$e')));
+      }
+      return;
+    }
+    final count = groups.fold<int>(0, (n, g) => n + g.notes.length);
+    if (count == 0) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('暂无笔记')));
+      }
+      return;
+    }
+    if (!mounted) return;
+    final fmt = await showDialog<String>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: const Text('导出格式'),
+        children: [
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(ctx, 'markdown'),
+            child: const Text('Markdown (.md)'),
+          ),
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(ctx, 'json'),
+            child: const Text('JSON (.json)'),
+          ),
+        ],
+      ),
+    );
+    if (fmt == null || !mounted) return;
+    final path = await _picker.pick(
+      suggestedName: widget.bookTitle,
+      extension: fmt == 'json' ? 'json' : 'md',
+    );
+    if (path == null || !mounted) return;
+    try {
+      final s = await _notes.export(widget.bookId, fmt, path);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('已导出 ${s.noteCount} 条到 ${s.path}')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('导出失败：$e')));
+      }
     }
   }
 
@@ -694,6 +1100,7 @@ class _ReaderPageState extends State<ReaderPage> {
                   right: 0,
                   child: Center(child: ReaderSelectionToolbar(
                     onAction: _onSelectionAction,
+                    onHighlightColor: _createHighlightWithColor,
                   )),
                 ),
               if (_selectedText != null)
@@ -721,11 +1128,38 @@ class _ReaderPageState extends State<ReaderPage> {
                     onPrevChapter: () => _goChapter(-1),
                     onNextChapter: () => _goChapter(1),
                     onDirectory: _openDirectory,
-                    onBookmark: () => setState(() => _bookmarked = !_bookmarked),
+                    onBookmark: _toggleBookmark,
                     onSettings: _openSettings,
                     onProgressChanged: (v) => setState(() => _chapterProgress = v),
                     onProgressSeek: _onProgressSeek,
                   )),
+              ],
+              // 笔记面板（线框 07）：右侧覆盖层 + 主体调暗 + 点外关闭
+              if (_notesPanelOpen) ...[
+                Positioned.fill(
+                  child: GestureDetector(
+                    key: const Key('notes-scrim'),
+                    onTap: () => setState(() => _notesPanelOpen = false),
+                    child: Container(color: Colors.black26),
+                  ),
+                ),
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  bottom: 0,
+                  width: (constraints.maxWidth * 0.9)
+                      .clamp(0.0, 360.0)
+                      .toDouble(),
+                  child: NotesPanel(
+                    bookId: widget.bookId,
+                    bookTitle: widget.bookTitle,
+                    notesBackend: _notes,
+                    picker: _picker,
+                    onChanged: _loadNotes,
+                    onTapNote: _openNoteEntry,
+                    onClose: () => setState(() => _notesPanelOpen = false),
+                  ),
+                ),
               ],
             ],
           );
@@ -806,6 +1240,11 @@ class _ReaderPageState extends State<ReaderPage> {
           if (notification is ScrollStartNotification &&
               notification.dragDetails != null) {
             _chapterLocked = false;
+            // 临时高亮在用户真实滚动时消失（US-8）。
+            if (_tempHighlight != null) {
+              _tempTimer?.cancel();
+              setState(() => _tempHighlight = null);
+            }
           }
           return false;
         },
@@ -853,6 +1292,10 @@ class _ReaderPageState extends State<ReaderPage> {
         lineHeight: _lineHeightFor(_settings.lineHeight),
         fontFamily: _fontFamilyFor(_settings.fontFamily),
         foreground: fg,
+        annotations: _notesByHref[resolution.chapter!.href] ??
+            const <NoteSpanData>[],
+        tempHighlight:
+            resolution.chapter!.href == _tempHref ? _tempHighlight : null,
       ),
     );
   }
@@ -906,6 +1349,12 @@ class _ReaderPageState extends State<ReaderPage> {
 
   String _hrefFor(BookViewData view) => _hrefForIndex(_chapterIndex);
 
-  String _hrefForIndex(int index) =>
-      'chapter_${(index + 1).toString().padLeft(4, '0')}.xhtml';
+  String _hrefForIndex(int index) {
+    final view = _view;
+    if (view != null && index >= 0 && index < view.chapters.length) {
+      final h = view.chapters[index].href;
+      if (h.isNotEmpty) return h;
+    }
+    return 'chapter_${(index + 1).toString().padLeft(4, '0')}.xhtml';
+  }
 }

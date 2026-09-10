@@ -1,0 +1,482 @@
+[
+  {
+    "diff": "--- src/locator/mod.rs\n+++ replace += with *= in LocatorResolver::from_selection\n@@ -53,17 +53,17 @@\n         // 2) 归一化无命中 → 原始精确匹配兜底\n         if candidates.is_empty() {\n             let raw: Vec<char> = text.chars().collect();\n             let raw_needle: Vec<char> = snippet.chars().collect();\n             let mut u = 0u32;\n             let mut offsets: Vec<u32> = Vec::with_capacity(raw.len() + 1);\n             for c in &raw {\n                 offsets.push(u);\n-                u += c.len_utf16() as u32;\n+                u *= /* ~ changed by cargo-mutants ~ */ c.len_utf16() as u32;\n             }\n             offsets.push(u);\n             for start in find_all(&raw, &raw_needle) {\n                 candidates.push((offsets[start], offsets[start + raw_needle.len()]));\n             }\n         }\n \n         if candidates.is_empty() {\n",
+    "file": "src/locator/mod.rs",
+    "function": {
+      "function_name": "LocatorResolver::from_selection",
+      "return_type": "-> Result<Locator>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 105
+        },
+        "start": {
+          "column": 5,
+          "line": 17
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/locator/mod.rs:61:19: replace += with *= in LocatorResolver::from_selection",
+    "package": "reader_core",
+    "replacement": "*=",
+    "span": {
+      "end": {
+        "column": 21,
+        "line": 61
+      },
+      "start": {
+        "column": 19,
+        "line": 61
+      }
+    }
+  },
+  {
+    "diff": "--- src/locator/mod.rs\n+++ replace + with - in LocatorResolver::from_selection\n@@ -57,17 +57,17 @@\n             let mut u = 0u32;\n             let mut offsets: Vec<u32> = Vec::with_capacity(raw.len() + 1);\n             for c in &raw {\n                 offsets.push(u);\n                 u += c.len_utf16() as u32;\n             }\n             offsets.push(u);\n             for start in find_all(&raw, &raw_needle) {\n-                candidates.push((offsets[start], offsets[start + raw_needle.len()]));\n+                candidates.push((offsets[start], offsets[start - /* ~ changed by cargo-mutants ~ */ raw_needle.len()]));\n             }\n         }\n \n         if candidates.is_empty() {\n             let p = clamp_progression(sel.progression);\n             return Ok(fallback(p));\n         }\n \n",
+    "file": "src/locator/mod.rs",
+    "function": {
+      "function_name": "LocatorResolver::from_selection",
+      "return_type": "-> Result<Locator>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 105
+        },
+        "start": {
+          "column": 5,
+          "line": 17
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/locator/mod.rs:65:64: replace + with - in LocatorResolver::from_selection",
+    "package": "reader_core",
+    "replacement": "-",
+    "span": {
+      "end": {
+        "column": 65,
+        "line": 65
+      },
+      "start": {
+        "column": 64,
+        "line": 65
+      }
+    }
+  },
+  {
+    "diff": "--- src/locator/mod.rs\n+++ replace + with * in LocatorResolver::from_selection\n@@ -57,17 +57,17 @@\n             let mut u = 0u32;\n             let mut offsets: Vec<u32> = Vec::with_capacity(raw.len() + 1);\n             for c in &raw {\n                 offsets.push(u);\n                 u += c.len_utf16() as u32;\n             }\n             offsets.push(u);\n             for start in find_all(&raw, &raw_needle) {\n-                candidates.push((offsets[start], offsets[start + raw_needle.len()]));\n+                candidates.push((offsets[start], offsets[start * /* ~ changed by cargo-mutants ~ */ raw_needle.len()]));\n             }\n         }\n \n         if candidates.is_empty() {\n             let p = clamp_progression(sel.progression);\n             return Ok(fallback(p));\n         }\n \n",
+    "file": "src/locator/mod.rs",
+    "function": {
+      "function_name": "LocatorResolver::from_selection",
+      "return_type": "-> Result<Locator>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 105
+        },
+        "start": {
+          "column": 5,
+          "line": 17
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/locator/mod.rs:65:64: replace + with * in LocatorResolver::from_selection",
+    "package": "reader_core",
+    "replacement": "*",
+    "span": {
+      "end": {
+        "column": 65,
+        "line": 65
+      },
+      "start": {
+        "column": 64,
+        "line": 65
+      }
+    }
+  },
+  {
+    "diff": "--- src/notes/mod.rs\n+++ replace - with + in civil_from_days\n@@ -300,17 +300,17 @@\n     let hh = rem / 3600;\n     let mm = (rem % 3600) / 60;\n     let ss = rem % 60;\n     format!(\"{y:04}-{m:02}-{d:02} {hh:02}:{mm:02}:{ss:02}\")\n }\n \n fn civil_from_days(z: i64) -> (i64, u32, u32) {\n     let z = z + 719_468;\n-    let era = if z >= 0 { z } else { z - 146_096 } / 146_097;\n+    let era = if z >= 0 { z } else { z + /* ~ changed by cargo-mutants ~ */ 146_096 } / 146_097;\n     let doe = (z - era * 146_097) as u64;\n     let yoe = (doe - doe / 1460 + doe / 36_524 - doe / 146_096) / 365;\n     let y = yoe as i64 + era * 400;\n     let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);\n     let mp = (5 * doy + 2) / 153;\n     let d = (doy - (153 * mp + 2) / 5 + 1) as u32;\n     let m = if mp < 10 { mp + 3 } else { mp - 9 } as u32;\n     (if m <= 2 { y + 1 } else { y }, m, d)\n",
+    "file": "src/notes/mod.rs",
+    "function": {
+      "function_name": "civil_from_days",
+      "return_type": "-> (i64, u32, u32)",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 317
+        },
+        "start": {
+          "column": 1,
+          "line": 306
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/notes/mod.rs:308:40: replace - with + in civil_from_days",
+    "package": "reader_core",
+    "replacement": "+",
+    "span": {
+      "end": {
+        "column": 41,
+        "line": 308
+      },
+      "start": {
+        "column": 40,
+        "line": 308
+      }
+    }
+  },
+  {
+    "diff": "--- src/notes/mod.rs\n+++ replace - with / in civil_from_days\n@@ -300,17 +300,17 @@\n     let hh = rem / 3600;\n     let mm = (rem % 3600) / 60;\n     let ss = rem % 60;\n     format!(\"{y:04}-{m:02}-{d:02} {hh:02}:{mm:02}:{ss:02}\")\n }\n \n fn civil_from_days(z: i64) -> (i64, u32, u32) {\n     let z = z + 719_468;\n-    let era = if z >= 0 { z } else { z - 146_096 } / 146_097;\n+    let era = if z >= 0 { z } else { z / /* ~ changed by cargo-mutants ~ */ 146_096 } / 146_097;\n     let doe = (z - era * 146_097) as u64;\n     let yoe = (doe - doe / 1460 + doe / 36_524 - doe / 146_096) / 365;\n     let y = yoe as i64 + era * 400;\n     let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);\n     let mp = (5 * doy + 2) / 153;\n     let d = (doy - (153 * mp + 2) / 5 + 1) as u32;\n     let m = if mp < 10 { mp + 3 } else { mp - 9 } as u32;\n     (if m <= 2 { y + 1 } else { y }, m, d)\n",
+    "file": "src/notes/mod.rs",
+    "function": {
+      "function_name": "civil_from_days",
+      "return_type": "-> (i64, u32, u32)",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 317
+        },
+        "start": {
+          "column": 1,
+          "line": 306
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/notes/mod.rs:308:40: replace - with / in civil_from_days",
+    "package": "reader_core",
+    "replacement": "/",
+    "span": {
+      "end": {
+        "column": 41,
+        "line": 308
+      },
+      "start": {
+        "column": 40,
+        "line": 308
+      }
+    }
+  },
+  {
+    "diff": "--- src/notes/mod.rs\n+++ replace - with / in civil_from_days\n@@ -302,17 +302,17 @@\n     let ss = rem % 60;\n     format!(\"{y:04}-{m:02}-{d:02} {hh:02}:{mm:02}:{ss:02}\")\n }\n \n fn civil_from_days(z: i64) -> (i64, u32, u32) {\n     let z = z + 719_468;\n     let era = if z >= 0 { z } else { z - 146_096 } / 146_097;\n     let doe = (z - era * 146_097) as u64;\n-    let yoe = (doe - doe / 1460 + doe / 36_524 - doe / 146_096) / 365;\n+    let yoe = (doe - doe / 1460 + doe / 36_524 / /* ~ changed by cargo-mutants ~ */ doe / 146_096) / 365;\n     let y = yoe as i64 + era * 400;\n     let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);\n     let mp = (5 * doy + 2) / 153;\n     let d = (doy - (153 * mp + 2) / 5 + 1) as u32;\n     let m = if mp < 10 { mp + 3 } else { mp - 9 } as u32;\n     (if m <= 2 { y + 1 } else { y }, m, d)\n }\n \n",
+    "file": "src/notes/mod.rs",
+    "function": {
+      "function_name": "civil_from_days",
+      "return_type": "-> (i64, u32, u32)",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 317
+        },
+        "start": {
+          "column": 1,
+          "line": 306
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/notes/mod.rs:310:48: replace - with / in civil_from_days",
+    "package": "reader_core",
+    "replacement": "/",
+    "span": {
+      "end": {
+        "column": 49,
+        "line": 310
+      },
+      "start": {
+        "column": 48,
+        "line": 310
+      }
+    }
+  },
+  {
+    "diff": "--- src/notes/mod.rs\n+++ replace + with - in civil_from_days\n@@ -302,17 +302,17 @@\n     let ss = rem % 60;\n     format!(\"{y:04}-{m:02}-{d:02} {hh:02}:{mm:02}:{ss:02}\")\n }\n \n fn civil_from_days(z: i64) -> (i64, u32, u32) {\n     let z = z + 719_468;\n     let era = if z >= 0 { z } else { z - 146_096 } / 146_097;\n     let doe = (z - era * 146_097) as u64;\n-    let yoe = (doe - doe / 1460 + doe / 36_524 - doe / 146_096) / 365;\n+    let yoe = (doe - doe / 1460 - /* ~ changed by cargo-mutants ~ */ doe / 36_524 - doe / 146_096) / 365;\n     let y = yoe as i64 + era * 400;\n     let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);\n     let mp = (5 * doy + 2) / 153;\n     let d = (doy - (153 * mp + 2) / 5 + 1) as u32;\n     let m = if mp < 10 { mp + 3 } else { mp - 9 } as u32;\n     (if m <= 2 { y + 1 } else { y }, m, d)\n }\n \n",
+    "file": "src/notes/mod.rs",
+    "function": {
+      "function_name": "civil_from_days",
+      "return_type": "-> (i64, u32, u32)",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 317
+        },
+        "start": {
+          "column": 1,
+          "line": 306
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/notes/mod.rs:310:33: replace + with - in civil_from_days",
+    "package": "reader_core",
+    "replacement": "-",
+    "span": {
+      "end": {
+        "column": 34,
+        "line": 310
+      },
+      "start": {
+        "column": 33,
+        "line": 310
+      }
+    }
+  },
+  {
+    "diff": "--- src/notes/mod.rs\n+++ replace + with * in civil_from_days\n@@ -302,17 +302,17 @@\n     let ss = rem % 60;\n     format!(\"{y:04}-{m:02}-{d:02} {hh:02}:{mm:02}:{ss:02}\")\n }\n \n fn civil_from_days(z: i64) -> (i64, u32, u32) {\n     let z = z + 719_468;\n     let era = if z >= 0 { z } else { z - 146_096 } / 146_097;\n     let doe = (z - era * 146_097) as u64;\n-    let yoe = (doe - doe / 1460 + doe / 36_524 - doe / 146_096) / 365;\n+    let yoe = (doe - doe / 1460 * /* ~ changed by cargo-mutants ~ */ doe / 36_524 - doe / 146_096) / 365;\n     let y = yoe as i64 + era * 400;\n     let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);\n     let mp = (5 * doy + 2) / 153;\n     let d = (doy - (153 * mp + 2) / 5 + 1) as u32;\n     let m = if mp < 10 { mp + 3 } else { mp - 9 } as u32;\n     (if m <= 2 { y + 1 } else { y }, m, d)\n }\n \n",
+    "file": "src/notes/mod.rs",
+    "function": {
+      "function_name": "civil_from_days",
+      "return_type": "-> (i64, u32, u32)",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 317
+        },
+        "start": {
+          "column": 1,
+          "line": 306
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/notes/mod.rs:310:33: replace + with * in civil_from_days",
+    "package": "reader_core",
+    "replacement": "*",
+    "span": {
+      "end": {
+        "column": 34,
+        "line": 310
+      },
+      "start": {
+        "column": 33,
+        "line": 310
+      }
+    }
+  },
+  {
+    "diff": "--- src/search/mod.rs\n+++ replace > with >= in extract_snippet\n@@ -124,17 +124,17 @@\n /// 在原文中抽上下文片段并给出关键词 UTF-16 区间（`window` = 命中两侧字符数）。\n pub fn extract_snippet(text: &str, query: &str, window: usize) -> (String, Vec<TextRange>) {\n     let (chars, offsets) = char_table(text);\n     if chars.is_empty() {\n         return (String::new(), Vec::new());\n     }\n     let terms: Vec<String> = {\n         let ws: Vec<&str> = query.split_whitespace().collect();\n-        if ws.len() > 1 {\n+        if ws.len() >= /* ~ changed by cargo-mutants ~ */ 1 {\n             ws.into_iter().map(|s| s.to_string()).collect()\n         } else {\n             vec![query.to_string()]\n         }\n     };\n     let mut occ: Vec<(usize, usize)> = Vec::new();\n     for t in &terms {\n         let n: Vec<char> = t.chars().collect();\n",
+    "file": "src/search/mod.rs",
+    "function": {
+      "function_name": "extract_snippet",
+      "return_type": "-> (String, Vec<TextRange>)",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 166
+        },
+        "start": {
+          "column": 1,
+          "line": 124
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/search/mod.rs:132:21: replace > with >= in extract_snippet",
+    "package": "reader_core",
+    "replacement": ">=",
+    "span": {
+      "end": {
+        "column": 22,
+        "line": 132
+      },
+      "start": {
+        "column": 21,
+        "line": 132
+      }
+    }
+  },
+  {
+    "diff": "--- src/store/mod.rs\n+++ replace Store::integrity_check -> Result<bool> with Ok(true)\n@@ -239,21 +239,17 @@\n                  ON CONFLICT(key) DO UPDATE SET value = excluded.value\",\n                 rusqlite::params![key, value],\n             )\n             .map_err(Error::from)?;\n         Ok(())\n     }\n \n     pub fn integrity_check(&self) -> Result<bool> {\n-        let ok: String = self\n-            .conn\n-            .query_row(\"PRAGMA integrity_check\", [], |r| r.get(0))\n-            .map_err(Error::from)?;\n-        Ok(ok == \"ok\")\n+        Ok(true) /* ~ changed by cargo-mutants ~ */\n     }\n }\n \n fn now_unix() -> i64 {\n     std::time::SystemTime::now()\n         .duration_since(std::time::UNIX_EPOCH)\n         .map(|d| d.as_secs() as i64)\n         .unwrap_or(0)\n",
+    "file": "src/store/mod.rs",
+    "function": {
+      "function_name": "Store::integrity_check",
+      "return_type": "-> Result<bool>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 252
+        },
+        "start": {
+          "column": 5,
+          "line": 246
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/store/mod.rs:247:9: replace Store::integrity_check -> Result<bool> with Ok(true)",
+    "package": "reader_core",
+    "replacement": "Ok(true)",
+    "span": {
+      "end": {
+        "column": 23,
+        "line": 251
+      },
+      "start": {
+        "column": 9,
+        "line": 247
+      }
+    }
+  },
+  {
+    "diff": "--- src/store/mod.rs\n+++ replace < with <= in migrate_conn\n@@ -260,17 +260,17 @@\n }\n \n /// 幂等迁移（v1 → v2 → v3）：Store 主连接与 TranslationRepo 第二连接共用（REQ-003 02-design §3）。\n /// v1/v2 分支行为与既有完全一致；v3 追加 translation_cache + settings（docs/04 §5 DDL）。\n pub(crate) fn migrate_conn(conn: &Connection) -> Result<()> {\n     let version: i64 = conn\n         .query_row(\"PRAGMA user_version\", [], |r| r.get(0))\n         .map_err(Error::from)?;\n-    if version < 1 {\n+    if version <= /* ~ changed by cargo-mutants ~ */ 1 {\n         conn.execute_batch(\n             r#\"\n CREATE TABLE IF NOT EXISTS books (\n   id            TEXT PRIMARY KEY,\n   title         TEXT NOT NULL,\n   authors       TEXT NOT NULL DEFAULT '[]',\n   language      TEXT,\n   source_path   TEXT NOT NULL,\n",
+    "file": "src/store/mod.rs",
+    "function": {
+      "function_name": "migrate_conn",
+      "return_type": "-> Result<()>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 364
+        },
+        "start": {
+          "column": 1,
+          "line": 262
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/store/mod.rs:268:16: replace < with <= in migrate_conn",
+    "package": "reader_core",
+    "replacement": "<=",
+    "span": {
+      "end": {
+        "column": 17,
+        "line": 268
+      },
+      "start": {
+        "column": 16,
+        "line": 268
+      }
+    }
+  },
+  {
+    "diff": "--- src/store/mod.rs\n+++ replace < with <= in migrate_conn\n@@ -284,17 +284,17 @@\n   canonical_path TEXT\n );\n CREATE INDEX IF NOT EXISTS idx_books_hash ON books(source_hash);\n PRAGMA user_version = 1;\n \"#,\n         )\n         .map_err(Error::from)?;\n     }\n-    if version < 2 {\n+    if version <= /* ~ changed by cargo-mutants ~ */ 2 {\n         conn.execute_batch(\n             r#\"\n CREATE TABLE IF NOT EXISTS reading_progress (\n   book_id     TEXT PRIMARY KEY REFERENCES books(id) ON DELETE CASCADE,\n   href        TEXT NOT NULL,\n   progression REAL NOT NULL,\n   updated_at  INTEGER NOT NULL\n );\n",
+    "file": "src/store/mod.rs",
+    "function": {
+      "function_name": "migrate_conn",
+      "return_type": "-> Result<()>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 364
+        },
+        "start": {
+          "column": 1,
+          "line": 262
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/store/mod.rs:292:16: replace < with <= in migrate_conn",
+    "package": "reader_core",
+    "replacement": "<=",
+    "span": {
+      "end": {
+        "column": 17,
+        "line": 292
+      },
+      "start": {
+        "column": 16,
+        "line": 292
+      }
+    }
+  },
+  {
+    "diff": "--- src/store/mod.rs\n+++ replace < with <= in migrate_conn\n@@ -298,17 +298,17 @@\n   progression REAL NOT NULL,\n   updated_at  INTEGER NOT NULL\n );\n PRAGMA user_version = 2;\n \"#,\n         )\n         .map_err(Error::from)?;\n     }\n-    if version < 3 {\n+    if version <= /* ~ changed by cargo-mutants ~ */ 3 {\n         // REQ-003（docs/04 §5 翻译缓存 + 设置）：vocabulary 表本期不建（TRANS-04 排除，不占迁移号）\n         conn.execute_batch(\n             r#\"\n CREATE TABLE IF NOT EXISTS translation_cache (\n   id          INTEGER PRIMARY KEY AUTOINCREMENT,\n   source_text TEXT NOT NULL,\n   from_lang   TEXT NOT NULL,\n   to_lang     TEXT NOT NULL,\n",
+    "file": "src/store/mod.rs",
+    "function": {
+      "function_name": "migrate_conn",
+      "return_type": "-> Result<()>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 364
+        },
+        "start": {
+          "column": 1,
+          "line": 262
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/store/mod.rs:306:16: replace < with <= in migrate_conn",
+    "package": "reader_core",
+    "replacement": "<=",
+    "span": {
+      "end": {
+        "column": 17,
+        "line": 306
+      },
+      "start": {
+        "column": 16,
+        "line": 306
+      }
+    }
+  },
+  {
+    "diff": "--- src/store/mod.rs\n+++ replace < with <= in migrate_conn\n@@ -323,17 +323,17 @@\n   key   TEXT PRIMARY KEY,\n   value TEXT NOT NULL\n );\n PRAGMA user_version = 3;\n \"#,\n         )\n         .map_err(Error::from)?;\n     }\n-    if version < 4 {\n+    if version <= /* ~ changed by cargo-mutants ~ */ 4 {\n         // REQ-009（docs/04 §5 + ADR D3）：annotations + idx_annot_book + fts_books。\n         // fts_books 复用既有虚拟表并扩列：text_bi 为唯一索引列（CJK bigram 预处理流），\n         // href/chapter/text 仅存储（UNINDEXED），text 供应用层抽 snippet 与关键词区间。\n         conn.execute_batch(\n             r#\"\n CREATE TABLE IF NOT EXISTS annotations (\n   id            TEXT PRIMARY KEY,\n   book_id       TEXT NOT NULL REFERENCES books(id) ON DELETE CASCADE,\n",
+    "file": "src/store/mod.rs",
+    "function": {
+      "function_name": "migrate_conn",
+      "return_type": "-> Result<()>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 364
+        },
+        "start": {
+          "column": 1,
+          "line": 262
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/store/mod.rs:331:16: replace < with <= in migrate_conn",
+    "package": "reader_core",
+    "replacement": "<=",
+    "span": {
+      "end": {
+        "column": 17,
+        "line": 331
+      },
+      "start": {
+        "column": 16,
+        "line": 331
+      }
+    }
+  },
+  {
+    "diff": "--- src/store/annotations.rs\n+++ replace < with <= in <impl AnnotationRepository for AnnotationRepo>::find_bookmark\n@@ -183,17 +183,17 @@\n     ) -> Result<Option<Annotation>> {\n         // href/progression 在 locator_json 内，无法直接 SQL 过滤 → 取该书书签在 Rust 侧匹配\n         // （单书书签量小；`round(progression,3)` 语义与 ADR D9 一致）。\n         let all = self.list(book_id)?;\n         let target = (progression * 1000.0).round() / 1000.0;\n         Ok(all.into_iter().find(|a| {\n             a.kind == NoteKind::Bookmark\n                 && a.locator.href == href\n-                && ((a.locator.progression * 1000.0).round() / 1000.0 - target).abs() < 1e-6\n+                && ((a.locator.progression * 1000.0).round() / 1000.0 - target).abs() <= /* ~ changed by cargo-mutants ~ */ 1e-6\n         }))\n     }\n }\n \n #[cfg(test)]\n mod tests {\n     use super::*;\n     use crate::types::{BookId, TextAnchor};\n",
+    "file": "src/store/annotations.rs",
+    "function": {
+      "function_name": "<impl AnnotationRepository for AnnotationRepo>::find_bookmark",
+      "return_type": "-> Result<Option<Annotation>>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 193
+        },
+        "start": {
+          "column": 5,
+          "line": 178
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/store/annotations.rs:191:87: replace < with <= in <impl AnnotationRepository for AnnotationRepo>::find_bookmark",
+    "package": "reader_core",
+    "replacement": "<=",
+    "span": {
+      "end": {
+        "column": 88,
+        "line": 191
+      },
+      "start": {
+        "column": 87,
+        "line": 191
+      }
+    }
+  }
+]

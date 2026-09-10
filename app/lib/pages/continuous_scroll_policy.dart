@@ -14,6 +14,7 @@ library;
 import 'package:flutter/widgets.dart';
 
 import '../services/library_backend.dart' show ChapterData;
+import 'note_span_policy.dart';
 
 /// 章节内容出口（D5）：生产 = `(i) => view.chapters[i]`；测试可对某章抛异常。
 typedef ChapterContentProvider = ChapterData Function(int index);
@@ -184,7 +185,9 @@ double proportionalChapterOffset({
 
 /// 每章一个 item 的正文段落（公开 widget，供 US-11 以 `find.byType` 计数）。
 ///
-/// 结构与既有单章渲染逐字一致：`Text(title, bold 18)` + `SizedBox(16)` + `Text(body)`。
+/// 结构与既有单章渲染逐字一致：`Text(title, bold 18)` + `SizedBox(16)` + 正文。
+/// REQ-009：正文改 `Text.rich` 分段渲染持久化高亮/划线/批注与临时高亮；
+/// 新参数全部**可选**（默认空/null → 与既有 `Text(chapter.text)` 等价）。
 class ChapterSection extends StatelessWidget {
   const ChapterSection({
     super.key,
@@ -194,6 +197,8 @@ class ChapterSection extends StatelessWidget {
     required this.lineHeight,
     required this.fontFamily,
     required this.foreground,
+    this.annotations = const <NoteSpanData>[],
+    this.tempHighlight,
   });
 
   final int index;
@@ -203,8 +208,32 @@ class ChapterSection extends StatelessWidget {
   final String? fontFamily;
   final Color foreground;
 
+  /// 本章持久化笔记区间（按 href 归组后传入）。
+  final List<NoteSpanData> annotations;
+
+  /// 跳转临时高亮（仅当前目标章非 null）。
+  final TempHighlightData? tempHighlight;
+
   @override
   Widget build(BuildContext context) {
+    final base = TextStyle(
+      color: foreground,
+      fontSize: fontSize.toDouble(),
+      height: lineHeight,
+      fontFamily: fontFamily,
+    );
+    final spans = composeSpans(
+      text: chapter.text,
+      annotations: annotations,
+      temp: tempHighlight,
+    );
+    final children = <InlineSpan>[
+      for (final s in spans)
+        TextSpan(
+          text: chapter.text.substring(s.start, s.end),
+          style: s.style,
+        ),
+    ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -213,14 +242,11 @@ class ChapterSection extends StatelessWidget {
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         const SizedBox(height: 16),
-        Text(
-          chapter.text,
-          style: TextStyle(
-            color: foreground,
-            fontSize: fontSize.toDouble(),
-            height: lineHeight,
-            fontFamily: fontFamily,
-          ),
+        Text.rich(
+          TextSpan(style: base, children: children),
+          key: tempHighlight != null
+              ? const Key('temp-highlight')
+              : null,
         ),
       ],
     );

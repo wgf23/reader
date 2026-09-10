@@ -30,6 +30,9 @@ scripts/*/target/
 # 变异测试产物（勿提交）
 core/mutants.out/
 core/mutants.out.old/
+# REQ-009：变异原始构建产物过大，仅保留 summary/（日志+outcomes JSON）
+workflow/reports/mutants-req009/*
+!workflow/reports/mutants-req009/summary/
 
 # 发布产物
 app/dist/

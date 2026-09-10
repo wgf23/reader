@@ -1,0 +1,3 @@
+src/notes/mod.rs:310:48: replace - with / in civil_from_days
+src/notes/mod.rs:310:33: replace + with - in civil_from_days
+src/notes/mod.rs:310:33: replace + with * in civil_from_days

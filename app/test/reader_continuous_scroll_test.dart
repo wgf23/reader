@@ -3,9 +3,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:reader_app/pages/continuous_scroll_policy.dart';
 import 'package:reader_app/pages/reader_page.dart';
 import 'package:reader_app/services/library_backend.dart';
+import 'package:reader_app/services/notes_backend.dart';
 import 'package:reader_app/widgets/reader_chrome.dart';
 
 import 'fake_backend.dart';
+import 'fake_notes_backend.dart';
 
 /// REQ-008 T-006 [widget 测试]：连续滚动矩阵 US-5/6/7/9/10/11。
 ///
@@ -50,7 +52,11 @@ Widget _fakePagedBuilder(
 }) =>
     const Center(child: Text(_pagedMarker));
 
-Widget _app(LibraryBackend backend, {ChapterContentProvider? provider}) =>
+Widget _app(
+  LibraryBackend backend, {
+  ChapterContentProvider? provider,
+  NotesBackend? notesBackend,
+}) =>
     MaterialApp(
       home: ReaderPage(
         bookId: 'b1',
@@ -58,6 +64,7 @@ Widget _app(LibraryBackend backend, {ChapterContentProvider? provider}) =>
         backend: backend,
         pagedViewBuilder: _fakePagedBuilder,
         chapterProvider: provider,
+        notesBackend: notesBackend,
       ),
     );
 
@@ -215,14 +222,22 @@ void main() {
     addTearDown(tester.view.reset);
 
     final backend = _MultiChapterBackend(3);
-    await tester.pumpWidget(_app(backend));
+    final notes = FakeNotesBackend(
+      chapterTexts: {
+        for (var i = 0; i < 3; i++) 'chapter_${(i + 1).toString().padLeft(4, '0')}.xhtml': _text(i),
+      },
+      chapterTitles: {
+        for (var i = 0; i < 3; i++) 'chapter_${(i + 1).toString().padLeft(4, '0')}.xhtml': _title(i),
+      },
+    );
+    await tester.pumpWidget(_app(backend, notesBackend: notes));
     await tester.pumpAndSettle();
     await _showChrome(tester);
 
     // 书签幂等切换
     expect(find.byTooltip('加书签'), findsOneWidget);
     await tester.tap(find.byTooltip('加书签'));
-    await tester.pump();
+    await tester.pumpAndSettle();
     expect(find.byTooltip('取消书签'), findsOneWidget);
 
     // 切分页模式

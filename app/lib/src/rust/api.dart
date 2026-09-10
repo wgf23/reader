@@ -6,7 +6,8 @@
 import 'frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These functions are ignored because they are not marked as `pub`: `_unused_result_type`, `chapter_text`, `dict_service`, `err_msg`, `service`, `to_locator_view`, `to_summary`, `translation_service`
+// These functions are ignored because they are not marked as `pub`: `_unused_result_type`, `book_title_of`, `books_in_scope`, `chapter_indices`, `chapter_text`, `chapter_titles`, `dict_service`, `domain_scope`, `ensure_indexed`, `err_msg`, `indexed_chapters`, `notes_service`, `search_service`, `service`, `to_annotation_view`, `to_group_view`, `to_hit_view`, `to_locator_view`, `to_summary`, `translation_service`
+// These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `TextSelectionView`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
 /// 打开（或创建）书库，指定数据目录。应用启动时调用一次。
@@ -14,7 +15,7 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 Future<void> libraryOpen({required String dataDir}) =>
     RustLib.instance.api.crateApiLibraryOpen(dataDir: dataDir);
 
-/// 导入一个书籍文件（解析 → 规范 EPUB 缓存 → 入库），返回书库条目。
+/// 导入一个书籍文件（解析 → 规范 EPUB 缓存 → 入库 + 建搜索索引），返回书库条目。
 Future<BookSummary> libraryImport({required String path}) =>
     RustLib.instance.api.crateApiLibraryImport(path: path);
 
@@ -117,6 +118,136 @@ Future<ListenSettingsView> ttsListenSettingsGet() =>
 Future<void> ttsListenSettingsSet({required ListenSettingsView settings}) =>
     RustLib.instance.api.crateApiTtsListenSettingsSet(settings: settings);
 
+/// 创建笔记（高亮/划线/批注）：章全文 → 文本锚 → 落库（US-1/2/3）。
+Future<AnnotationView> notesCreate(
+        {required String bookId,
+        required String href,
+        required String text,
+        required double progression,
+        required String kind,
+        String? color,
+        String? noteText}) =>
+    RustLib.instance.api.crateApiNotesCreate(
+        bookId: bookId,
+        href: href,
+        text: text,
+        progression: progression,
+        kind: kind,
+        color: color,
+        noteText: noteText);
+
+/// 更新笔记（批注文本/颜色/kind）。
+Future<void> notesUpdate(
+        {required String noteId, required NotePatchView patch}) =>
+    RustLib.instance.api.crateApiNotesUpdate(noteId: noteId, patch: patch);
+
+Future<void> notesDelete({required String noteId}) =>
+    RustLib.instance.api.crateApiNotesDelete(noteId: noteId);
+
+Future<int> notesDeleteMany({required List<String> noteIds}) =>
+    RustLib.instance.api.crateApiNotesDeleteMany(noteIds: noteIds);
+
+Future<int> notesDeleteAll({required String bookId}) =>
+    RustLib.instance.api.crateApiNotesDeleteAll(bookId: bookId);
+
+/// 列出该书笔记（按章节分组；含书签，US-6/14）。
+Future<List<NoteGroupView>> notesList({required String bookId}) =>
+    RustLib.instance.api.crateApiNotesList(bookId: bookId);
+
+/// 笔记 id → 位置（面板/书签跳转用）。
+Future<LocatorView> notesResolve({required String noteId}) =>
+    RustLib.instance.api.crateApiNotesResolve(noteId: noteId);
+
+/// 导出 Markdown / JSON；空笔记 → Err("暂无笔记")（US-16/17）。
+Future<ExportSummaryView> notesExport(
+        {required String bookId,
+        required String fmt,
+        required String outPath}) =>
+    RustLib.instance.api
+        .crateApiNotesExport(bookId: bookId, fmt: fmt, outPath: outPath);
+
+/// 幂等切换书签（US-14）。
+Future<BookmarkToggleView> notesToggleBookmark(
+        {required String bookId,
+        required String href,
+        required double progression,
+        String? snippet}) =>
+    RustLib.instance.api.crateApiNotesToggleBookmark(
+        bookId: bookId, href: href, progression: progression, snippet: snippet);
+
+/// 全文搜索（空查询短路；懒回填旧书；CJK bigram；US-18/19/20/21/23）。
+Future<List<SearchHitView>> search(
+        {required String query, required SearchScopeView scope}) =>
+    RustLib.instance.api.crateApiSearch(query: query, scope: scope);
+
+/// 笔记视图（字段与 Dart `AnnotationData` 一一对应）
+class AnnotationView {
+  final String id;
+  final String bookId;
+  final String kind;
+  final String? color;
+  final String href;
+  final double progression;
+  final String? snippet;
+  final String? noteText;
+  final int? start;
+  final int? end;
+  final PlatformInt64 createdAt;
+  final PlatformInt64 updatedAt;
+  final String syncStatus;
+
+  const AnnotationView({
+    required this.id,
+    required this.bookId,
+    required this.kind,
+    this.color,
+    required this.href,
+    required this.progression,
+    this.snippet,
+    this.noteText,
+    this.start,
+    this.end,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.syncStatus,
+  });
+
+  @override
+  int get hashCode =>
+      id.hashCode ^
+      bookId.hashCode ^
+      kind.hashCode ^
+      color.hashCode ^
+      href.hashCode ^
+      progression.hashCode ^
+      snippet.hashCode ^
+      noteText.hashCode ^
+      start.hashCode ^
+      end.hashCode ^
+      createdAt.hashCode ^
+      updatedAt.hashCode ^
+      syncStatus.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is AnnotationView &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          bookId == other.bookId &&
+          kind == other.kind &&
+          color == other.color &&
+          href == other.href &&
+          progression == other.progression &&
+          snippet == other.snippet &&
+          noteText == other.noteText &&
+          start == other.start &&
+          end == other.end &&
+          createdAt == other.createdAt &&
+          updatedAt == other.updatedAt &&
+          syncStatus == other.syncStatus;
+}
+
 /// 书架条目
 class BookSummary {
   final String id;
@@ -178,18 +309,44 @@ class BookView {
           chapters == other.chapters;
 }
 
+/// 书签切换结果视图
+class BookmarkToggleView {
+  final bool bookmarked;
+  final String? noteId;
+
+  const BookmarkToggleView({
+    required this.bookmarked,
+    this.noteId,
+  });
+
+  @override
+  int get hashCode => bookmarked.hashCode ^ noteId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BookmarkToggleView &&
+          runtimeType == other.runtimeType &&
+          bookmarked == other.bookmarked &&
+          noteId == other.noteId;
+}
+
 /// 章节视图（阅读器用）
 class ChapterView {
   final String title;
   final String text;
 
+  /// 章/资源路径（REQ-009：搜索定位/笔记锚点用；规范 EPUB 内相对路径）
+  final String href;
+
   const ChapterView({
     required this.title,
     required this.text,
+    required this.href,
   });
 
   @override
-  int get hashCode => title.hashCode ^ text.hashCode;
+  int get hashCode => title.hashCode ^ text.hashCode ^ href.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -197,7 +354,8 @@ class ChapterView {
       other is ChapterView &&
           runtimeType == other.runtimeType &&
           title == other.title &&
-          text == other.text;
+          text == other.text &&
+          href == other.href;
 }
 
 /// 词条视图（US-1/16）
@@ -263,6 +421,31 @@ class DictInfoView {
           name == other.name &&
           wordCount == other.wordCount &&
           path == other.path;
+}
+
+/// 导出结果视图
+class ExportSummaryView {
+  final String path;
+  final int noteCount;
+  final String format;
+
+  const ExportSummaryView({
+    required this.path,
+    required this.noteCount,
+    required this.format,
+  });
+
+  @override
+  int get hashCode => path.hashCode ^ noteCount.hashCode ^ format.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ExportSummaryView &&
+          runtimeType == other.runtimeType &&
+          path == other.path &&
+          noteCount == other.noteCount &&
+          format == other.format;
 }
 
 /// 听书设置视图（settings 表三键的类型化投影）
@@ -334,6 +517,56 @@ class LocatorView {
           snippet == other.snippet;
 }
 
+/// 按章节分组的笔记视图
+class NoteGroupView {
+  final String chapterTitle;
+  final String href;
+  final List<AnnotationView> notes;
+
+  const NoteGroupView({
+    required this.chapterTitle,
+    required this.href,
+    required this.notes,
+  });
+
+  @override
+  int get hashCode => chapterTitle.hashCode ^ href.hashCode ^ notes.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is NoteGroupView &&
+          runtimeType == other.runtimeType &&
+          chapterTitle == other.chapterTitle &&
+          href == other.href &&
+          notes == other.notes;
+}
+
+/// 笔记局部更新视图
+class NotePatchView {
+  final String? noteText;
+  final String? color;
+  final String? kind;
+
+  const NotePatchView({
+    this.noteText,
+    this.color,
+    this.kind,
+  });
+
+  @override
+  int get hashCode => noteText.hashCode ^ color.hashCode ^ kind.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is NotePatchView &&
+          runtimeType == other.runtimeType &&
+          noteText == other.noteText &&
+          color == other.color &&
+          kind == other.kind;
+}
+
 /// 阅读进度视图（桥接）
 class ProgressView {
   final String href;
@@ -354,6 +587,103 @@ class ProgressView {
           runtimeType == other.runtimeType &&
           href == other.href &&
           progression == other.progression;
+}
+
+/// UTF-16 半开区间视图
+class RangeView {
+  final int start;
+  final int end;
+
+  const RangeView({
+    required this.start,
+    required this.end,
+  });
+
+  @override
+  int get hashCode => start.hashCode ^ end.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is RangeView &&
+          runtimeType == other.runtimeType &&
+          start == other.start &&
+          end == other.end;
+}
+
+/// 搜索命中视图
+class SearchHitView {
+  final String bookId;
+  final String bookTitle;
+  final String href;
+  final String chapterTitle;
+
+  /// 该书章节顺序的 0 基序号（rework-B D1；UI 渲染 `+1`）。
+  final int chapterIndex;
+  final String snippet;
+  final List<RangeView> ranges;
+  final double? score;
+
+  const SearchHitView({
+    required this.bookId,
+    required this.bookTitle,
+    required this.href,
+    required this.chapterTitle,
+    required this.chapterIndex,
+    required this.snippet,
+    required this.ranges,
+    this.score,
+  });
+
+  @override
+  int get hashCode =>
+      bookId.hashCode ^
+      bookTitle.hashCode ^
+      href.hashCode ^
+      chapterTitle.hashCode ^
+      chapterIndex.hashCode ^
+      snippet.hashCode ^
+      ranges.hashCode ^
+      score.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SearchHitView &&
+          runtimeType == other.runtimeType &&
+          bookId == other.bookId &&
+          bookTitle == other.bookTitle &&
+          href == other.href &&
+          chapterTitle == other.chapterTitle &&
+          chapterIndex == other.chapterIndex &&
+          snippet == other.snippet &&
+          ranges == other.ranges &&
+          score == other.score;
+}
+
+/// 搜索范围视图（`all_books=true` 时忽略 `book_id`）
+class SearchScopeView {
+  final bool allBooks;
+  final String? bookId;
+  final List<String> formats;
+
+  const SearchScopeView({
+    required this.allBooks,
+    this.bookId,
+    required this.formats,
+  });
+
+  @override
+  int get hashCode => allBooks.hashCode ^ bookId.hashCode ^ formats.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SearchScopeView &&
+          runtimeType == other.runtimeType &&
+          allBooks == other.allBooks &&
+          bookId == other.bookId &&
+          formats == other.formats;
 }
 
 /// 朗读句子块视图（字段与 Dart `SentenceChunk` 一一对应）

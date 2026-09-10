@@ -1,0 +1,113 @@
+{
+  "req": "REQ-009",
+  "product": "笔记（NOTE-01~07）+ 全文搜索（READ-06）—— 真实渲染截图对照",
+  "screens": [
+    {
+      "id": "S1",
+      "name": "选词浮动工具条 · 四色高亮",
+      "device": "mobile",
+      "design": {
+        "svg": "docs/wireframes/06-selection-toolbar.svg",
+        "viewport": "900x640",
+        "label": "设计稿 · 文本选择与浮动工具条（线框 06）"
+      },
+      "impl": {
+        "png": "app/screenshots/selection_toolbar_colors.png",
+        "viewport": "390x844",
+        "label": "真实渲染 · 真实 ReaderPage 长按选词 + 点「高亮」展开四色（非合成页）"
+      },
+      "intent": [
+        "浮动工具条随选区定位、不遮挡正文；长按/双击选中，两端蓝色手柄调整选区",
+        "工具条动作：复制 / 高亮（4 色：黄/蓝/绿/粉）/ 划线 / 批注 / 翻译；保留既有「查词」入口（REQ-003，01-req §1.5 授权）",
+        "「高亮」点开后展开 4 色选色（02-design §6.1 授权）；色值复用工具栏既有 4 色（ADR C15），非自造色板"
+      ],
+      "acceptance": [
+        "工具条出现且贴选区、不遮挡正文",
+        "6 个动作入口齐全（复制/高亮/划线/批注/翻译/查词）",
+        "点「高亮」展开 4 色色点（黄/蓝/绿/粉），顺序与线框一致",
+        "选色后落库 kind=highlight + 所选色（集成 US-10 断言）"
+      ]
+    },
+    {
+      "id": "S2",
+      "name": "笔记面板 · 章节分组",
+      "device": "mobile",
+      "design": {
+        "svg": "docs/wireframes/07-annotation-panel.svg",
+        "viewport": "900x640",
+        "label": "设计稿 · 笔记面板（线框 07）"
+      },
+      "impl": {
+        "png": "app/screenshots/notes_panel.png",
+        "viewport": "390x844",
+        "label": "真实渲染 · 真实 ReaderPage 覆盖层（更多→笔记），预置两章 6 条笔记"
+      },
+      "intent": [
+        "右侧 360px 白色面板、左侧竖边框；打开时阅读器主体调暗、点面板外空白关闭",
+        "标题「笔记」+ ✕；搜索框「搜索笔记」；按章节分组（组头章节名）",
+        "每条：色标（左竖条 == color）+ 原文片段 + 批注（有则显示）+ 时间（MM-dd 样式）",
+        "底部「导出」（左）/「全部删除」（右，红字）；编辑批注卡片（输入框+删除+保存）；多选批量删除；书签行并入（🔖 无色标）"
+      ],
+      "acceptance": [
+        "右侧面板 + 主体调暗 + 点外关闭",
+        "标题「笔记」/搜索框/章节分组/底部导出·全部删除齐全",
+        "色标竖条颜色 == 笔记 color（黄/蓝可辨）",
+        "片段/批注/时间/书签行渲染",
+        "编辑/改色/多选删除由 widget 测试覆盖（US-11/12/13）"
+      ]
+    },
+    {
+      "id": "S3",
+      "name": "全文搜索 · 结果与筛选",
+      "device": "mobile",
+      "design": {
+        "svg": "docs/wireframes/04-search.svg",
+        "viewport": "900x640",
+        "label": "设计稿 · 全文搜索（线框 04）"
+      },
+      "impl": {
+        "png": "app/screenshots/search_page.png",
+        "viewport": "390x844",
+        "label": "真实渲染 · 真实 SearchPage（注入 FakeSearchBackend，复刻线框三本书/三章）"
+      },
+      "intent": [
+        "顶部搜索框 + 放大镜 +「全文搜索」按钮；结果行=书名（粗）+「第 N 章 · 章节名」+ 上下文（关键词蓝色加粗）+「定位」",
+        "右侧筛选面板：按范围（全部书籍/当前书籍，单选）+ 按格式（EPUB/PDF/MOBI，复选，默认 EPUB+MOBI）+「结果 N 条 · X.XXs」",
+        "点击「定位」返回命中给 ReaderPage，跳转并临时高亮关键词；空态/空查询提示"
+      ],
+      "acceptance": [
+        "顶部搜索框 + 全文搜索按钮",
+        "结果行含书名粗体 / 章节信息 / 关键词蓝色加粗 / 定位按钮",
+        "右侧筛选面板：范围单选 + 格式复选 + 结果数与耗时",
+        "定位跳转 + 关键词临时高亮（集成 US-22 断言）",
+        "第 N 章序号语义与线框一致（线框示例为 1/3/2 章号）"
+      ]
+    },
+    {
+      "id": "S4",
+      "name": "笔记跳回原文 · 临时高亮",
+      "device": "mobile",
+      "design": {
+        "svg": "docs/wireframes/07-annotation-panel.svg",
+        "viewport": "900x640",
+        "label": "设计稿 · 点击条目跳回原文并临时高亮（线框 07）"
+      },
+      "impl": {
+        "png": "app/screenshots/notes_jump_temp_highlight.png",
+        "viewport": "390x844",
+        "label": "真实渲染 · 点第二章笔记条目后面板关闭、跳回原文并出现临时高亮"
+      },
+      "intent": [
+        "点击笔记条目 → 面板关闭、阅读器定位到该笔记 Locator、原文出现临时高亮（区别于持久化高亮）",
+        "临时高亮按锚点区间精确覆盖命中文本；超时/再次滚动/点击后消失，持久化高亮仍在",
+        "跳转复用既有定位路径并更新 reading_progress（听读同进度不变）"
+      ],
+      "acceptance": [
+        "面板关闭 + 阅读器定位到目标章节",
+        "临时高亮覆盖命中文本区间（Key('temp-highlight')）",
+        "临时高亮颜色区别于持久化高亮",
+        "集成 US-10 断言跳转位置与临时高亮"
+      ]
+    }
+  ]
+}

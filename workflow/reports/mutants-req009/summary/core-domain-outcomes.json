@@ -1,0 +1,1139 @@
+{
+  "outcomes": [
+    {
+      "scenario": "Baseline",
+      "summary": "Success",
+      "log_path": "log/baseline.log",
+      "diff_path": null,
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.925886729,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.263960706,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0",
+            "--lib",
+            "--",
+            "notes::tests::",
+            "search::tests::",
+            "locator::tests::",
+            "store::annotations::tests::",
+            "store::search_index::tests::",
+            "store::tests::",
+            "types::tests::"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/locator/mod.rs:61:19: replace += with *= in LocatorResolver::from_selection",
+          "package": "reader_core",
+          "file": "src/locator/mod.rs",
+          "function": {
+            "function_name": "LocatorResolver::from_selection",
+            "return_type": "-> Result<Locator>",
+            "span": {
+              "start": {
+                "line": 17,
+                "column": 5
+              },
+              "end": {
+                "line": 105,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 61,
+              "column": 19
+            },
+            "end": {
+              "line": 61,
+              "column": 21
+            }
+          },
+          "replacement": "*=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "MissedMutant",
+      "log_path": "log/src__locator__mod.rs_line_61_col_19.log",
+      "diff_path": "diff/src__locator__mod.rs_line_61_col_19.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.176088912,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.262639079,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0",
+            "--lib",
+            "--",
+            "notes::tests::",
+            "search::tests::",
+            "locator::tests::",
+            "store::annotations::tests::",
+            "store::search_index::tests::",
+            "store::tests::",
+            "types::tests::"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/locator/mod.rs:65:64: replace + with - in LocatorResolver::from_selection",
+          "package": "reader_core",
+          "file": "src/locator/mod.rs",
+          "function": {
+            "function_name": "LocatorResolver::from_selection",
+            "return_type": "-> Result<Locator>",
+            "span": {
+              "start": {
+                "line": 17,
+                "column": 5
+              },
+              "end": {
+                "line": 105,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 65,
+              "column": 64
+            },
+            "end": {
+              "line": 65,
+              "column": 65
+            }
+          },
+          "replacement": "-",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "MissedMutant",
+      "log_path": "log/src__locator__mod.rs_line_65_col_64.log",
+      "diff_path": "diff/src__locator__mod.rs_line_65_col_64.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.224335704,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.261453334,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0",
+            "--lib",
+            "--",
+            "notes::tests::",
+            "search::tests::",
+            "locator::tests::",
+            "store::annotations::tests::",
+            "store::search_index::tests::",
+            "store::tests::",
+            "types::tests::"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/locator/mod.rs:65:64: replace + with * in LocatorResolver::from_selection",
+          "package": "reader_core",
+          "file": "src/locator/mod.rs",
+          "function": {
+            "function_name": "LocatorResolver::from_selection",
+            "return_type": "-> Result<Locator>",
+            "span": {
+              "start": {
+                "line": 17,
+                "column": 5
+              },
+              "end": {
+                "line": 105,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 65,
+              "column": 64
+            },
+            "end": {
+              "line": 65,
+              "column": 65
+            }
+          },
+          "replacement": "*",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "MissedMutant",
+      "log_path": "log/src__locator__mod.rs_line_65_col_64_001.log",
+      "diff_path": "diff/src__locator__mod.rs_line_65_col_64_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.9148855769999997,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.2632911789999999,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0",
+            "--lib",
+            "--",
+            "notes::tests::",
+            "search::tests::",
+            "locator::tests::",
+            "store::annotations::tests::",
+            "store::search_index::tests::",
+            "store::tests::",
+            "types::tests::"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/notes/mod.rs:308:40: replace - with + in civil_from_days",
+          "package": "reader_core",
+          "file": "src/notes/mod.rs",
+          "function": {
+            "function_name": "civil_from_days",
+            "return_type": "-> (i64, u32, u32)",
+            "span": {
+              "start": {
+                "line": 306,
+                "column": 1
+              },
+              "end": {
+                "line": 317,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 308,
+              "column": 40
+            },
+            "end": {
+              "line": 308,
+              "column": 41
+            }
+          },
+          "replacement": "+",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "MissedMutant",
+      "log_path": "log/src__notes__mod.rs_line_308_col_40.log",
+      "diff_path": "diff/src__notes__mod.rs_line_308_col_40.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.378332465,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.213982603,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0",
+            "--lib",
+            "--",
+            "notes::tests::",
+            "search::tests::",
+            "locator::tests::",
+            "store::annotations::tests::",
+            "store::search_index::tests::",
+            "store::tests::",
+            "types::tests::"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/notes/mod.rs:308:40: replace - with / in civil_from_days",
+          "package": "reader_core",
+          "file": "src/notes/mod.rs",
+          "function": {
+            "function_name": "civil_from_days",
+            "return_type": "-> (i64, u32, u32)",
+            "span": {
+              "start": {
+                "line": 306,
+                "column": 1
+              },
+              "end": {
+                "line": 317,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 308,
+              "column": 40
+            },
+            "end": {
+              "line": 308,
+              "column": 41
+            }
+          },
+          "replacement": "/",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "MissedMutant",
+      "log_path": "log/src__notes__mod.rs_line_308_col_40_001.log",
+      "diff_path": "diff/src__notes__mod.rs_line_308_col_40_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.9254430300000003,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.212944285,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0",
+            "--lib",
+            "--",
+            "notes::tests::",
+            "search::tests::",
+            "locator::tests::",
+            "store::annotations::tests::",
+            "store::search_index::tests::",
+            "store::tests::",
+            "types::tests::"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/notes/mod.rs:310:48: replace - with / in civil_from_days",
+          "package": "reader_core",
+          "file": "src/notes/mod.rs",
+          "function": {
+            "function_name": "civil_from_days",
+            "return_type": "-> (i64, u32, u32)",
+            "span": {
+              "start": {
+                "line": 306,
+                "column": 1
+              },
+              "end": {
+                "line": 317,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 310,
+              "column": 48
+            },
+            "end": {
+              "line": 310,
+              "column": 49
+            }
+          },
+          "replacement": "/",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__notes__mod.rs_line_310_col_48.log",
+      "diff_path": "diff/src__notes__mod.rs_line_310_col_48.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.473997976,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.2640234320000001,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0",
+            "--lib",
+            "--",
+            "notes::tests::",
+            "search::tests::",
+            "locator::tests::",
+            "store::annotations::tests::",
+            "store::search_index::tests::",
+            "store::tests::",
+            "types::tests::"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/notes/mod.rs:310:33: replace + with - in civil_from_days",
+          "package": "reader_core",
+          "file": "src/notes/mod.rs",
+          "function": {
+            "function_name": "civil_from_days",
+            "return_type": "-> (i64, u32, u32)",
+            "span": {
+              "start": {
+                "line": 306,
+                "column": 1
+              },
+              "end": {
+                "line": 317,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 310,
+              "column": 33
+            },
+            "end": {
+              "line": 310,
+              "column": 34
+            }
+          },
+          "replacement": "-",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__notes__mod.rs_line_310_col_33.log",
+      "diff_path": "diff/src__notes__mod.rs_line_310_col_33.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.320567929,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.2644364160000001,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0",
+            "--lib",
+            "--",
+            "notes::tests::",
+            "search::tests::",
+            "locator::tests::",
+            "store::annotations::tests::",
+            "store::search_index::tests::",
+            "store::tests::",
+            "types::tests::"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/notes/mod.rs:310:33: replace + with * in civil_from_days",
+          "package": "reader_core",
+          "file": "src/notes/mod.rs",
+          "function": {
+            "function_name": "civil_from_days",
+            "return_type": "-> (i64, u32, u32)",
+            "span": {
+              "start": {
+                "line": 306,
+                "column": 1
+              },
+              "end": {
+                "line": 317,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 310,
+              "column": 33
+            },
+            "end": {
+              "line": 310,
+              "column": 34
+            }
+          },
+          "replacement": "*",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__notes__mod.rs_line_310_col_33_001.log",
+      "diff_path": "diff/src__notes__mod.rs_line_310_col_33_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.127005029,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.260897747,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0",
+            "--lib",
+            "--",
+            "notes::tests::",
+            "search::tests::",
+            "locator::tests::",
+            "store::annotations::tests::",
+            "store::search_index::tests::",
+            "store::tests::",
+            "types::tests::"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/search/mod.rs:132:21: replace > with >= in extract_snippet",
+          "package": "reader_core",
+          "file": "src/search/mod.rs",
+          "function": {
+            "function_name": "extract_snippet",
+            "return_type": "-> (String, Vec<TextRange>)",
+            "span": {
+              "start": {
+                "line": 124,
+                "column": 1
+              },
+              "end": {
+                "line": 166,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 132,
+              "column": 21
+            },
+            "end": {
+              "line": 132,
+              "column": 22
+            }
+          },
+          "replacement": ">=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "MissedMutant",
+      "log_path": "log/src__search__mod.rs_line_132_col_21.log",
+      "diff_path": "diff/src__search__mod.rs_line_132_col_21.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.776617458,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.21505282,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0",
+            "--lib",
+            "--",
+            "notes::tests::",
+            "search::tests::",
+            "locator::tests::",
+            "store::annotations::tests::",
+            "store::search_index::tests::",
+            "store::tests::",
+            "types::tests::"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/store/mod.rs:247:9: replace Store::integrity_check -> Result<bool> with Ok(true)",
+          "package": "reader_core",
+          "file": "src/store/mod.rs",
+          "function": {
+            "function_name": "Store::integrity_check",
+            "return_type": "-> Result<bool>",
+            "span": {
+              "start": {
+                "line": 246,
+                "column": 5
+              },
+              "end": {
+                "line": 252,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 247,
+              "column": 9
+            },
+            "end": {
+              "line": 251,
+              "column": 23
+            }
+          },
+          "replacement": "Ok(true)",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "MissedMutant",
+      "log_path": "log/src__store__mod.rs_line_247_col_9.log",
+      "diff_path": "diff/src__store__mod.rs_line_247_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.630987994,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.265501185,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0",
+            "--lib",
+            "--",
+            "notes::tests::",
+            "search::tests::",
+            "locator::tests::",
+            "store::annotations::tests::",
+            "store::search_index::tests::",
+            "store::tests::",
+            "types::tests::"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/store/mod.rs:268:16: replace < with <= in migrate_conn",
+          "package": "reader_core",
+          "file": "src/store/mod.rs",
+          "function": {
+            "function_name": "migrate_conn",
+            "return_type": "-> Result<()>",
+            "span": {
+              "start": {
+                "line": 262,
+                "column": 1
+              },
+              "end": {
+                "line": 364,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 268,
+              "column": 16
+            },
+            "end": {
+              "line": 268,
+              "column": 17
+            }
+          },
+          "replacement": "<=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "MissedMutant",
+      "log_path": "log/src__store__mod.rs_line_268_col_16.log",
+      "diff_path": "diff/src__store__mod.rs_line_268_col_16.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.026041947,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.314617911,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0",
+            "--lib",
+            "--",
+            "notes::tests::",
+            "search::tests::",
+            "locator::tests::",
+            "store::annotations::tests::",
+            "store::search_index::tests::",
+            "store::tests::",
+            "types::tests::"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/store/mod.rs:292:16: replace < with <= in migrate_conn",
+          "package": "reader_core",
+          "file": "src/store/mod.rs",
+          "function": {
+            "function_name": "migrate_conn",
+            "return_type": "-> Result<()>",
+            "span": {
+              "start": {
+                "line": 262,
+                "column": 1
+              },
+              "end": {
+                "line": 364,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 292,
+              "column": 16
+            },
+            "end": {
+              "line": 292,
+              "column": 17
+            }
+          },
+          "replacement": "<=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "MissedMutant",
+      "log_path": "log/src__store__mod.rs_line_292_col_16.log",
+      "diff_path": "diff/src__store__mod.rs_line_292_col_16.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.076072656,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.264439165,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0",
+            "--lib",
+            "--",
+            "notes::tests::",
+            "search::tests::",
+            "locator::tests::",
+            "store::annotations::tests::",
+            "store::search_index::tests::",
+            "store::tests::",
+            "types::tests::"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/store/mod.rs:306:16: replace < with <= in migrate_conn",
+          "package": "reader_core",
+          "file": "src/store/mod.rs",
+          "function": {
+            "function_name": "migrate_conn",
+            "return_type": "-> Result<()>",
+            "span": {
+              "start": {
+                "line": 262,
+                "column": 1
+              },
+              "end": {
+                "line": 364,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 306,
+              "column": 16
+            },
+            "end": {
+              "line": 306,
+              "column": 17
+            }
+          },
+          "replacement": "<=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "MissedMutant",
+      "log_path": "log/src__store__mod.rs_line_306_col_16.log",
+      "diff_path": "diff/src__store__mod.rs_line_306_col_16.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.188279261,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.267312833,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0",
+            "--lib",
+            "--",
+            "notes::tests::",
+            "search::tests::",
+            "locator::tests::",
+            "store::annotations::tests::",
+            "store::search_index::tests::",
+            "store::tests::",
+            "types::tests::"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/store/mod.rs:331:16: replace < with <= in migrate_conn",
+          "package": "reader_core",
+          "file": "src/store/mod.rs",
+          "function": {
+            "function_name": "migrate_conn",
+            "return_type": "-> Result<()>",
+            "span": {
+              "start": {
+                "line": 262,
+                "column": 1
+              },
+              "end": {
+                "line": 364,
+                "column": 2
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 331,
+              "column": 16
+            },
+            "end": {
+              "line": 331,
+              "column": 17
+            }
+          },
+          "replacement": "<=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "MissedMutant",
+      "log_path": "log/src__store__mod.rs_line_331_col_16.log",
+      "diff_path": "diff/src__store__mod.rs_line_331_col_16.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.678807507,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.2608104070000001,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0",
+            "--lib",
+            "--",
+            "notes::tests::",
+            "search::tests::",
+            "locator::tests::",
+            "store::annotations::tests::",
+            "store::search_index::tests::",
+            "store::tests::",
+            "types::tests::"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "name": "src/store/annotations.rs:191:87: replace < with <= in <impl AnnotationRepository for AnnotationRepo>::find_bookmark",
+          "package": "reader_core",
+          "file": "src/store/annotations.rs",
+          "function": {
+            "function_name": "<impl AnnotationRepository for AnnotationRepo>::find_bookmark",
+            "return_type": "-> Result<Option<Annotation>>",
+            "span": {
+              "start": {
+                "line": 178,
+                "column": 5
+              },
+              "end": {
+                "line": 193,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 191,
+              "column": 87
+            },
+            "end": {
+              "line": 191,
+              "column": 88
+            }
+          },
+          "replacement": "<=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "MissedMutant",
+      "log_path": "log/src__store__annotations.rs_line_191_col_87.log",
+      "diff_path": "diff/src__store__annotations.rs_line_191_col_87.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.07214023,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=reader_core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 1.2625969000000001,
+          "process_status": "Success",
+          "argv": [
+            "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=reader_core@0.1.0",
+            "--lib",
+            "--",
+            "notes::tests::",
+            "search::tests::",
+            "locator::tests::",
+            "store::annotations::tests::",
+            "store::search_index::tests::",
+            "store::tests::",
+            "types::tests::"
+          ]
+        }
+      ]
+    }
+  ],
+  "total_mutants": 15,
+  "missed": 12,
+  "caught": 3,
+  "timeout": 0,
+  "unviable": 0,
+  "success": 0,
+  "start_time": "2026-09-09T14:23:21.929929788Z",
+  "end_time": "2026-09-09T14:24:34.031478323Z",
+  "cargo_mutants_version": "27.1.0"
+}

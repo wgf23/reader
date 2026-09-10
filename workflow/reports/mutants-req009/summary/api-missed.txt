@@ -1,0 +1,6 @@
+src/api.rs:702:5: replace book_title_of -> std::result::Result<String, String> with Ok(String::new())
+src/api.rs:702:5: replace book_title_of -> std::result::Result<String, String> with Ok("xyzzy".into())
+src/api.rs:739:5: replace domain_scope -> SearchScope with Default::default()
+src/api.rs:761:17: replace && with || in books_in_scope
+src/api.rs:759:30: replace == with != in books_in_scope
+src/api.rs:823:5: replace notes_delete -> std::result::Result<(), String> with Ok(())

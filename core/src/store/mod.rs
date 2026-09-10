@@ -4,7 +4,11 @@
 //! 性能：WAL（docs/03 §5）。REQ-003：`migrate_conn` 为 Store 主连接与 TranslationRepo
 //! 第二连接共用的幂等迁移；`translation.rs` 实现翻译缓存与 Provider 配置仓储。
 
+mod annotations;
+mod search_index;
 mod translation;
+pub use annotations::AnnotationRepo;
+pub use search_index::SearchIndexRepo;
 pub use translation::TranslationRepo;
 
 use std::path::Path;
@@ -51,8 +55,11 @@ impl Store {
         std::fs::create_dir_all(data_dir.join("cache")).map_err(Error::Io)?;
         std::fs::create_dir_all(data_dir.join("dicts")).map_err(Error::Io)?;
         let conn = Connection::open(data_dir.join("library.db")).map_err(Error::from)?;
-        conn.execute_batch("PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;")
-            .map_err(Error::from)?;
+        // REQ-009 D3/C12：4 连接 WAL 下补 busy_timeout，避免 SQLITE_BUSY。
+        conn.execute_batch(
+            "PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000; PRAGMA foreign_keys=ON;",
+        )
+        .map_err(Error::from)?;
         migrate_conn(&conn)?;
         let store = Store {
             conn,
@@ -200,10 +207,15 @@ impl Store {
         Ok(row)
     }
 
+    /// 删除书籍：同一事务内显式删 `fts_books`（虚拟表不参与 FK 级联，ADR D3），
+    /// 再删 books（FK 级联清 annotations / reading_progress）。
     pub fn remove_book(&mut self, id: &str) -> Result<()> {
-        self.conn
-            .execute("DELETE FROM books WHERE id = ?1", rusqlite::params![id])
+        let tx = self.conn.transaction().map_err(Error::from)?;
+        tx.execute("DELETE FROM fts_books WHERE book_id = ?1", rusqlite::params![id])
             .map_err(Error::from)?;
+        tx.execute("DELETE FROM books WHERE id = ?1", rusqlite::params![id])
+            .map_err(Error::from)?;
+        tx.commit().map_err(Error::from)?;
         Ok(())
     }
 
@@ -316,6 +328,38 @@ PRAGMA user_version = 3;
         )
         .map_err(Error::from)?;
     }
+    if version < 4 {
+        // REQ-009（docs/04 §5 + ADR D3）：annotations + idx_annot_book + fts_books。
+        // fts_books 复用既有虚拟表并扩列：text_bi 为唯一索引列（CJK bigram 预处理流），
+        // href/chapter/text 仅存储（UNINDEXED），text 供应用层抽 snippet 与关键词区间。
+        conn.execute_batch(
+            r#"
+CREATE TABLE IF NOT EXISTS annotations (
+  id            TEXT PRIMARY KEY,
+  book_id       TEXT NOT NULL REFERENCES books(id) ON DELETE CASCADE,
+  kind          TEXT NOT NULL,
+  color         TEXT,
+  locator_json  TEXT NOT NULL,
+  snippet       TEXT,
+  note_text     TEXT,
+  created_at    INTEGER NOT NULL,
+  updated_at    INTEGER NOT NULL,
+  sync_status   TEXT NOT NULL DEFAULT 'local'
+);
+CREATE INDEX IF NOT EXISTS idx_annot_book ON annotations(book_id, updated_at);
+CREATE VIRTUAL TABLE IF NOT EXISTS fts_books USING fts5(
+  book_id UNINDEXED,
+  href    UNINDEXED,
+  chapter UNINDEXED,
+  text    UNINDEXED,
+  text_bi,
+  tokenize='unicode61'
+);
+PRAGMA user_version = 4;
+"#,
+        )
+        .map_err(Error::from)?;
+    }
     Ok(())
 }
 
@@ -405,5 +449,87 @@ mod tests {
         assert!(p.updated_at > 1_000_000_000, "updated_at 应为真实时间戳: {}", p.updated_at);
         assert_eq!(p.href, "chapter_0001.xhtml");
         assert!((p.progression - 0.5).abs() < 1e-4);
+    }
+
+    #[test]
+    fn v3_to_v4_migration_idempotent_and_preserves_data() {
+        // US-23：构造 user_version=3 存量库（books/reading_progress/translation_cache/settings）
+        let dir = tempfile::tempdir().unwrap();
+        let db = dir.path().join("library.db");
+        {
+            let conn = Connection::open(&db).unwrap();
+            conn.execute_batch(
+                "PRAGMA user_version=3;
+                 CREATE TABLE books (id TEXT PRIMARY KEY, title TEXT NOT NULL, authors TEXT NOT NULL DEFAULT '[]',
+                   language TEXT, source_path TEXT NOT NULL, source_hash TEXT NOT NULL UNIQUE, format TEXT NOT NULL,
+                   added_at INTEGER NOT NULL, updated_at INTEGER NOT NULL);
+                 CREATE TABLE book_files (book_id TEXT PRIMARY KEY REFERENCES books(id) ON DELETE CASCADE, canonical_path TEXT);
+                 CREATE TABLE reading_progress (book_id TEXT PRIMARY KEY REFERENCES books(id) ON DELETE CASCADE,
+                   href TEXT NOT NULL, progression REAL NOT NULL, updated_at INTEGER NOT NULL);
+                 CREATE TABLE translation_cache (id INTEGER PRIMARY KEY AUTOINCREMENT, source_text TEXT NOT NULL,
+                   from_lang TEXT NOT NULL, to_lang TEXT NOT NULL, provider TEXT NOT NULL, result TEXT NOT NULL,
+                   created_at INTEGER NOT NULL, hit_count INTEGER NOT NULL DEFAULT 1);
+                 CREATE UNIQUE INDEX idx_tcache ON translation_cache(source_text, from_lang, to_lang, provider);
+                 CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+                 INSERT INTO books (id,title,authors,source_path,source_hash,format,added_at,updated_at)
+                   VALUES ('bk1','存量书','[\"张三\"]','/x.epub','hash1','epub',1,1);
+                 INSERT INTO reading_progress (book_id,href,progression,updated_at) VALUES ('bk1','c1.xhtml',0.5,1);",
+            )
+            .unwrap();
+        }
+        // 重开（走 v4 迁移）
+        let store = Store::open(dir.path()).unwrap();
+        assert_eq!(store.list_books().unwrap().len(), 1, "存量书不丢");
+        let p = store.load_progress("bk1").unwrap().expect("进度不丢");
+        assert_eq!(p.href, "c1.xhtml");
+        let ver: i64 = store
+            .conn
+            .query_row("PRAGMA user_version", [], |r| r.get(0))
+            .unwrap();
+        assert_eq!(ver, 4);
+        // annotations / idx_annot_book / fts_books 均存在且可用
+        store
+            .conn
+            .execute(
+                "INSERT INTO annotations (id,book_id,kind,locator_json,created_at,updated_at)
+                 VALUES ('a1','bk1','highlight','{}',1,1)",
+                [],
+            )
+            .unwrap();
+        store
+            .conn
+            .execute(
+                "INSERT INTO fts_books (book_id,href,chapter,text,text_bi) VALUES ('bk1','c1','章','城市','城市')",
+                [],
+            )
+            .unwrap();
+        let n: i64 = store
+            .conn
+            .query_row("SELECT COUNT(*) FROM fts_books", [], |r| r.get(0))
+            .unwrap();
+        assert_eq!(n, 1);
+        // 重复打开幂等（no-op）
+        let store2 = Store::open(dir.path()).unwrap();
+        let ver2: i64 = store2
+            .conn
+            .query_row("PRAGMA user_version", [], |r| r.get(0))
+            .unwrap();
+        assert_eq!(ver2, 4);
+        assert_eq!(store2.list_books().unwrap().len(), 1);
+    }
+
+    #[test]
+    fn cache_and_dicts_dirs_live_under_data_dir() {
+        let dir = tempfile::tempdir().unwrap();
+        let store = Store::open(dir.path()).unwrap();
+        assert_eq!(store.cache_dir(), dir.path().join("cache"));
+        assert_eq!(store.dicts_dir(), dir.path().join("dicts"));
+    }
+
+    #[test]
+    fn integrity_check_passes_on_fresh_db() {
+        let dir = tempfile::tempdir().unwrap();
+        let store = Store::open(dir.path()).unwrap();
+        assert!(store.integrity_check().unwrap(), "新库完整性检查应通过");
     }
 }

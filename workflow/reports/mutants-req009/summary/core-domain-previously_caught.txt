@@ -1,0 +1,364 @@
+src/types.rs:89:9: replace Lang::as_str -> &str with ""
+src/types.rs:89:9: replace Lang::as_str -> &str with "xyzzy"
+src/types.rs:105:9: replace Lang::parse -> Option<Lang> with None
+src/types.rs:106:13: delete match arm "auto" in Lang::parse
+src/types.rs:107:13: delete match arm "en" in Lang::parse
+src/types.rs:108:13: delete match arm "zh" in Lang::parse
+src/types.rs:109:13: delete match arm "ja" in Lang::parse
+src/types.rs:110:13: delete match arm "ko" in Lang::parse
+src/types.rs:111:13: delete match arm "fr" in Lang::parse
+src/types.rs:112:13: delete match arm "de" in Lang::parse
+src/types.rs:113:13: delete match arm "es" in Lang::parse
+src/types.rs:114:13: delete match arm "ru" in Lang::parse
+src/types.rs:195:9: replace NoteKind::as_str -> &'static str with ""
+src/types.rs:195:9: replace NoteKind::as_str -> &'static str with "xyzzy"
+src/types.rs:204:9: replace NoteKind::parse -> Option<NoteKind> with None
+src/types.rs:205:13: delete match arm "highlight" in NoteKind::parse
+src/types.rs:206:13: delete match arm "underline" in NoteKind::parse
+src/types.rs:207:13: delete match arm "note" in NoteKind::parse
+src/types.rs:208:13: delete match arm "bookmark" in NoteKind::parse
+src/types.rs:253:9: replace ExportFormat::parse -> Option<Self> with None
+src/types.rs:254:13: delete match arm "markdown" | "md" in ExportFormat::parse
+src/types.rs:255:13: delete match arm "json" in ExportFormat::parse
+src/types.rs:261:9: replace ExportFormat::ext -> &'static str with ""
+src/types.rs:261:9: replace ExportFormat::ext -> &'static str with "xyzzy"
+src/types.rs:268:9: replace ExportFormat::as_str -> &'static str with ""
+src/types.rs:268:9: replace ExportFormat::as_str -> &'static str with "xyzzy"
+src/locator/mod.rs:48:29: replace + with - in LocatorResolver::from_selection
+src/locator/mod.rs:48:29: replace + with * in LocatorResolver::from_selection
+src/locator/mod.rs:49:70: replace - with + in LocatorResolver::from_selection
+src/locator/mod.rs:49:70: replace - with / in LocatorResolver::from_selection
+src/locator/mod.rs:61:19: replace += with -= in LocatorResolver::from_selection
+src/locator/mod.rs:80:19: replace < with == in LocatorResolver::from_selection
+src/locator/mod.rs:80:19: replace < with > in LocatorResolver::from_selection
+src/locator/mod.rs:80:19: replace < with <= in LocatorResolver::from_selection
+src/locator/mod.rs:86:36: replace == with != in LocatorResolver::from_selection
+src/locator/mod.rs:89:27: replace / with % in LocatorResolver::from_selection
+src/locator/mod.rs:89:27: replace / with * in LocatorResolver::from_selection
+src/locator/mod.rs:109:9: replace LocatorResolver::text_at -> Result<String> with Ok(String::new())
+src/locator/mod.rs:109:9: replace LocatorResolver::text_at -> Result<String> with Ok("xyzzy".into())
+src/locator/mod.rs:113:25: replace > with == in LocatorResolver::text_at
+src/locator/mod.rs:113:25: replace > with < in LocatorResolver::text_at
+src/locator/mod.rs:113:25: replace > with >= in LocatorResolver::text_at
+src/locator/mod.rs:122:5: replace clamp_progression -> f32 with 0.0
+src/locator/mod.rs:122:5: replace clamp_progression -> f32 with 1.0
+src/locator/mod.rs:122:5: replace clamp_progression -> f32 with -1.0
+src/locator/mod.rs:130:5: replace score_of -> f32 with 0.0
+src/locator/mod.rs:130:5: replace score_of -> f32 with 1.0
+src/locator/mod.rs:130:5: replace score_of -> f32 with -1.0
+src/locator/mod.rs:130:14: replace == with != in score_of
+src/locator/mod.rs:133:38: replace - with + in score_of
+src/locator/mod.rs:133:38: replace - with / in score_of
+src/locator/mod.rs:133:23: replace / with % in score_of
+src/locator/mod.rs:133:23: replace / with * in score_of
+src/locator/mod.rs:138:5: replace utf16_len -> u32 with 0
+src/locator/mod.rs:138:5: replace utf16_len -> u32 with 1
+src/locator/mod.rs:143:5: replace utf16_slice -> Option<String> with None
+src/locator/mod.rs:143:5: replace utf16_slice -> Option<String> with Some(String::new())
+src/locator/mod.rs:143:5: replace utf16_slice -> Option<String> with Some("xyzzy".into())
+src/locator/mod.rs:147:20: replace + with - in utf16_slice
+src/locator/mod.rs:147:20: replace + with * in utf16_slice
+src/locator/mod.rs:148:24: replace && with || in utf16_slice
+src/locator/mod.rs:148:15: replace >= with < in utf16_slice
+src/locator/mod.rs:148:30: replace <= with > in utf16_slice
+src/locator/mod.rs:150:22: replace >= with < in utf16_slice
+src/locator/mod.rs:155:10: replace < with == in utf16_slice
+src/locator/mod.rs:155:10: replace < with > in utf16_slice
+src/locator/mod.rs:155:10: replace < with <= in utf16_slice
+src/locator/mod.rs:164:5: replace normalize_with_map -> (String, Vec<(u32, u32)>) with (String::new(), vec![])
+src/locator/mod.rs:164:5: replace normalize_with_map -> (String, Vec<(u32, u32)>) with (String::new(), vec![(0, 0)])
+src/locator/mod.rs:164:5: replace normalize_with_map -> (String, Vec<(u32, u32)>) with (String::new(), vec![(0, 1)])
+src/locator/mod.rs:164:5: replace normalize_with_map -> (String, Vec<(u32, u32)>) with (String::new(), vec![(1, 0)])
+src/locator/mod.rs:164:5: replace normalize_with_map -> (String, Vec<(u32, u32)>) with (String::new(), vec![(1, 1)])
+src/locator/mod.rs:164:5: replace normalize_with_map -> (String, Vec<(u32, u32)>) with ("xyzzy".into(), vec![])
+src/locator/mod.rs:164:5: replace normalize_with_map -> (String, Vec<(u32, u32)>) with ("xyzzy".into(), vec![(0, 0)])
+src/locator/mod.rs:164:5: replace normalize_with_map -> (String, Vec<(u32, u32)>) with ("xyzzy".into(), vec![(0, 1)])
+src/locator/mod.rs:164:5: replace normalize_with_map -> (String, Vec<(u32, u32)>) with ("xyzzy".into(), vec![(1, 0)])
+src/locator/mod.rs:164:5: replace normalize_with_map -> (String, Vec<(u32, u32)>) with ("xyzzy".into(), vec![(1, 1)])
+src/locator/mod.rs:171:21: replace + with - in normalize_with_map
+src/locator/mod.rs:171:21: replace + with * in normalize_with_map
+src/locator/mod.rs:197:5: replace find_all -> Vec<usize> with vec![]
+src/locator/mod.rs:197:5: replace find_all -> Vec<usize> with vec![0]
+src/locator/mod.rs:197:5: replace find_all -> Vec<usize> with vec![1]
+src/locator/mod.rs:197:26: replace || with && in find_all
+src/locator/mod.rs:197:42: replace > with == in find_all
+src/locator/mod.rs:197:42: replace > with < in find_all
+src/locator/mod.rs:197:42: replace > with >= in find_all
+src/locator/mod.rs:201:29: replace - with + in find_all
+src/locator/mod.rs:201:29: replace - with / in find_all
+src/locator/mod.rs:202:37: replace == with != in find_all
+src/locator/mod.rs:202:21: replace + with - in find_all
+src/locator/mod.rs:202:21: replace + with * in find_all
+src/notes/mod.rs:38:25: delete ! in AnnotationService::create
+src/notes/mod.rs:39:35: replace && with || in AnnotationService::create
+src/notes/mod.rs:39:17: replace == with != in AnnotationService::create
+src/notes/mod.rs:42:38: delete ! in AnnotationService::create
+src/notes/mod.rs:62:9: replace AnnotationService::update -> Result<()> with Ok(())
+src/notes/mod.rs:66:9: replace AnnotationService::delete -> Result<()> with Ok(())
+src/notes/mod.rs:70:9: replace AnnotationService::delete_many -> Result<usize> with Ok(0)
+src/notes/mod.rs:70:9: replace AnnotationService::delete_many -> Result<usize> with Ok(1)
+src/notes/mod.rs:75:9: replace AnnotationService::delete_all -> Result<usize> with Ok(0)
+src/notes/mod.rs:75:9: replace AnnotationService::delete_all -> Result<usize> with Ok(1)
+src/notes/mod.rs:84:9: replace AnnotationService::list -> Result<Vec<NoteGroup>> with Ok(vec![])
+src/notes/mod.rs:93:64: replace == with != in AnnotationService::list
+src/notes/mod.rs:126:23: replace == with != in AnnotationService::export
+src/notes/mod.rs:148:9: replace AnnotationService::toggle_bookmark -> Result<(bool, Option<String>)> with Ok((true, None))
+src/notes/mod.rs:148:9: replace AnnotationService::toggle_bookmark -> Result<(bool, Option<String>)> with Ok((true, Some(String::new())))
+src/notes/mod.rs:148:9: replace AnnotationService::toggle_bookmark -> Result<(bool, Option<String>)> with Ok((true, Some("xyzzy".into())))
+src/notes/mod.rs:148:9: replace AnnotationService::toggle_bookmark -> Result<(bool, Option<String>)> with Ok((false, None))
+src/notes/mod.rs:148:9: replace AnnotationService::toggle_bookmark -> Result<(bool, Option<String>)> with Ok((false, Some(String::new())))
+src/notes/mod.rs:148:9: replace AnnotationService::toggle_bookmark -> Result<(bool, Option<String>)> with Ok((false, Some("xyzzy".into())))
+src/notes/mod.rs:149:49: delete ! in AnnotationService::toggle_bookmark
+src/notes/mod.rs:172:5: replace now_unix -> i64 with 0
+src/notes/mod.rs:172:5: replace now_unix -> i64 with 1
+src/notes/mod.rs:172:5: replace now_unix -> i64 with -1
+src/notes/mod.rs:180:5: replace new_note_id -> String with String::new()
+src/notes/mod.rs:180:5: replace new_note_id -> String with "xyzzy".into()
+src/notes/mod.rs:201:5: replace escape_md -> String with String::new()
+src/notes/mod.rs:201:5: replace escape_md -> String with "xyzzy".into()
+src/notes/mod.rs:204:13: delete match arm '\\' | '`' | '*' | '_' | '[' | ']' | '<' | '>' | '#' | '|' in escape_md
+src/notes/mod.rs:208:13: delete match arm '\n' | '\r' in escape_md
+src/notes/mod.rs:216:5: replace kind_label -> &'static str with ""
+src/notes/mod.rs:216:5: replace kind_label -> &'static str with "xyzzy"
+src/notes/mod.rs:225:5: replace to_markdown -> String with String::new()
+src/notes/mod.rs:225:5: replace to_markdown -> String with "xyzzy".into()
+src/notes/mod.rs:241:64: delete ! in to_markdown
+src/notes/mod.rs:256:5: replace to_json -> Result<String> with Ok(String::new())
+src/notes/mod.rs:256:5: replace to_json -> Result<String> with Ok("xyzzy".into())
+src/notes/mod.rs:297:5: replace format_unix -> String with String::new()
+src/notes/mod.rs:297:5: replace format_unix -> String with "xyzzy".into()
+src/notes/mod.rs:300:18: replace / with % in format_unix
+src/notes/mod.rs:300:18: replace / with * in format_unix
+src/notes/mod.rs:301:27: replace / with % in format_unix
+src/notes/mod.rs:301:27: replace / with * in format_unix
+src/notes/mod.rs:301:19: replace % with / in format_unix
+src/notes/mod.rs:301:19: replace % with + in format_unix
+src/notes/mod.rs:302:18: replace % with / in format_unix
+src/notes/mod.rs:302:18: replace % with + in format_unix
+src/notes/mod.rs:307:5: replace civil_from_days -> (i64, u32, u32) with (0, 0, 0)
+src/notes/mod.rs:307:5: replace civil_from_days -> (i64, u32, u32) with (0, 0, 1)
+src/notes/mod.rs:307:5: replace civil_from_days -> (i64, u32, u32) with (0, 1, 0)
+src/notes/mod.rs:307:5: replace civil_from_days -> (i64, u32, u32) with (0, 1, 1)
+src/notes/mod.rs:307:5: replace civil_from_days -> (i64, u32, u32) with (1, 0, 0)
+src/notes/mod.rs:307:5: replace civil_from_days -> (i64, u32, u32) with (1, 0, 1)
+src/notes/mod.rs:307:5: replace civil_from_days -> (i64, u32, u32) with (1, 1, 0)
+src/notes/mod.rs:307:5: replace civil_from_days -> (i64, u32, u32) with (1, 1, 1)
+src/notes/mod.rs:307:5: replace civil_from_days -> (i64, u32, u32) with (-1, 0, 0)
+src/notes/mod.rs:307:5: replace civil_from_days -> (i64, u32, u32) with (-1, 0, 1)
+src/notes/mod.rs:307:5: replace civil_from_days -> (i64, u32, u32) with (-1, 1, 0)
+src/notes/mod.rs:307:5: replace civil_from_days -> (i64, u32, u32) with (-1, 1, 1)
+src/notes/mod.rs:307:15: replace + with - in civil_from_days
+src/notes/mod.rs:307:15: replace + with * in civil_from_days
+src/notes/mod.rs:308:52: replace / with % in civil_from_days
+src/notes/mod.rs:308:52: replace / with * in civil_from_days
+src/notes/mod.rs:308:20: replace >= with < in civil_from_days
+src/notes/mod.rs:309:18: replace - with + in civil_from_days
+src/notes/mod.rs:309:18: replace - with / in civil_from_days
+src/notes/mod.rs:309:24: replace * with + in civil_from_days
+src/notes/mod.rs:309:24: replace * with / in civil_from_days
+src/notes/mod.rs:310:65: replace / with % in civil_from_days
+src/notes/mod.rs:310:65: replace / with * in civil_from_days
+src/notes/mod.rs:310:48: replace - with + in civil_from_days
+src/notes/mod.rs:310:20: replace - with + in civil_from_days
+src/notes/mod.rs:310:20: replace - with / in civil_from_days
+src/notes/mod.rs:310:26: replace / with % in civil_from_days
+src/notes/mod.rs:310:26: replace / with * in civil_from_days
+src/notes/mod.rs:310:39: replace / with % in civil_from_days
+src/notes/mod.rs:310:39: replace / with * in civil_from_days
+src/notes/mod.rs:310:54: replace / with % in civil_from_days
+src/notes/mod.rs:310:54: replace / with * in civil_from_days
+src/notes/mod.rs:311:24: replace + with - in civil_from_days
+src/notes/mod.rs:311:24: replace + with * in civil_from_days
+src/notes/mod.rs:311:30: replace * with + in civil_from_days
+src/notes/mod.rs:311:30: replace * with / in civil_from_days
+src/notes/mod.rs:312:19: replace - with + in civil_from_days
+src/notes/mod.rs:312:19: replace - with / in civil_from_days
+src/notes/mod.rs:312:42: replace - with + in civil_from_days
+src/notes/mod.rs:312:42: replace - with / in civil_from_days
+src/notes/mod.rs:312:32: replace + with - in civil_from_days
+src/notes/mod.rs:312:32: replace + with * in civil_from_days
+src/notes/mod.rs:312:26: replace * with + in civil_from_days
+src/notes/mod.rs:312:26: replace * with / in civil_from_days
+src/notes/mod.rs:312:38: replace / with % in civil_from_days
+src/notes/mod.rs:312:38: replace / with * in civil_from_days
+src/notes/mod.rs:312:48: replace / with % in civil_from_days
+src/notes/mod.rs:312:48: replace / with * in civil_from_days
+src/notes/mod.rs:313:28: replace / with % in civil_from_days
+src/notes/mod.rs:313:28: replace / with * in civil_from_days
+src/notes/mod.rs:313:23: replace + with - in civil_from_days
+src/notes/mod.rs:313:23: replace + with * in civil_from_days
+src/notes/mod.rs:313:17: replace * with + in civil_from_days
+src/notes/mod.rs:313:17: replace * with / in civil_from_days
+src/notes/mod.rs:314:39: replace + with - in civil_from_days
+src/notes/mod.rs:314:39: replace + with * in civil_from_days
+src/notes/mod.rs:314:18: replace - with + in civil_from_days
+src/notes/mod.rs:314:18: replace - with / in civil_from_days
+src/notes/mod.rs:314:35: replace / with % in civil_from_days
+src/notes/mod.rs:314:35: replace / with * in civil_from_days
+src/notes/mod.rs:314:30: replace + with - in civil_from_days
+src/notes/mod.rs:314:30: replace + with * in civil_from_days
+src/notes/mod.rs:314:25: replace * with + in civil_from_days
+src/notes/mod.rs:314:25: replace * with / in civil_from_days
+src/notes/mod.rs:315:19: replace < with == in civil_from_days
+src/notes/mod.rs:315:19: replace < with > in civil_from_days
+src/notes/mod.rs:315:19: replace < with <= in civil_from_days
+src/notes/mod.rs:315:29: replace + with - in civil_from_days
+src/notes/mod.rs:315:29: replace + with * in civil_from_days
+src/notes/mod.rs:315:45: replace - with + in civil_from_days
+src/notes/mod.rs:315:45: replace - with / in civil_from_days
+src/notes/mod.rs:316:11: replace <= with > in civil_from_days
+src/notes/mod.rs:316:20: replace + with - in civil_from_days
+src/notes/mod.rs:316:20: replace + with * in civil_from_days
+src/search/mod.rs:16:5: replace is_cjk -> bool with true
+src/search/mod.rs:16:5: replace is_cjk -> bool with false
+src/search/mod.rs:26:5: replace flush_cjk with ()
+src/search/mod.rs:29:18: replace == with != in flush_cjk
+src/search/mod.rs:40:5: replace flush_word with ()
+src/search/mod.rs:50:5: replace bigram_index_text -> String with String::new()
+src/search/mod.rs:50:5: replace bigram_index_text -> String with "xyzzy".into()
+src/search/mod.rs:74:5: replace build_match_expr -> Option<String> with None
+src/search/mod.rs:74:5: replace build_match_expr -> Option<String> with Some(String::new())
+src/search/mod.rs:74:5: replace build_match_expr -> Option<String> with Some("xyzzy".into())
+src/search/mod.rs:92:5: replace char_table -> (Vec<char>, Vec<u32>) with (vec![], vec![])
+src/search/mod.rs:92:5: replace char_table -> (Vec<char>, Vec<u32>) with (vec![], vec![0])
+src/search/mod.rs:92:5: replace char_table -> (Vec<char>, Vec<u32>) with (vec![], vec![1])
+src/search/mod.rs:92:5: replace char_table -> (Vec<char>, Vec<u32>) with (vec![Default::default()], vec![])
+src/search/mod.rs:92:5: replace char_table -> (Vec<char>, Vec<u32>) with (vec![Default::default()], vec![0])
+src/search/mod.rs:92:5: replace char_table -> (Vec<char>, Vec<u32>) with (vec![Default::default()], vec![1])
+src/search/mod.rs:97:11: replace += with -= in char_table
+src/search/mod.rs:97:11: replace += with *= in char_table
+src/search/mod.rs:104:5: replace eq_ci -> bool with true
+src/search/mod.rs:104:5: replace eq_ci -> bool with false
+src/search/mod.rs:104:12: replace || with && in eq_ci
+src/search/mod.rs:104:7: replace == with != in eq_ci
+src/search/mod.rs:104:45: replace && with || in eq_ci
+src/search/mod.rs:104:29: replace && with || in eq_ci
+src/search/mod.rs:108:5: replace find_ci -> Vec<usize> with vec![]
+src/search/mod.rs:108:5: replace find_ci -> Vec<usize> with vec![0]
+src/search/mod.rs:108:5: replace find_ci -> Vec<usize> with vec![1]
+src/search/mod.rs:108:26: replace || with && in find_ci
+src/search/mod.rs:108:42: replace > with == in find_ci
+src/search/mod.rs:108:42: replace > with < in find_ci
+src/search/mod.rs:108:42: replace > with >= in find_ci
+src/search/mod.rs:112:29: replace - with + in find_ci
+src/search/mod.rs:112:29: replace - with / in find_ci
+src/search/mod.rs:113:21: replace + with - in find_ci
+src/search/mod.rs:113:21: replace + with * in find_ci
+src/search/mod.rs:126:5: replace extract_snippet -> (String, Vec<TextRange>) with (String::new(), vec![])
+src/search/mod.rs:126:5: replace extract_snippet -> (String, Vec<TextRange>) with ("xyzzy".into(), vec![])
+src/search/mod.rs:132:21: replace > with == in extract_snippet
+src/search/mod.rs:132:21: replace > with < in extract_snippet
+src/search/mod.rs:142:28: replace + with - in extract_snippet
+src/search/mod.rs:142:28: replace + with * in extract_snippet
+src/search/mod.rs:153:29: replace + with - in extract_snippet
+src/search/mod.rs:153:29: replace + with * in extract_snippet
+src/search/mod.rs:158:28: replace && with || in extract_snippet
+src/search/mod.rs:158:14: replace >= with < in extract_snippet
+src/search/mod.rs:158:33: replace <= with > in extract_snippet
+src/search/mod.rs:160:35: replace - with + in extract_snippet
+src/search/mod.rs:160:35: replace - with / in extract_snippet
+src/search/mod.rs:161:33: replace - with + in extract_snippet
+src/search/mod.rs:161:33: replace - with / in extract_snippet
+src/search/mod.rs:169:5: replace is_single_cjk_char -> bool with true
+src/search/mod.rs:169:5: replace is_single_cjk_char -> bool with false
+src/search/mod.rs:171:9: delete match arm (Some(c), None) in is_single_cjk_char
+src/search/mod.rs:186:9: replace SearchService::index_book -> Result<()> with Ok(())
+src/search/mod.rs:190:9: replace SearchService::is_indexed -> Result<bool> with Ok(true)
+src/search/mod.rs:190:9: replace SearchService::is_indexed -> Result<bool> with Ok(false)
+src/search/mod.rs:195:9: replace SearchService::query -> Result<Vec<SearchHit>> with Ok(vec![])
+src/store/mod.rs:72:9: replace Store::cache_dir -> std::path::PathBuf with Default::default()
+src/store/mod.rs:76:9: replace Store::dicts_dir -> std::path::PathBuf with Default::default()
+src/store/mod.rs:81:9: replace Store::save_progress -> Result<()> with Ok(())
+src/store/mod.rs:95:9: replace Store::load_progress -> Result<Option<ProgressRecord>> with Ok(None)
+src/store/mod.rs:114:9: replace Store::insert_book -> Result<()> with Ok(())
+src/store/mod.rs:145:9: replace Store::list_books -> Result<Vec<BookRecord>> with Ok(vec![])
+src/store/mod.rs:213:9: replace Store::remove_book -> Result<()> with Ok(())
+src/store/mod.rs:224:9: replace Store::get_setting -> Result<Option<String>> with Ok(None)
+src/store/mod.rs:224:9: replace Store::get_setting -> Result<Option<String>> with Ok(Some(String::new()))
+src/store/mod.rs:224:9: replace Store::get_setting -> Result<Option<String>> with Ok(Some("xyzzy".into()))
+src/store/mod.rs:236:9: replace Store::set_setting -> Result<()> with Ok(())
+src/store/mod.rs:247:9: replace Store::integrity_check -> Result<bool> with Ok(false)
+src/store/mod.rs:251:15: replace == with != in Store::integrity_check
+src/store/mod.rs:256:5: replace now_unix -> i64 with 0
+src/store/mod.rs:256:5: replace now_unix -> i64 with 1
+src/store/mod.rs:256:5: replace now_unix -> i64 with -1
+src/store/mod.rs:265:5: replace migrate_conn -> Result<()> with Ok(())
+src/store/mod.rs:268:16: replace < with == in migrate_conn
+src/store/mod.rs:268:16: replace < with > in migrate_conn
+src/store/mod.rs:292:16: replace < with == in migrate_conn
+src/store/mod.rs:292:16: replace < with > in migrate_conn
+src/store/mod.rs:306:16: replace < with == in migrate_conn
+src/store/mod.rs:306:16: replace < with > in migrate_conn
+src/store/mod.rs:331:16: replace < with == in migrate_conn
+src/store/mod.rs:331:16: replace < with > in migrate_conn
+src/store/annotations.rs:66:9: replace <impl AnnotationRepository for AnnotationRepo>::insert -> Result<()> with Ok(())
+src/store/annotations.rs:91:9: replace <impl AnnotationRepository for AnnotationRepo>::update -> Result<()> with Ok(())
+src/store/annotations.rs:109:9: replace <impl AnnotationRepository for AnnotationRepo>::delete -> Result<()> with Ok(())
+src/store/annotations.rs:116:9: replace <impl AnnotationRepository for AnnotationRepo>::delete_many -> Result<usize> with Ok(0)
+src/store/annotations.rs:116:9: replace <impl AnnotationRepository for AnnotationRepo>::delete_many -> Result<usize> with Ok(1)
+src/store/annotations.rs:119:15: replace += with -= in <impl AnnotationRepository for AnnotationRepo>::delete_many
+src/store/annotations.rs:119:15: replace += with *= in <impl AnnotationRepository for AnnotationRepo>::delete_many
+src/store/annotations.rs:128:9: replace <impl AnnotationRepository for AnnotationRepo>::delete_all -> Result<usize> with Ok(0)
+src/store/annotations.rs:128:9: replace <impl AnnotationRepository for AnnotationRepo>::delete_all -> Result<usize> with Ok(1)
+src/store/annotations.rs:137:23: replace += with -= in <impl AnnotationRepository for AnnotationRepo>::delete_all
+src/store/annotations.rs:137:23: replace += with *= in <impl AnnotationRepository for AnnotationRepo>::delete_all
+src/store/annotations.rs:151:9: replace <impl AnnotationRepository for AnnotationRepo>::list -> Result<Vec<Annotation>> with Ok(vec![])
+src/store/annotations.rs:168:9: replace <impl AnnotationRepository for AnnotationRepo>::get -> Result<Option<Annotation>> with Ok(None)
+src/store/annotations.rs:186:9: replace <impl AnnotationRepository for AnnotationRepo>::find_bookmark -> Result<Option<Annotation>> with Ok(None)
+src/store/annotations.rs:187:53: replace / with % in <impl AnnotationRepository for AnnotationRepo>::find_bookmark
+src/store/annotations.rs:187:53: replace / with * in <impl AnnotationRepository for AnnotationRepo>::find_bookmark
+src/store/annotations.rs:187:35: replace * with + in <impl AnnotationRepository for AnnotationRepo>::find_bookmark
+src/store/annotations.rs:187:35: replace * with / in <impl AnnotationRepository for AnnotationRepo>::find_bookmark
+src/store/annotations.rs:191:17: replace && with || in <impl AnnotationRepository for AnnotationRepo>::find_bookmark
+src/store/annotations.rs:190:17: replace && with || in <impl AnnotationRepository for AnnotationRepo>::find_bookmark
+src/store/annotations.rs:189:20: replace == with != in <impl AnnotationRepository for AnnotationRepo>::find_bookmark
+src/store/annotations.rs:190:35: replace == with != in <impl AnnotationRepository for AnnotationRepo>::find_bookmark
+src/store/annotations.rs:191:87: replace < with == in <impl AnnotationRepository for AnnotationRepo>::find_bookmark
+src/store/annotations.rs:191:87: replace < with > in <impl AnnotationRepository for AnnotationRepo>::find_bookmark
+src/store/annotations.rs:191:71: replace - with + in <impl AnnotationRepository for AnnotationRepo>::find_bookmark
+src/store/annotations.rs:191:71: replace - with / in <impl AnnotationRepository for AnnotationRepo>::find_bookmark
+src/store/annotations.rs:191:62: replace / with % in <impl AnnotationRepository for AnnotationRepo>::find_bookmark
+src/store/annotations.rs:191:62: replace / with * in <impl AnnotationRepository for AnnotationRepo>::find_bookmark
+src/store/annotations.rs:191:44: replace * with + in <impl AnnotationRepository for AnnotationRepo>::find_bookmark
+src/store/annotations.rs:191:44: replace * with / in <impl AnnotationRepository for AnnotationRepo>::find_bookmark
+src/store/search_index.rs:35:5: replace scope_clause -> (String, Vec<rusqlite::types::Value>) with (String::new(), vec![])
+src/store/search_index.rs:35:5: replace scope_clause -> (String, Vec<rusqlite::types::Value>) with ("xyzzy".into(), vec![])
+src/store/search_index.rs:42:11: replace += with -= in scope_clause
+src/store/search_index.rs:42:11: replace += with *= in scope_clause
+src/store/search_index.rs:44:8: delete ! in scope_clause
+src/store/search_index.rs:59:5: replace run_rows -> Result<Vec<SearchRow>> with Ok(vec![])
+src/store/search_index.rs:81:9: replace <impl SearchIndexRepository for SearchIndexRepo>::replace_book -> Result<()> with Ok(())
+src/store/search_index.rs:97:9: replace <impl SearchIndexRepository for SearchIndexRepo>::is_indexed -> Result<bool> with Ok(true)
+src/store/search_index.rs:97:9: replace <impl SearchIndexRepository for SearchIndexRepo>::is_indexed -> Result<bool> with Ok(false)
+src/store/search_index.rs:105:19: replace != with == in <impl SearchIndexRepository for SearchIndexRepo>::is_indexed
+src/store/search_index.rs:109:9: replace <impl SearchIndexRepository for SearchIndexRepo>::remove_book -> Result<()> with Ok(())
+src/store/search_index.rs:121:9: replace <impl SearchIndexRepository for SearchIndexRepo>::query_fts -> Result<Vec<SearchRow>> with Ok(vec![])
+src/store/search_index.rs:142:9: replace <impl SearchIndexRepository for SearchIndexRepo>::query_substring -> Result<Vec<SearchRow>> with Ok(vec![])
+src/types.rs:105:9: replace Lang::parse -> Option<Lang> with Some(Default::default())
+src/types.rs:122:9: replace <impl serde::Serialize for Lang>::serialize -> std::result::Result<S::Ok, S::Error> with Ok(Default::default())
+src/types.rs:128:9: replace <impl serde::Deserialize<'de> for Lang>::deserialize -> std::result::Result<Lang, D::Error> with Ok(Default::default())
+src/types.rs:204:9: replace NoteKind::parse -> Option<NoteKind> with Some(Default::default())
+src/types.rs:253:9: replace ExportFormat::parse -> Option<Self> with Some(Default::default())
+src/locator/mod.rs:24:9: replace LocatorResolver::from_selection -> Result<Locator> with Ok(Default::default())
+src/notes/mod.rs:36:9: replace AnnotationService::create -> Result<Annotation> with Ok(Default::default())
+src/notes/mod.rs:84:9: replace AnnotationService::list -> Result<Vec<NoteGroup>> with Ok(vec![Default::default()])
+src/notes/mod.rs:111:9: replace AnnotationService::resolve -> Result<Locator> with Ok(Default::default())
+src/notes/mod.rs:125:9: replace AnnotationService::export -> Result<ExportSummary> with Ok(Default::default())
+src/search/mod.rs:126:5: replace extract_snippet -> (String, Vec<TextRange>) with (String::new(), vec![Default::default()])
+src/search/mod.rs:126:5: replace extract_snippet -> (String, Vec<TextRange>) with ("xyzzy".into(), vec![Default::default()])
+src/search/mod.rs:195:9: replace SearchService::query -> Result<Vec<SearchHit>> with Ok(vec![Default::default()])
+src/store/mod.rs:54:9: replace Store::open -> Result<Store> with Ok(Default::default())
+src/store/mod.rs:95:9: replace Store::load_progress -> Result<Option<ProgressRecord>> with Ok(Some(Default::default()))
+src/store/mod.rs:145:9: replace Store::list_books -> Result<Vec<BookRecord>> with Ok(vec![Default::default()])
+src/store/mod.rs:178:9: replace Store::get_book -> Result<BookRecord> with Ok(Default::default())
+src/store/annotations.rs:22:9: replace AnnotationRepo::open -> Result<AnnotationRepo> with Ok(Default::default())
+src/store/annotations.rs:35:5: replace row_to_annotation -> rusqlite::Result<Annotation> with Ok(Default::default())
+src/store/annotations.rs:151:9: replace <impl AnnotationRepository for AnnotationRepo>::list -> Result<Vec<Annotation>> with Ok(vec![Default::default()])
+src/store/annotations.rs:168:9: replace <impl AnnotationRepository for AnnotationRepo>::get -> Result<Option<Annotation>> with Ok(Some(Default::default()))
+src/store/annotations.rs:186:9: replace <impl AnnotationRepository for AnnotationRepo>::find_bookmark -> Result<Option<Annotation>> with Ok(Some(Default::default()))
+src/store/search_index.rs:22:9: replace SearchIndexRepo::open -> Result<SearchIndexRepo> with Ok(Default::default())
+src/store/search_index.rs:35:5: replace scope_clause -> (String, Vec<rusqlite::types::Value>) with (String::new(), vec![Default::default()])
+src/store/search_index.rs:35:5: replace scope_clause -> (String, Vec<rusqlite::types::Value>) with ("xyzzy".into(), vec![Default::default()])
+src/store/search_index.rs:59:5: replace run_rows -> Result<Vec<SearchRow>> with Ok(vec![Default::default()])
+src/store/search_index.rs:121:9: replace <impl SearchIndexRepository for SearchIndexRepo>::query_fts -> Result<Vec<SearchRow>> with Ok(vec![Default::default()])
+src/store/search_index.rs:142:9: replace <impl SearchIndexRepository for SearchIndexRepo>::query_substring -> Result<Vec<SearchRow>> with Ok(vec![Default::default()])
